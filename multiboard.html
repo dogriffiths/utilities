@@ -521,6 +521,9 @@ w<!DOCTYPE html>
          document.addEventListener('pointerdown', handlePointerEvent);
          document.addEventListener('pointermove', handlePointerEvent);
          document.addEventListener('pointerup', handlePointerEvent);
+         document.addEventListener('contextmenu', function(event) {
+             event.preventDefault();
+         });
 
          // Initial setup
          resizeCanvas();
