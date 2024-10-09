@@ -1,0 +1,530 @@
+w<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Multi-Whiteboard App</title>
+        <style>
+         body, html {
+             margin: 0;
+             padding: 0;
+             overflow: hidden;
+             font-family: Arial, sans-serif;
+         }
+         #canvas {
+             position: absolute;
+             top: 0;
+             left: 0;
+         }
+         .control-panel {
+             position: fixed;
+             bottom: 20px;
+             z-index: 1000;
+             background-color: rgba(255, 255, 255, 0.8);
+             padding: 15px;
+             border-radius: 10px;
+             display: flex;
+             align-items: center;
+             gap: 10px;
+         }
+         #drawing-controls {
+             right: 20px;
+         }
+         #navigation {
+             left: 20px;
+         }
+         #colorPicker {
+             width: 40px;
+             height: 40px;
+             border: none;
+             padding: 0;
+             border-radius: 50%;
+             overflow: hidden;
+         }
+         #brushSize {
+             width: 100px;
+         }
+         .round-button {
+             width: 40px;
+             height: 40px;
+             border: none;
+             border-radius: 50%;
+             cursor: pointer;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             padding: 0;
+             transition: all 0.3s ease;
+         }
+         #clearBtn {
+             background-color: #ff4444;
+         }
+         #clearBtn:hover {
+             background-color: #ff6666;
+         }
+         #newBoardBtn {
+             background-color: #44aa44;
+         }
+         #newBoardBtn:hover {
+             background-color: #66cc66;
+         }
+         #saveBtn {
+             background-color: #4444ff;
+         }
+         #saveBtn:hover {
+             background-color: #6666ff;
+         }
+         #eraserBtn {
+             background-color: #f0f0f0;
+             border: 2px solid #999;
+         }
+         #eraserBtn:hover {
+             background-color: #e0e0e0;
+         }
+         #eraserBtn.active {
+             background-color: #ff44ff;
+             border-color: #ff44ff;
+         }
+         #eraserBtn.active svg {
+             stroke: white;
+         }
+         #undoBtn {
+             background-color: #ffaa44;
+         }
+         #undoBtn:hover {
+             background-color: #ffcc66;
+         }
+         .round-button svg {
+             width: 24px;
+             height: 24px;
+             transition: all 0.3s ease;
+         }
+         #boardInfo {
+             margin: 0 10px;
+         }
+         .round-button:disabled {
+             opacity: 0.5;
+             cursor: not-allowed;
+         }
+         #confirmDialog {
+             display: none;
+             position: fixed;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             background-color: white;
+             padding: 20px;
+             border-radius: 10px;
+             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+             z-index: 2000;
+         }
+         #confirmDialog p {
+             margin-top: 0;
+         }
+         #confirmDialog button {
+             margin-right: 10px;
+             padding: 5px 10px;
+             border: none;
+             border-radius: 5px;
+             cursor: pointer;
+         }
+         #confirmYes {
+             background-color: #ff4444;
+             color: white;
+         }
+         #confirmNo {
+             background-color: #44aa44;
+             color: white;
+         }
+         #highlighterBtn {
+             background-color: #ffff00;
+             border: 2px solid #999;
+         }
+         #highlighterBtn:hover {
+             background-color: #ffff66;
+         }
+         #highlighterBtn.active {
+             background-color: #ffff00;
+             border-color: #000;
+         }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <div id="drawing-controls" class="control-panel">
+            <input type="color" id="colorPicker" value="#000000">
+            <input type="range" id="brushSize" min="2.0" max="50" step="0.5" value="2.0">
+            <button id="highlighterBtn" class="round-button" title="Highlighter">
+                <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 11l-6 6v3h9l3-3"></path>
+                    <path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path>
+                </svg>
+            </button>
+            <button id="eraserBtn" class="round-button" title="Eraser">
+                <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 20H7L3 16C2 15 2 13 3 12L11 4C12 3 14 3 15 4L21 10C22 11 22 13 21 14L13 22"></path>
+                </svg>
+            </button>
+            <button id="undoBtn" class="round-button" title="Undo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v6h6"></path>
+                    <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"></path>
+                </svg>
+            </button>
+            <button id="clearBtn" class="round-button" title="Clear canvas">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </button>
+            <button id="saveBtn" class="round-button" title="Save as PNG">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div id="navigation" class="control-panel">
+            <button id="prevBtn" class="round-button" title="Previous whiteboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <span id="boardInfo">Whiteboard 1 / 1</span>
+            <button id="nextBtn" class="round-button" title="Next whiteboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+            <button id="newBoardBtn" class="round-button" title="New whiteboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+        <div id="confirmDialog">
+            <p>Are you sure you want to clear this whiteboard?</p>
+            <button id="confirmYes">Yes</button>
+            <button id="confirmNo">No</button>
+        </div>
+
+        <script>
+         const canvas = document.getElementById('canvas');
+         const ctx = canvas.getContext('2d');
+         const colorPicker = document.getElementById('colorPicker');
+         const brushSize = document.getElementById('brushSize');
+         const eraserBtn = document.getElementById('eraserBtn');
+         const clearBtn = document.getElementById('clearBtn');
+         const saveBtn = document.getElementById('saveBtn');
+         const newBoardBtn = document.getElementById('newBoardBtn');
+         const prevBtn = document.getElementById('prevBtn');
+         const nextBtn = document.getElementById('nextBtn');
+         const boardInfo = document.getElementById('boardInfo');
+         const confirmDialog = document.getElementById('confirmDialog');
+         const confirmYes = document.getElementById('confirmYes');
+         const confirmNo = document.getElementById('confirmNo');
+         const highlighterBtn = document.getElementById('highlighterBtn');
+
+         let isDrawing = false;
+         let isErasing = false;
+         let isHighlighting = false;
+         let lastX = 0;
+         let lastY = 0;
+         let lastPressure = 1.0; // Default pressure
+         let whiteboards = [{ name: 'Whiteboard 1', data: null, history: [] }];
+         let currentBoardIndex = 0;
+         let saveTimeout;
+
+         // Enable image smoothing for anti-aliasing
+         ctx.imageSmoothingEnabled = true;
+         ctx.imageSmoothingQuality = 'high';
+         let db;
+
+         // Open IndexedDB
+         const dbPromise = indexedDB.open('WhiteboardDB', 1);
+
+         dbPromise.onupgradeneeded = function(event) {
+             db = event.target.result;
+             db.createObjectStore('whiteboards', { keyPath: 'id' });
+         };
+
+         dbPromise.onsuccess = function(event) {
+             db = event.target.result;
+             loadWhiteboardsFromIndexedDB();
+         };
+
+         dbPromise.onerror = function(event) {
+             console.error('IndexedDB error:', event.target.error);
+         };
+
+         function toggleHighlighter() {
+             isHighlighting = !isHighlighting;
+             isErasing = false;
+             highlighterBtn.classList.toggle('active', isHighlighting);
+             eraserBtn.classList.remove('active');
+             if (isHighlighting) {
+                 canvas.style.cursor = 'url("data:image/svg+xml,...") 0 24, auto';
+             } else {
+                 canvas.style.cursor = 'default';
+             }
+         }
+
+         function debounce(func, wait) {
+             return function executedFunction(...args) {
+                 const later = () => {
+                     clearTimeout(saveTimeout);
+                     func(...args);
+                 };
+                 clearTimeout(saveTimeout);
+                 saveTimeout = setTimeout(later, wait);
+             };
+         }
+
+         // Function to save whiteboards to IndexedDB
+         function saveWhiteboardsToIndexedDB() {
+             if (!db) return;
+
+             const transaction = db.transaction(['whiteboards'], 'readwrite');
+             const store = transaction.objectStore('whiteboards');
+
+             // Clear existing data
+             store.clear();
+
+             // Save each whiteboard
+             whiteboards.forEach((board, index) => {
+                 store.put({ id: index, data: board });
+             });
+
+             transaction.oncomplete = function() {
+                 console.log('All whiteboards saved successfully');
+             };
+
+             transaction.onerror = function(event) {
+                 console.error('Error saving whiteboards:', event.target.error);
+             };
+         }
+
+         const debouncedSave = debounce(saveWhiteboardsToIndexedDB, 1000);
+
+         // Function to load whiteboards from IndexedDB
+         function loadWhiteboardsFromIndexedDB() {
+             if (!db) return;
+
+             const transaction = db.transaction(['whiteboards'], 'readonly');
+             const store = transaction.objectStore('whiteboards');
+             const request = store.getAll();
+
+             request.onsuccess = function(event) {
+                 const savedWhiteboards = event.target.result;
+                 if (savedWhiteboards.length > 0) {
+                     whiteboards = savedWhiteboards.map(item => item.data);
+                     currentBoardIndex = 0;
+                     loadCurrentBoard();
+                     updateBoardInfo();
+                 }
+             };
+
+             request.onerror = function(event) {
+                 console.error('Error loading whiteboards:', event.target.error);
+             };
+         }
+
+         function resizeCanvas() {
+             canvas.width = window.innerWidth;
+             canvas.height = window.innerHeight;
+             ctx.imageSmoothingEnabled = true;
+             ctx.imageSmoothingQuality = 'high';
+             loadCurrentBoard();
+         }
+
+         function startDrawing(e) {
+             isDrawing = true;
+             [lastX, lastY] = [e.clientX, e.clientY];
+             if (whiteboards[currentBoardIndex].history.length >= 5) {
+                 whiteboards[currentBoardIndex].history.shift(); // Remove the oldest state
+             }
+             whiteboards[currentBoardIndex].history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+         }
+
+         function undo() {
+             if (whiteboards[currentBoardIndex].history.length > 0) {
+                 const previousState = whiteboards[currentBoardIndex].history.pop();
+                 ctx.putImageData(previousState, 0, 0);
+                 saveCurrentBoard();
+             }
+         }
+
+         function draw(e) {
+             if (!isDrawing) return;
+
+             ctx.lineWidth = (brushSize.value < 10) ? brushSize.value : brushSize.value * lastPressure;
+             ctx.lineCap = 'round';
+             ctx.lineJoin = 'round';
+
+             if (isErasing) {
+                 ctx.globalCompositeOperation = 'destination-out';
+                 ctx.lineWidth = 20;
+             } else if (isHighlighting) {
+                 ctx.globalCompositeOperation = 'multiply';
+                 ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
+                 ctx.lineWidth = 50;
+             } else {
+                 ctx.globalCompositeOperation = 'source-over';
+                 ctx.strokeStyle = colorPicker.value;
+             }
+
+             ctx.beginPath();
+             ctx.moveTo(lastX, lastY);
+             ctx.lineTo(e.clientX, e.clientY);
+             ctx.stroke();
+
+             [lastX, lastY] = [e.clientX, e.clientY];
+             saveCurrentBoard();
+         }
+
+         function stopDrawing() {
+             if (isDrawing) {
+                 isDrawing = false;
+                 saveCurrentBoard();
+             }
+         }
+
+         function toggleEraser() {
+             isErasing = !isErasing;
+             isHighlighting = false;
+             eraserBtn.classList.toggle('active', isErasing);
+             if (isErasing) {
+                 canvas.style.cursor = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'10\'/%3E%3Cline x1=\'8\' y1=\'12\' x2=\'16\' y2=\'12\'/%3E%3C/svg%3E") 12 12, auto';
+             } else {
+                 canvas.style.cursor = 'default';
+             }
+         }
+
+         function showConfirmDialog() {
+             confirmDialog.style.display = 'block';
+         }
+
+         function hideConfirmDialog() {
+             confirmDialog.style.display = 'none';
+         }
+
+         function clearCanvas() {
+             whiteboards[currentBoardIndex].history = [];
+             ctx.clearRect(0, 0, canvas.width, canvas.height);
+             saveCurrentBoard();
+             hideConfirmDialog();
+         }
+
+         function createNewBoard() {
+             saveCurrentBoard();
+             whiteboards.push({ name: `Whiteboard ${whiteboards.length + 1}`, data: null, history: [] });
+             currentBoardIndex = whiteboards.length - 1;
+             clearCanvas();
+             updateBoardInfo();
+             saveWhiteboardsToIndexedDB();
+         }
+
+         function saveCurrentBoard() {
+             whiteboards[currentBoardIndex].data = canvas.toDataURL();
+             debouncedSave();
+         }
+
+         function loadBoard(index) {
+             saveCurrentBoard();
+             currentBoardIndex = index;
+             loadCurrentBoard();
+             updateBoardInfo();
+             // Clear the undo history when switching boards
+             whiteboards[currentBoardIndex].history = [];
+         }
+
+         function loadCurrentBoard() {
+             ctx.clearRect(0, 0, canvas.width, canvas.height);
+             ctx.globalCompositeOperation = 'source-over';  // Reset to default
+             if (whiteboards[currentBoardIndex].data) {
+                 const img = new Image();
+                 img.onload = function() {
+                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                 };
+                 img.src = whiteboards[currentBoardIndex].data;
+             }
+             // Reset eraser state
+             isErasing = false;
+             eraserBtn.classList.remove('active');
+             canvas.style.cursor = 'default';
+             // Clear the undo history
+             whiteboards[currentBoardIndex].history = [];
+         }
+
+         function updateBoardInfo() {
+             boardInfo.textContent = `${whiteboards[currentBoardIndex].name} / ${whiteboards.length}`;
+             prevBtn.disabled = currentBoardIndex === 0;
+             nextBtn.disabled = currentBoardIndex === whiteboards.length - 1;
+         }
+
+         function navigateBoards(direction) {
+             const newIndex = currentBoardIndex + direction;
+             if (newIndex >= 0 && newIndex < whiteboards.length) {
+                 loadBoard(newIndex);
+             }
+         }
+
+         function saveAsPNG() {
+             const link = document.createElement('a');
+             link.download = `${whiteboards[currentBoardIndex].name}.png`;
+             link.href = canvas.toDataURL('image/png');
+             link.click();
+         }
+
+         function handleKeyboardShortcuts(e) {
+             // Check if CMD (Mac) or CTRL (Windows/Linux) is pressed along with 'Z'
+             if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+                 e.preventDefault(); // Prevent the browser's default undo behavior
+                 undo();
+             }
+         }
+
+         function handlePointerEvent(event) {
+             // Check if the pointer type is 'pen' (stylus)
+             if (event.pointerType === 'pen') {
+                 // Get the pressure level (0 to 1)
+                 lastPressure = event.pressure;
+                 if (event.button === 0) {
+                     isErasing = false;
+                 } else if (event.button === 5) {
+                     isErasing = true;
+                 }
+             }
+         }
+
+         window.addEventListener('resize', resizeCanvas);
+         canvas.addEventListener('mousedown', startDrawing);
+         canvas.addEventListener('mousemove', draw);
+         canvas.addEventListener('mouseup', stopDrawing);
+         canvas.addEventListener('mouseout', stopDrawing);
+         eraserBtn.addEventListener('click', toggleEraser);
+         clearBtn.addEventListener('click', showConfirmDialog);
+         confirmYes.addEventListener('click', clearCanvas);
+         confirmNo.addEventListener('click', hideConfirmDialog);
+         newBoardBtn.addEventListener('click', createNewBoard);
+         prevBtn.addEventListener('click', () => navigateBoards(-1));
+         nextBtn.addEventListener('click', () => navigateBoards(1));
+         saveBtn.addEventListener('click', saveAsPNG);
+         undoBtn.addEventListener('click', undo);
+         document.addEventListener('keydown', handleKeyboardShortcuts);
+         window.addEventListener('load', loadWhiteboardsFromIndexedDB);
+         highlighterBtn.addEventListener('click', toggleHighlighter);
+         document.addEventListener('pointerdown', handlePointerEvent);
+         document.addEventListener('pointermove', handlePointerEvent);
+         document.addEventListener('pointerup', handlePointerEvent);
+
+         // Initial setup
+         resizeCanvas();
+         updateBoardInfo();
+        </script>
+    </body>
+</html>
