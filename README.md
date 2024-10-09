@@ -9,7 +9,7 @@ Welcome to this collection of web-based tools! This project is a group of simple
 ## List of Tools
 
 
-### Simple Whiteboard App (Made with Claude.AI)
+### [Simple Whiteboard App](https://dogriffiths.github.io/utilities/multiboard.html) (Made with Claude.AI)
 
 This is a light and easy-to-use web tool for drawing and sharing ideas. The whiteboard app lets you sketch, write, and organize your thoughts visually. Made with Claude.AI, it is simple but useful for brainstorming or note-taking.
 
@@ -19,7 +19,22 @@ This is a light and easy-to-use web tool for drawing and sharing ideas. The whit
 - **Local Save**: Your boards are saved in your browser. Even if you close the browser or refresh the page, your work will not be lost.
 - **Save as PNG**: You can save your whiteboard drawings as PNG image files. This makes it easy to share or keep for later use.
 
-This app is a simple and useful tool for anyone who needs to draw or organize ideas. Whether working alone or with others, it provides a good way to express your thoughts visually.
+---
+
+### [Markdown to Unicode Converter](https://dogriffiths.github.io/utilities/unicode.html) (Made with Claude.AI)
+
+This web app, built with Claude.ai, lets you write text using markdown and change it into Unicode characters. You can copy and paste the text as plain text, but it keeps the format, even on platforms that do not support formatting, like LinkedIn posts. This tool helps you make bold, italic, and other styled text that looks plain but keeps the style, so your content stands out where formatting is limited.
+
+#### Main features
+
+- **Markdown formatting**: Write text using markdown syntax for bold, italic, headers, and more.
+- **Unicode conversion**: Converts markdown text into Unicode characters to retain formatting.
+- **Copy and paste as plain text**: Allows you to copy the formatted text as plain text that keeps its style.
+- **Works on platforms without formatting support**: Use formatted text on platforms like LinkedIn that normally don’t allow rich text formatting.
+
+---
+
+This version uses simpler language for clarity. Let me know if you'd like more adjustments!
 
 ---
 
