@@ -291,9 +291,15 @@
          let lastX = 0;
          let lastY = 0;
          let lastPressure = 1.0; // Default pressure
+         let drawingDirection = null;
+         let initialX = null;
+         let initialY = null;
+         const directionThreshold = 50;
+
          let whiteboards = [{ name: 'Whiteboard 1', data: null, history: [] }];
          let currentBoardIndex = 0;
          let saveTimeout;
+
          const brushSizeDisplay = document.getElementById('brushSizeDisplay');
 
          const gridBtn = document.getElementById('gridBtn');
@@ -323,6 +329,16 @@
          dbPromise.onerror = function(event) {
              console.error('IndexedDB error:', event.target.error);
          };
+
+         function determineDrawingDirection(startX, startY, endX, endY) {
+             const dx = Math.abs(endX - startX);
+             const dy = Math.abs(endY - startY);
+             
+             if (dx > directionThreshold || dy > directionThreshold) {
+                 return dx > dy ? 'horizontal' : 'vertical';
+             }
+             return null;
+         }
 
          function toggleHighlighter() {
              isHighlighting = !isHighlighting;
@@ -406,7 +422,10 @@
 
          function startDrawing(e) {
              isDrawing = true;
-             [lastX, lastY] = snapToGrid(e.clientX, e.clientY);
+             initialX = e.clientX;
+             initialY = e.clientY;
+             [lastX, lastY] = [initialX, initialY];
+             drawingDirection = null;
              if (whiteboards[currentBoardIndex].history.length >= 5) {
                  whiteboards[currentBoardIndex].history.shift(); // Remove the oldest state
              }
@@ -440,7 +459,7 @@
                  ctx.strokeStyle = colorPicker.value;
              }
 
-             const [newX, newY] = snapToGrid(e.clientX, e.clientY);
+             const [newX, newY] = snapToGridEnhanced(e.clientX, e.clientY);
 
              ctx.beginPath();
              ctx.moveTo(lastX, lastY);
@@ -454,6 +473,9 @@
          function stopDrawing() {
              if (isDrawing) {
                  isDrawing = false;
+                 drawingDirection = null;
+                 initialX = null;
+                 initialY = null;
                  saveCurrentBoard();
              }
          }
@@ -573,12 +595,23 @@
              gridBtn.classList.toggle('active', isGridVisible);
          }
 
-         function snapToGrid(x, y) {
-             if (isErasing || !isSnappingEnabled) return [x, y];
-             return [
-                 Math.round(x / gridSize) * gridSize,
-                 Math.round(y / gridSize) * gridSize
-             ];
+         function snapToGridEnhanced(x, y) {
+             if (isErasing || isHighlighting || !isSnappingEnabled) return [x, y];
+
+             const snappedX = Math.round(x / gridSize) * gridSize;
+             const snappedY = Math.round(y / gridSize) * gridSize;
+
+             if (drawingDirection === null) {
+                 drawingDirection = determineDrawingDirection(initialX, initialY, snappedX, snappedY);
+             }
+
+             if (drawingDirection === 'vertical') {
+                 return [initialX, snappedY];
+             } else if (drawingDirection === 'horizontal') {
+                 return [snappedX, initialY];
+             }
+
+             return [snappedX, snappedY];
          }
 
          function updateBrushSizeDisplay() {
