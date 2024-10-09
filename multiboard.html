@@ -175,6 +175,16 @@
              pointer-events: none;
              z-index: -1;
          }
+         .brush-size-container {
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+         }
+         #brushSizeDisplay {
+             font-size: 12px;
+             margin-top: 5px;
+             color: #333;
+         }
         </style>
     </head>
     <body>
@@ -191,7 +201,10 @@
                 </svg>
             </button>
             <input type="color" id="colorPicker" value="#000000">
-            <input type="range" id="brushSize" min="2.0" max="50" step="0.5" value="2.0">
+            <div class="brush-size-container">
+                <input type="range" id="brushSize" min="2.0" max="50" step="2" value="2">
+                <span id="brushSizeDisplay">2</span>
+            </div>
             <button id="highlighterBtn" class="round-button" title="Highlighter">
                 <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 11l-6 6v3h9l3-3"></path>
@@ -276,6 +289,7 @@
          let whiteboards = [{ name: 'Whiteboard 1', data: null, history: [] }];
          let currentBoardIndex = 0;
          let saveTimeout;
+         const brushSizeDisplay = document.getElementById('brushSizeDisplay');
 
          const gridBtn = document.getElementById('gridBtn');
          const gridElement = document.getElementById('grid');
@@ -549,6 +563,11 @@
              gridBtn.classList.toggle('active', isGridVisible);
          }
 
+         function updateBrushSizeDisplay() {
+             brushSizeDisplay.textContent = brushSize.value;
+         }
+
+         brushSize.addEventListener('input', updateBrushSizeDisplay);
          gridBtn.addEventListener('click', toggleGrid);
          window.addEventListener('resize', resizeCanvas);
          canvas.addEventListener('mousedown', startDrawing);
