@@ -299,6 +299,8 @@
          const gridBtn = document.getElementById('gridBtn');
          const gridElement = document.getElementById('grid');
          let isGridVisible = false;
+         let isSnappingEnabled = false;
+         const gridSize = 20; // This should match the small grid size in CSS
 
          // Enable image smoothing for anti-aliasing
          ctx.imageSmoothingEnabled = true;
@@ -404,7 +406,7 @@
 
          function startDrawing(e) {
              isDrawing = true;
-             [lastX, lastY] = [e.clientX, e.clientY];
+             [lastX, lastY] = snapToGrid(e.clientX, e.clientY);
              if (whiteboards[currentBoardIndex].history.length >= 5) {
                  whiteboards[currentBoardIndex].history.shift(); // Remove the oldest state
              }
@@ -438,12 +440,14 @@
                  ctx.strokeStyle = colorPicker.value;
              }
 
+             const [newX, newY] = snapToGrid(e.clientX, e.clientY);
+
              ctx.beginPath();
              ctx.moveTo(lastX, lastY);
-             ctx.lineTo(e.clientX, e.clientY);
+             ctx.lineTo(newX, newY);
              ctx.stroke();
 
-             [lastX, lastY] = [e.clientX, e.clientY];
+             [lastX, lastY] = [newX, newY];
              saveCurrentBoard();
          }
 
@@ -564,8 +568,17 @@
 
          function toggleGrid() {
              isGridVisible = !isGridVisible;
+             isSnappingEnabled = isGridVisible; // Enable snapping when grid is visible
              gridElement.style.display = isGridVisible ? 'block' : 'none';
              gridBtn.classList.toggle('active', isGridVisible);
+         }
+
+         function snapToGrid(x, y) {
+             if (isErasing || !isSnappingEnabled) return [x, y];
+             return [
+                 Math.round(x / gridSize) * gridSize,
+                 Math.round(y / gridSize) * gridSize
+             ];
          }
 
          function updateBrushSizeDisplay() {
