@@ -184,6 +184,11 @@
              font-size: 12px;
              margin-top: 5px;
              color: #333;
+             width: 40px;
+             text-align: center;
+             border: 1px solid #ccc;
+             border-radius: 3px;
+             padding: 2px;
          }
         </style>
     </head>
@@ -203,7 +208,7 @@
             <input type="color" id="colorPicker" value="#000000">
             <div class="brush-size-container">
                 <input type="range" id="brushSize" min="2.0" max="50" step="2" value="2">
-                <span id="brushSizeDisplay">2</span>
+                <input type="text" id="brushSizeDisplay" value="2">
             </div>
             <button id="highlighterBtn" class="round-button" title="Highlighter">
                 <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -564,10 +569,22 @@
          }
 
          function updateBrushSizeDisplay() {
-             brushSizeDisplay.textContent = brushSize.value;
+             brushSizeDisplay.value = brushSize.value;
+         }
+
+         function updateBrushSizeSlider() {
+             let value = parseFloat(brushSizeDisplay.value);
+             if (isNaN(value) || value < 2) {
+                 value = 2;
+             } else if (value > 50) {
+                 value = 50;
+             }
+             brushSize.value = value;
+             brushSizeDisplay.value = value;
          }
 
          brushSize.addEventListener('input', updateBrushSizeDisplay);
+         brushSizeDisplay.addEventListener('change', updateBrushSizeSlider);
          gridBtn.addEventListener('click', toggleGrid);
          window.addEventListener('resize', resizeCanvas);
          canvas.addEventListener('mousedown', startDrawing);
@@ -596,6 +613,7 @@
          // Initial setup
          resizeCanvas();
          updateBoardInfo();
+         updateBrushSizeDisplay();
         </script>
     </body>
 </html>
