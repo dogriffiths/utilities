@@ -804,6 +804,14 @@
              }
          }
 
+         function handleKeyPress(event) {
+             if (event.key === 'Escape' && isOverviewVisible) {
+                 event.preventDefault(); // Prevent default Escape behavior
+                 toggleOverview();
+             }
+             // If overview is not visible, Escape key will behave normally
+         }
+
          brushSize.addEventListener('input', updateBrushSizeDisplay);
          brushSizeDisplay.addEventListener('change', updateBrushSizeSlider);
          overviewBtn.addEventListener('click', toggleOverview);
@@ -831,6 +839,7 @@
          document.addEventListener('contextmenu', function(event) {
              event.preventDefault();
          });
+         document.addEventListener('keydown', handleKeyPress);
 
          // Initial setup
          resizeCanvas();
