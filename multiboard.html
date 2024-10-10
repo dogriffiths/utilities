@@ -210,6 +210,11 @@
              z-index: 2000;
              overflow-y: auto;
              padding: 20px;
+             opacity: 0;
+             transition: opacity 0.5s ease;
+         }
+         #overviewContainer.visible {
+             opacity: 1;
          }
          #overviewGrid {
              display: grid;
@@ -231,6 +236,13 @@
              object-fit: contain;
              background-color: white;
          }
+         .blankThumbnail {
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             font-size: 14px;
+             color: #888;
+         }
          .overviewName {
              margin-top: 5px;
              font-size: 14px;
@@ -241,7 +253,7 @@
              right: 5px;
              width: 20px;
              height: 20px;
-             background-color: rgba(255, 0, 0, 0.7);
+             background-color: rgba(64, 64, 64, 0.7); /* Dark gray with 70% opacity */
              color: white;
              border: none;
              border-radius: 50%;
@@ -254,7 +266,7 @@
              z-index: 1;
          }
          .removeWhiteboardBtn:hover {
-             background-color: rgba(255, 0, 0, 1);
+             background-color: rgba(64, 64, 64, 1); /* Solid dark gray on hover */
          }
         </style>
     </head>
@@ -580,16 +592,17 @@
          }
 
          function clearCanvas() {
-             whiteboards[currentBoardIndex].history = [];
              ctx.clearRect(0, 0, canvas.width, canvas.height);
+             whiteboards[currentBoardIndex].data = null;
+             whiteboards[currentBoardIndex].history = [];
              saveCurrentBoard();
-             hideConfirmDialog();
          }
 
          function createNewBoard() {
              saveCurrentBoard();
-             whiteboards.push({ name: `Whiteboard ${whiteboards.length + 1}`, data: null, history: [] });
-             currentBoardIndex = whiteboards.length - 1;
+             const newBoardIndex = whiteboards.length;
+             whiteboards.push({ name: `Whiteboard ${newBoardIndex + 1}`, data: null, history: [] });
+             currentBoardIndex = newBoardIndex;
              clearCanvas();
              updateBoardInfo();
              saveWhiteboardsToIndexedDB();
@@ -719,10 +732,17 @@
 
          function toggleOverview() {
              isOverviewVisible = !isOverviewVisible;
-             overviewContainer.style.display = isOverviewVisible ? 'block' : 'none';
+             overviewContainer.style.display = 'block';
+             setTimeout(() => {
+                 overviewContainer.classList.toggle('visible', isOverviewVisible);
+             }, 10);
              overviewBtn.classList.toggle('active', isOverviewVisible);
              if (isOverviewVisible) {
                  updateOverviewGrid();
+             } else {
+                 setTimeout(() => {
+                     overviewContainer.style.display = 'none';
+                 }, 500);
              }
          }
 
@@ -731,11 +751,19 @@
              whiteboards.forEach((board, index) => {
                  const item = document.createElement('div');
                  item.className = 'overviewItem';
+                 
+                 let thumbnailContent;
+                 if (board.data) {
+                     thumbnailContent = `<img src="${board.data}" alt="${board.name}" class="overviewImage">`;
+                 } else {
+                     thumbnailContent = `<div class="overviewImage blankThumbnail">Blank Whiteboard</div>`;
+                 }
+                 
                  item.innerHTML = `
-                        <img src="${board.data || ''}" alt="${board.name}" class="overviewImage">
-                        <span class="overviewName">${board.name}</span>
-                        <button class="removeWhiteboardBtn" title="Remove Whiteboard">×</button>
-                    `;
+                    ${thumbnailContent}
+                    <span class="overviewName">${board.name}</span>
+                    <button class="removeWhiteboardBtn" title="Remove Whiteboard">×</button>
+                 `;
                  
                  const removeBtn = item.querySelector('.removeWhiteboardBtn');
                  removeBtn.addEventListener('click', (e) => {
@@ -758,21 +786,21 @@
          }
 
          function removeWhiteboard(index) {
-             if (whiteboards.length > 1) {
-                 const confirmRemove = confirm(`Are you sure you want to remove ${whiteboards[index].name}?`);
-                 if (confirmRemove) {
-                     whiteboards.splice(index, 1);
-                     if (currentBoardIndex >= index) {
-                         currentBoardIndex = Math.max(0, currentBoardIndex - 1);
-                     }
-                     renameWhiteboards();
-                     updateOverviewGrid();
-                     loadCurrentBoard();
-                     updateBoardInfo();
-                     saveWhiteboardsToIndexedDB();
+             const confirmRemove = confirm(`Are you sure you want to remove ${whiteboards[index].name}?`);
+             if (confirmRemove) {
+                 whiteboards.splice(index, 1);
+                 
+                 // If it was the last whiteboard, create a new blank one
+                 if (whiteboards.length === 0) {
+                     whiteboards.push({ name: 'Whiteboard 1', data: null, history: [] });
                  }
-             } else {
-                 alert("You cannot remove the last whiteboard.");
+                 
+                 currentBoardIndex = Math.min(index, whiteboards.length - 1);
+                 renameWhiteboards();
+                 loadCurrentBoard();
+                 updateOverviewGrid();
+                 updateBoardInfo();
+                 saveWhiteboardsToIndexedDB();
              }
          }
 
