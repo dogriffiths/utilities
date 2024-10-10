@@ -591,7 +591,7 @@
          function draw(e) {
              if (!isDrawing) return;
 
-             ctx.lineWidth = (brushSize.value < 10) ? brushSize.value : brushSize.value * lastPressure;
+             ctx.lineWidth = (brushSize.value < 4) ? brushSize.value : brushSize.value * lastPressure;
              ctx.lineCap = 'round';
              ctx.lineJoin = 'round';
 
