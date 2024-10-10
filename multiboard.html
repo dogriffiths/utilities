@@ -268,6 +268,12 @@
          .removeWhiteboardBtn:hover {
              background-color: rgba(64, 64, 64, 1); /* Solid dark gray on hover */
          }
+         #fullscreenBtn {
+             background-color: #8844ff;
+         }
+         #fullscreenBtn:hover {
+             background-color: #aa66ff;
+         }
         </style>
     </head>
     <body>
@@ -343,6 +349,11 @@
                     <line x1="9" y1="21" x2="9" y2="9"></line>
                 </svg>
             </button>
+            <button id="fullscreenBtn" class="round-button" title="Toggle Fullscreen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+            </button>
             <button id="newBoardBtn" class="round-button" title="New whiteboard">
                 <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -375,6 +386,7 @@
          const overviewBtn = document.getElementById('overviewBtn');
          const overviewContainer = document.getElementById('overviewContainer');
          const overviewGrid = document.getElementById('overviewGrid');
+         const fullscreenBtn = document.getElementById('fullscreenBtn');
 
          let isDrawing = false;
          let isErasing = false;
@@ -812,6 +824,36 @@
              // If overview is not visible, Escape key will behave normally
          }
 
+         function toggleFullscreen() {
+             if (!document.fullscreenElement) {
+                 document.documentElement.requestFullscreen().catch(err => {
+                     console.error(`Error attempting to enable fullscreen mode: ${err.message}`);
+                 });
+             } else {
+                 if (document.exitFullscreen) {
+                     document.exitFullscreen();
+                 }
+             }
+         }
+
+         function updateFullscreenButton() {
+             if (document.fullscreenElement) {
+                 fullscreenBtn.innerHTML = `
+                     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <path d="M4 14h6m0 0v6m0-6l-7 7m17-11h-6m0 0V4m0 6l7-7"></path>
+                     </svg>
+                 `;
+                 fullscreenBtn.title = "Exit Fullscreen";
+             } else {
+                 fullscreenBtn.innerHTML = `
+                     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                     </svg>
+                 `;
+                 fullscreenBtn.title = "Enter Fullscreen";
+             }
+         }
+
          brushSize.addEventListener('input', updateBrushSizeDisplay);
          brushSizeDisplay.addEventListener('change', updateBrushSizeSlider);
          overviewBtn.addEventListener('click', toggleOverview);
@@ -840,6 +882,8 @@
              event.preventDefault();
          });
          document.addEventListener('keydown', handleKeyPress);
+         fullscreenBtn.addEventListener('click', toggleFullscreen);
+         document.addEventListener('fullscreenchange', updateFullscreenButton);
 
          // Initial setup
          resizeCanvas();
