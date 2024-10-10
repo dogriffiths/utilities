@@ -916,7 +916,14 @@
                  event.preventDefault(); // Prevent default Escape behavior
                  toggleOverview();
              }
-             // If overview is not visible, Escape key will behave normally
+             if (event.key === 'ArrowLeft') {
+                 event.preventDefault();
+                 navigateBoards(-1);
+             }
+             if (event.key === 'ArrowRight') {
+                 event.preventDefault();
+                 navigateBoards(1);
+             }
          }
 
          function toggleFullscreen() {
@@ -990,14 +997,11 @@
              const reader = new FileReader();
 
              reader.onload = function(event) {
-                 console.log('XXXXX load 2', event);
                  const img = new Image();
-                 console.log('XXXXX load 3');
                  img.onerror = function(event) {
                      showErrorDialog('Please drop an image file.');
                  };
                  img.onload = function() {
-                     console.log('XXXXX load 4');
                      // Clear the canvas
                      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
