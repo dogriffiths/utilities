@@ -751,7 +751,11 @@
              overviewBtn.classList.toggle('active', isOverviewVisible);
              if (isOverviewVisible) {
                  updateOverviewGrid();
+                 // Add click event listener to the overviewContainer
+                 overviewContainer.addEventListener('click', handleOverviewClick);
              } else {
+                 // Remove click event listener when hiding the overview
+                 overviewContainer.removeEventListener('click', handleOverviewClick);
                  setTimeout(() => {
                      overviewContainer.style.display = 'none';
                  }, 500);
@@ -783,7 +787,8 @@
                      removeWhiteboard(index);
                  });
 
-                 item.addEventListener('click', () => {
+                 item.addEventListener('click', (e) => {
+                     e.stopPropagation(); // Prevent the click from bubbling up to overviewContainer
                      loadBoard(index);
                      toggleOverview();
                  });
@@ -853,6 +858,14 @@
                  fullscreenBtn.title = "Enter Fullscreen";
              }
          }
+
+         function handleOverviewClick(event) {
+             // Check if the click is directly on the overviewContainer (not on a thumbnail)
+             if (event.target === overviewContainer) {
+                 toggleOverview();
+             }
+         }
+
 
          brushSize.addEventListener('input', updateBrushSizeDisplay);
          brushSizeDisplay.addEventListener('change', updateBrushSizeSlider);
