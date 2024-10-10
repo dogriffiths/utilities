@@ -274,6 +274,41 @@
          #fullscreenBtn:hover {
              background-color: #aa66ff;
          }
+         .dialog {
+             display: none;
+             position: fixed;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             background-color: white;
+             padding: 20px;
+             border-radius: 10px;
+             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+             z-index: 2000;
+         }
+         .dialog p {
+             margin-top: 0;
+         }
+         .dialog-buttons {
+             display: flex;
+             justify-content: flex-end;
+             margin-top: 20px;
+         }
+         .dialog-button {
+             margin-left: 10px;
+             padding: 5px 10px;
+             border: none;
+             border-radius: 5px;
+             cursor: pointer;
+         }
+         .dialog-button-primary {
+             background-color: #4444ff;
+             color: white;
+         }
+         .dialog-button-secondary {
+             background-color: #f0f0f0;
+             color: #333;
+         }
         </style>
     </head>
     <body>
@@ -361,10 +396,19 @@
                 </svg>
             </button>
         </div>
-        <div id="confirmDialog">
+        <div id="confirmDialog" class="dialog">
             <p>Are you sure you want to clear this whiteboard?</p>
-            <button id="confirmYes">Yes</button>
-            <button id="confirmNo">No</button>
+            <div class="dialog-buttons">
+                <button id="confirmNo" class="dialog-button dialog-button-secondary">No</button>
+                <button id="confirmYes" class="dialog-button dialog-button-primary">Yes</button>
+            </div>
+        </div>
+        <div id="removeWhiteboardDialog" class="dialog">
+            <p id="removeWhiteboardMessage"></p>
+            <div class="dialog-buttons">
+                <button id="removeWhiteboardNo" class="dialog-button dialog-button-secondary">No</button>
+                <button id="removeWhiteboardYes" class="dialog-button dialog-button-primary">Yes</button>
+            </div>
         </div>
 
         <script>
@@ -803,11 +847,15 @@
          }
 
          function removeWhiteboard(index) {
-             const confirmRemove = confirm(`Are you sure you want to remove ${whiteboards[index].name}?`);
-             if (confirmRemove) {
+             const removeWhiteboardDialog = document.getElementById('removeWhiteboardDialog');
+             const removeWhiteboardMessage = document.getElementById('removeWhiteboardMessage');
+             removeWhiteboardMessage.textContent = `Are you sure you want to remove ${whiteboards[index].name}?`;
+             
+             showDialog('removeWhiteboardDialog');
+
+             document.getElementById('removeWhiteboardYes').onclick = function() {
                  whiteboards.splice(index, 1);
                  
-                 // If it was the last whiteboard, create a new blank one
                  if (whiteboards.length === 0) {
                      whiteboards.push({ name: 'Whiteboard 1', data: null, history: [] });
                  }
@@ -818,7 +866,12 @@
                  updateOverviewGrid();
                  updateBoardInfo();
                  saveWhiteboardsToIndexedDB();
-             }
+                 hideDialog('removeWhiteboardDialog');
+             };
+
+             document.getElementById('removeWhiteboardNo').onclick = function() {
+                 hideDialog('removeWhiteboardDialog');
+             };
          }
 
          function handleKeyPress(event) {
@@ -866,6 +919,13 @@
              }
          }
 
+         function showDialog(dialogId) {
+             document.getElementById(dialogId).style.display = 'block';
+         }
+
+         function hideDialog(dialogId) {
+             document.getElementById(dialogId).style.display = 'none';
+         }
 
          brushSize.addEventListener('input', updateBrushSizeDisplay);
          brushSizeDisplay.addEventListener('change', updateBrushSizeSlider);
@@ -877,9 +937,12 @@
          canvas.addEventListener('mouseup', stopDrawing);
          canvas.addEventListener('mouseout', stopDrawing);
          eraserBtn.addEventListener('click', toggleEraser);
-         clearBtn.addEventListener('click', showConfirmDialog);
-         confirmYes.addEventListener('click', clearCanvas);
-         confirmNo.addEventListener('click', hideConfirmDialog);
+         clearBtn.addEventListener('click', () => showDialog('confirmDialog'));
+         confirmYes.addEventListener('click', () => {
+             clearCanvas();
+             hideDialog('confirmDialog');
+         });
+         confirmNo.addEventListener('click', () => hideDialog('confirmDialog'));
          newBoardBtn.addEventListener('click', createNewBoard);
          prevBtn.addEventListener('click', () => navigateBoards(-1));
          nextBtn.addEventListener('click', () => navigateBoards(1));
