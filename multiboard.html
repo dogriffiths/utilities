@@ -312,6 +312,15 @@
              background-color: #f0f0f0;
              color: #333;
          }
+         #fileInput {
+             display: none;
+         }
+         #fileSelectBtn {
+             background-color: #8844ff;
+         }
+         #fileSelectBtn:hover {
+             background-color: #aa66ff;
+         }
         </style>
     </head>
     <body>
@@ -321,6 +330,14 @@
             <div id="overviewGrid"></div>
         </div>
         <div id="drawing-controls" class="control-panel">
+            <button id="fileSelectBtn" class="round-button" title="Select Image File">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+            </button>
+            <input type="file" id="fileInput" accept="image/*">
             <button id="gridBtn" class="round-button" title="Toggle Grid">
                 <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -399,6 +416,13 @@
                 </svg>
             </button>
         </div>
+        <div id="errorDialog" class="dialog">
+            <h2>Error</h2>
+            <p id="errorMessage"></p>
+            <div class="dialog-buttons">
+                <button class="dialog-button dialog-button-primary" id="errorOkBtn">OK</button>
+            </div>
+        </div>
         <div id="confirmDialog" class="dialog">
             <p>Are you sure you want to clear this whiteboard?</p>
             <div class="dialog-buttons">
@@ -434,7 +458,12 @@
          const overviewContainer = document.getElementById('overviewContainer');
          const overviewGrid = document.getElementById('overviewGrid');
          const fullscreenBtn = document.getElementById('fullscreenBtn');
-
+         const fileSelectBtn = document.getElementById('fileSelectBtn');
+         const fileInput = document.getElementById('fileInput');
+         const errorDialog = document.getElementById('errorDialog');
+         const errorMessage = document.getElementById('errorMessage');
+         const errorOkBtn = document.getElementById('errorOkBtn');
+         
          let isDrawing = false;
          let isErasing = false;
          let isHighlighting = false;
@@ -640,6 +669,11 @@
              } else {
                  canvas.style.cursor = 'default';
              }
+         }
+
+         function showErrorDialog(message) {
+             errorMessage.textContent = message;
+             errorDialog.style.display = 'block';
          }
 
          function showConfirmDialog() {
@@ -930,6 +964,75 @@
              document.getElementById(dialogId).style.display = 'none';
          }
 
+         function handleDragOver(e) {
+             e.preventDefault();
+             e.stopPropagation();
+         }
+
+         function handleDrop(e) {
+             e.preventDefault();
+             e.stopPropagation();
+
+             const files = e.dataTransfer.files;
+
+             if (files.length > 0) {
+                 const file = files[0];
+
+                 if (file.type.startsWith('image/')) {
+                     loadImageToCanvas(file);
+                 } else {
+                     showErrorDialog('Please drop an image file.');
+                 }
+             }
+         }
+
+         function loadImageToCanvas(file) {
+             const reader = new FileReader();
+
+             reader.onload = function(event) {
+                 console.log('XXXXX load 2', event);
+                 const img = new Image();
+                 console.log('XXXXX load 3');
+                 img.onerror = function(event) {
+                     showErrorDialog('Please drop an image file.');
+                 };
+                 img.onload = function() {
+                     console.log('XXXXX load 4');
+                     // Clear the canvas
+                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                     // Calculate scaling to fit the image within the canvas
+                     const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                     const x = (canvas.width / 2) - (img.width / 2) * scale;
+                     const y = (canvas.height / 2) - (img.height / 2) * scale;
+
+                     // Draw the image on the canvas
+                     ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+                     // Save the updated canvas
+                     saveCurrentBoard();
+                 };
+                 img.src = event.target.result;
+             };
+
+             reader.readAsDataURL(file);
+         }
+
+         function handleFileSelect() {
+             fileInput.click();
+         }
+
+         function handleFileChange(e) {
+             const file = e.target.files[0];
+             if (file && file.type.startsWith('image/')) {
+                 loadImageToCanvas(file);
+             } else {
+                 showErrorDialog('Please select an image file.');
+             }
+         }
+
+         fileSelectBtn.addEventListener('click', handleFileSelect);
+         fileInput.addEventListener('change', handleFileChange);
          brushSize.addEventListener('input', updateBrushSizeDisplay);
          brushSizeDisplay.addEventListener('change', updateBrushSizeSlider);
          overviewBtn.addEventListener('click', toggleOverview);
@@ -946,6 +1049,7 @@
              hideDialog('confirmDialog');
          });
          confirmNo.addEventListener('click', () => hideDialog('confirmDialog'));
+         errorOkBtn.addEventListener('click', () => hideDialog('errorDialog'));
          newBoardBtn.addEventListener('click', createNewBoard);
          prevBtn.addEventListener('click', () => navigateBoards(-1));
          nextBtn.addEventListener('click', () => navigateBoards(1));
@@ -963,6 +1067,8 @@
          document.addEventListener('keydown', handleKeyPress);
          fullscreenBtn.addEventListener('click', toggleFullscreen);
          document.addEventListener('fullscreenchange', updateFullscreenButton);
+         canvas.addEventListener('dragover', handleDragOver);
+         canvas.addEventListener('drop', handleDrop);
 
          // Initial setup
          resizeCanvas();
