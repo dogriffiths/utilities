@@ -31,9 +31,30 @@ describe('Whiteboard Application', () => {
 
     it('should toggle eraser mode', () => {
         multiboardPage.eraserButton.click();
-        multiboardPage.eraserButton.assertHasClass('active')
+        multiboardPage.eraserButton.assertActive()
         multiboardPage.eraserButton.click();
-        multiboardPage.eraserButton.assertDoesNotHaveClass('active')
+        multiboardPage.eraserButton.assertInactive()
+    });
+
+    it('should toggle highlighter mode', () => {
+        multiboardPage.highlighterButton.click();
+        multiboardPage.highlighterButton.assertActive()
+        multiboardPage.highlighterButton.click();
+        multiboardPage.highlighterButton.assertInactive()
+    });
+
+    it('should be able to select brush by key press', () => {
+        multiboardPage.brushSizeDisplay.matches("2");
+        multiboardPage.type("1")
+        multiboardPage.brushSizeDisplay.matches("16");
+        multiboardPage.type("2")
+        multiboardPage.brushSizeDisplay.matches("28");
+        multiboardPage.type("3")
+        multiboardPage.brushSizeDisplay.matches("40");
+        multiboardPage.type("4")
+        multiboardPage.brushSizeDisplay.matches("50");
+        multiboardPage.type("0")
+        multiboardPage.brushSizeDisplay.matches("2");
     });
 
     it('should open and close overview', () => {

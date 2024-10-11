@@ -2,6 +2,8 @@ import CypressPage from "../relish-cypress/CypressPage";
 import CypressWidget from "../relish-cypress/CypressWidget";
 import {MenuWidget} from "../components/MenuWidget";
 import {multiboardPage} from "./index";
+import RoundButtonWidget from "../components/RoundButtonWidget";
+import InputText from "../relish-cypress/InputText";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -64,7 +66,15 @@ export default class MultiboardPage extends CypressPage {
     }
 
     get eraserButton() {
-        return new CypressWidget('#eraserBtn', this);
+        return new RoundButtonWidget('#eraserBtn', this);
+    }
+
+    get brushSizeDisplay() {
+        return new InputText('#brushSizeDisplay', this);
+    }
+
+    get highlighterButton() {
+        return new RoundButtonWidget('#highlighterBtn', this);
     }
 
     get overviewButton() {
