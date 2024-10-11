@@ -917,6 +917,10 @@
          }
 
          function handleKeyPress(event) {
+             if (document.activeElement === brushSizeDisplay) {
+                 return; // Exit the function if we're typing in the brush size input
+             }
+
              if (event.key === 'Escape' && isOverviewVisible) {
                  event.preventDefault(); // Prevent default Escape behavior
                  toggleOverview();
@@ -928,6 +932,16 @@
              if (event.key === 'ArrowRight') {
                  event.preventDefault();
                  navigateBoards(1);
+             }
+             
+             // New code to handle numeric key presses
+             const numKey = parseInt(event.key);
+             if (!isNaN(numKey) && numKey >= 0 && numKey <= 4) {
+                 event.preventDefault();
+                 const newSize = [2, 4, 8, 16, 32][numKey]; // Scale the brush size (1-9 becomes 5-45)
+                 brushSize.value = newSize;
+                 brushSizeDisplay.value = newSize;
+                 updateBrushSizeDisplay();
              }
          }
 
