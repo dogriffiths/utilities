@@ -715,8 +715,6 @@
                      newX = shiftStartX; // Keep X constant
                  }
              } else {
-                 // Reset constrained drawing when Shift is released
-                 shiftConstrainedDirection = null;
                  shiftStartX = newX;
                  shiftStartY = newY;
              }
@@ -749,6 +747,8 @@
                      highlighterBtn.classList.remove('active');
                  }
              }
+             isShiftPressed = false;
+             shiftConstrainedDirection = null;
          }
 
          function toggleEraser() {
@@ -1133,7 +1133,7 @@
          }
 
          function handleKeyUp(event) {
-             if (event.key === 'Shift') {
+             if (event.key === 'Shift' && !isDrawing) {
                  isShiftPressed = false;
                  shiftConstrainedDirection = null;
              }
