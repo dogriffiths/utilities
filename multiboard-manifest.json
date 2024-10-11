@@ -1,0 +1,21 @@
+{
+  "name": "Multi-Whiteboard App",
+  "short_name": "Whiteboard",
+  "description": "A multi-whiteboard drawing application",
+  "start_url": "/utilities/multiboard.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4444ff",
+  "icons": [
+    {
+      "src": "multiboard-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "multiboard-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
