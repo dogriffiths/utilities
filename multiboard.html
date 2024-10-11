@@ -481,6 +481,7 @@
          let initialY = null;
          const directionThreshold = 50;
          let lastBrushSize = 4;
+         let isCtrlPressed = false;
 
          let whiteboards = [{ name: 'Whiteboard 1', data: null, history: [] }];
          let currentBoardIndex = 0;
@@ -620,6 +621,12 @@
                  whiteboards[currentBoardIndex].history.shift(); // Remove the oldest state
              }
              whiteboards[currentBoardIndex].history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+             
+             // Check if Ctrl is pressed and enable highlighting
+             if (isCtrlPressed) {
+                 isHighlighting = true;
+                 highlighterBtn.classList.add('active');
+             }
          }
 
          function undo() {
@@ -668,7 +675,7 @@
              if (isErasing) {
                  ctx.globalCompositeOperation = 'destination-out';
                  ctx.lineWidth = 20;
-             } else if (isHighlighting) {
+             } else if (isHighlighting || isCtrlPressed) {
                  ctx.globalCompositeOperation = 'multiply';
                  ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
                  ctx.lineWidth = 50;
@@ -722,6 +729,12 @@
                  shiftStartX = null;
                  shiftStartY = null;
                  saveCurrentBoard();
+                 
+                 // Reset highlighting if it was enabled by Ctrl+Drag
+                 if (isCtrlPressed) {
+                     isHighlighting = false;
+                     highlighterBtn.classList.remove('active');
+                 }
              }
          }
 
@@ -981,6 +994,10 @@
                  return; // Exit the function if we're typing in the brush size input
              }
 
+             if (event.key === 'Control') {
+                 isCtrlPressed = true;
+             }
+
              if (event.key === 'Shift' && !isShiftPressed) {
                  isShiftPressed = true;
                  if (isDrawing) {
@@ -1106,6 +1123,14 @@
              if (event.key === 'Shift') {
                  isShiftPressed = false;
                  shiftConstrainedDirection = null;
+             }
+             if (event.key === 'Control') {
+                 isCtrlPressed = false;
+                 // Reset highlighting if it was enabled by Ctrl+Drag
+                 if (isHighlighting) {
+                     isHighlighting = false;
+                     highlighterBtn.classList.remove('active');
+                 }
              }
          }
 
