@@ -492,6 +492,10 @@
          const gridElement = document.getElementById('grid');
          let isGridVisible = false;
          let isSnappingEnabled = false;
+         let isShiftPressed = false;
+         let shiftConstrainedDirection = null; // 'horizontal' or 'vertical'
+         let shiftStartX = null;
+         let shiftStartY = null;
          const gridSize = 20; // This should match the small grid size in CSS
 
          // Enable image smoothing for anti-aliasing
@@ -608,10 +612,10 @@
 
          function startDrawing(e) {
              isDrawing = true;
-             initialX = e.clientX;
-             initialY = e.clientY;
-             [lastX, lastY] = [initialX, initialY];
-             drawingDirection = null;
+             [lastX, lastY] = [e.clientX, e.clientY];
+             shiftStartX = lastX;
+             shiftStartY = lastY;
+             shiftConstrainedDirection = null;
              if (whiteboards[currentBoardIndex].history.length >= 5) {
                  whiteboards[currentBoardIndex].history.shift(); // Remove the oldest state
              }
@@ -673,7 +677,29 @@
                  ctx.strokeStyle = colorPicker.value;
              }
 
-             const [newX, newY] = snapToGridEnhanced(e.clientX, e.clientY);
+             let [newX, newY] = snapToGridEnhanced(e.clientX, e.clientY);
+
+             if (isShiftPressed) {
+                 if (!shiftConstrainedDirection) {
+                     // Determine the initial direction
+                     const dx = Math.abs(newX - shiftStartX);
+                     const dy = Math.abs(newY - shiftStartY);
+                     if (dx * dy > 25) {
+                         shiftConstrainedDirection = dx > dy ? 'horizontal' : 'vertical';
+                     }
+                 }
+
+                 if (shiftConstrainedDirection === 'horizontal') {
+                     newY = shiftStartY; // Keep Y constant
+                 } else {
+                     newX = shiftStartX; // Keep X constant
+                 }
+             } else {
+                 // Reset constrained drawing when Shift is released
+                 shiftConstrainedDirection = null;
+                 shiftStartX = newX;
+                 shiftStartY = newY;
+             }
 
              ctx.beginPath();
              if (brushSize.value > 4 && newBrushSize / lastBrushSize < 0.7) {
@@ -692,9 +718,9 @@
          function stopDrawing() {
              if (isDrawing) {
                  isDrawing = false;
-                 drawingDirection = null;
-                 initialX = null;
-                 initialY = null;
+                 shiftConstrainedDirection = null;
+                 shiftStartX = null;
+                 shiftStartY = null;
                  saveCurrentBoard();
              }
          }
@@ -955,6 +981,14 @@
                  return; // Exit the function if we're typing in the brush size input
              }
 
+             if (event.key === 'Shift' && !isShiftPressed) {
+                 isShiftPressed = true;
+                 if (isDrawing) {
+                     shiftStartX = lastX;
+                     shiftStartY = lastY;
+                 }
+             }
+
              if (event.key === 'Escape' && isOverviewVisible) {
                  event.preventDefault(); // Prevent default Escape behavior
                  toggleOverview();
@@ -1068,6 +1102,13 @@
              }
          }
 
+         function handleKeyUp(event) {
+             if (event.key === 'Shift') {
+                 isShiftPressed = false;
+                 shiftConstrainedDirection = null;
+             }
+         }
+
          function loadImageToCanvas(file) {
              const reader = new FileReader();
 
@@ -1144,6 +1185,7 @@
              event.preventDefault();
          });
          document.addEventListener('keydown', handleKeyPress);
+         document.addEventListener('keyup', handleKeyUp);
          fullscreenBtn.addEventListener('click', toggleFullscreen);
          document.addEventListener('fullscreenchange', updateFullscreenButton);
          canvas.addEventListener('dragover', handleDragOver);
