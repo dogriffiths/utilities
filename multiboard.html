@@ -444,6 +444,11 @@
         </div>
 
         <script>
+         // Constants
+         const GRID_SIZE = 20;
+         const DIRECTION_THRESHOLD = 50;
+
+         // DOM Elements
          const canvas = document.getElementById('canvas');
          const ctx = canvas.getContext('2d');
          const colorPicker = document.getElementById('colorPicker');
@@ -468,36 +473,33 @@
          const errorDialog = document.getElementById('errorDialog');
          const errorMessage = document.getElementById('errorMessage');
          const errorOkBtn = document.getElementById('errorOkBtn');
-         
+         const brushSizeDisplay = document.getElementById('brushSizeDisplay');
+         const gridBtn = document.getElementById('gridBtn');
+         const gridElement = document.getElementById('grid');
+
+         // State variables
          let isDrawing = false;
          let isErasing = false;
          let isHighlighting = false;
          let isOverviewVisible = false;
          let lastX = 0;
          let lastY = 0;
-         let lastPressure = 1.0; // Default pressure
+         let lastPressure = 1.0;
          let drawingDirection = null;
          let initialX = null;
          let initialY = null;
-         const directionThreshold = 50;
          let lastBrushSize = 4;
          let isCtrlPressed = false;
-
-         let whiteboards = [{ name: 'Whiteboard 1', data: null, history: [] }];
-         let currentBoardIndex = 0;
-         let saveTimeout;
-
-         const brushSizeDisplay = document.getElementById('brushSizeDisplay');
-
-         const gridBtn = document.getElementById('gridBtn');
-         const gridElement = document.getElementById('grid');
          let isGridVisible = false;
          let isSnappingEnabled = false;
          let isShiftPressed = false;
-         let shiftConstrainedDirection = null; // 'horizontal' or 'vertical'
+         let shiftConstrainedDirection = null;
          let shiftStartX = null;
          let shiftStartY = null;
-         const gridSize = 20; // This should match the small grid size in CSS
+         let whiteboards = [{ name: 'Whiteboard 1', data: null, history: [] }];
+         let currentBoardIndex = 0;
+         let saveTimeout;
+         let db;
 
          // Enable image smoothing for anti-aliasing
          ctx.imageSmoothingEnabled = true;
