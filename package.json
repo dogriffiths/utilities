@@ -1,0 +1,17 @@
+{
+  "name": "utilities",
+  "version": "1.0.0",
+  "description": "A set of very simple utilities",
+  "main": "index.js",
+  "scripts": {
+    "start": "http-server . -p 8080",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
+  },
+  "author": "David Griffiths",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^13.15.0",
+    "http-server": "^14.1.1"
+  }
+}

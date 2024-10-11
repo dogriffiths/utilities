@@ -1236,13 +1236,15 @@
 
          if ('serviceWorker' in navigator) {
              window.addEventListener('load', () => {
-                 navigator.serviceWorker.register('/utilities/multiboard-service-worker.js')
-                          .then((registration) => {
-                              console.log('Service Worker registered successfully:', registration.scope);
-                          })
-                          .catch((error) => {
-                              console.log('Service Worker registration failed:', error);
-                          });
+                 if (!/localhost|127\.0\.0\.1/.test(location.hostname)) {
+                     navigator.serviceWorker.register('/utilities/multiboard-service-worker.js')
+                         .then((registration) => {
+                             console.log('Service Worker registered successfully:', registration.scope);
+                         })
+                         .catch((error) => {
+                             console.log('Service Worker registration failed:', error);
+                         });
+                 }
              });
          }
         </script>
