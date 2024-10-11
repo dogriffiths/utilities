@@ -109,36 +109,6 @@
              opacity: 0.5;
              cursor: not-allowed;
          }
-         #confirmDialog {
-             display: none;
-             position: fixed;
-             top: 50%;
-             left: 50%;
-             transform: translate(-50%, -50%);
-             background-color: white;
-             padding: 20px;
-             border-radius: 10px;
-             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-             z-index: 2000;
-         }
-         #confirmDialog p {
-             margin-top: 0;
-         }
-         #confirmDialog button {
-             margin-right: 10px;
-             padding: 5px 10px;
-             border: none;
-             border-radius: 5px;
-             cursor: pointer;
-         }
-         #confirmYes {
-             background-color: #ff4444;
-             color: white;
-         }
-         #confirmNo {
-             background-color: #44aa44;
-             color: white;
-         }
          #highlighterBtn {
              background-color: #ffff00;
              border: 2px solid #999;
@@ -282,40 +252,80 @@
          #fullscreenBtn:hover {
              background-color: #aa66ff;
          }
+         /* MacOS-style Dialog CSS */
          .dialog {
              display: none;
              position: fixed;
              top: 50%;
              left: 50%;
              transform: translate(-50%, -50%);
-             background-color: white;
+             background-color: #f5f5f7;
              padding: 20px;
              border-radius: 10px;
-             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+             box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
              z-index: 2000;
+             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+             min-width: 300px;
+             max-width: 400px;
          }
-         .dialog p {
+
+         .dialog h2 {
+             font-size: 18px;
+             font-weight: 600;
              margin-top: 0;
+             margin-bottom: 10px;
+             color: #1d1d1f;
          }
+
+         .dialog p {
+             font-size: 14px;
+             line-height: 1.4;
+             color: #1d1d1f;
+             margin-bottom: 20px;
+         }
+
          .dialog-buttons {
              display: flex;
              justify-content: flex-end;
-             margin-top: 20px;
+             gap: 8px;
          }
+
          .dialog-button {
-             margin-left: 10px;
-             padding: 5px 10px;
+             padding: 8px 16px;
              border: none;
-             border-radius: 5px;
+             border-radius: 6px;
+             font-size: 14px;
+             font-weight: 500;
              cursor: pointer;
+             transition: background-color 0.2s ease;
          }
+
          .dialog-button-primary {
-             background-color: #4444ff;
+             background-color: #0071e3;
              color: white;
          }
+
+         .dialog-button-primary:hover {
+             background-color: #0077ED;
+         }
+
          .dialog-button-secondary {
-             background-color: #f0f0f0;
-             color: #333;
+             background-color: #e3e3e3;
+             color: #1d1d1f;
+         }
+
+         .dialog-button-secondary:hover {
+             background-color: #d9d9d9;
+         }
+
+         /* Add a subtle animation for dialog appearance */
+         @keyframes fadeIn {
+             from { opacity: 0; transform: translate(-50%, -48%); }
+             to { opacity: 1; transform: translate(-50%, -50%); }
+         }
+
+         .dialog {
+             animation: fadeIn 0.2s ease-out;
          }
          #fileInput {
              display: none;
@@ -429,6 +439,7 @@
             </div>
         </div>
         <div id="confirmDialog" class="dialog">
+            <h2>Confirm</h2>
             <p>Are you sure you want to clear this whiteboard?</p>
             <div class="dialog-buttons">
                 <button id="confirmNo" class="dialog-button dialog-button-secondary">No</button>
@@ -436,6 +447,7 @@
             </div>
         </div>
         <div id="removeWhiteboardDialog" class="dialog">
+            <h2>Confirm</h2>
             <p id="removeWhiteboardMessage"></p>
             <div class="dialog-buttons">
                 <button id="removeWhiteboardNo" class="dialog-button dialog-button-secondary">No</button>
@@ -756,11 +768,11 @@
          }
 
          function showConfirmDialog() {
-             confirmDialog.style.display = 'block';
+             document.getElementById('confirmDialog').style.display = 'block';
          }
 
          function hideConfirmDialog() {
-             confirmDialog.style.display = 'none';
+             document.getElementById('confirmDialog').style.display = 'none';
          }
 
          function clearCanvas() {
@@ -1189,12 +1201,12 @@
          canvas.addEventListener('mouseup', stopDrawing);
          canvas.addEventListener('mouseout', stopDrawing);
          eraserBtn.addEventListener('click', toggleEraser);
-         clearBtn.addEventListener('click', () => showDialog('confirmDialog'));
+         clearBtn.addEventListener('click', () => showConfirmDialog());
          confirmYes.addEventListener('click', () => {
              clearCanvas();
-             hideDialog('confirmDialog');
+             hideConfirmDialog();
          });
-         confirmNo.addEventListener('click', () => hideDialog('confirmDialog'));
+         confirmNo.addEventListener('click', () => hideConfirmDialog());
          errorOkBtn.addEventListener('click', () => hideDialog('errorDialog'));
          newBoardBtn.addEventListener('click', createNewBoard);
          prevBtn.addEventListener('click', () => navigateBoards(-1));
