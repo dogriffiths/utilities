@@ -14,6 +14,8 @@ export default class MultiboardPage extends CypressPage {
         this.overviewButton.click()
         this.removeAllBoards()
         this.overviewContainer.click()
+        this.clearButton.click()
+        this.confirmYesButton.click()
     }
 
     public removeAllBoards(maxAttempts = 10) {
@@ -31,6 +33,34 @@ export default class MultiboardPage extends CypressPage {
                     });
             }
         });
+    }
+
+    get boardInfo() {
+        return new CypressWidget('#boardInfo', this);
+    }
+
+    get confirmNoButton() {
+        return new CypressWidget('#confirmNo', this);
+    }
+
+    get confirmYesButton() {
+        return new CypressWidget('#confirmYes', this);
+    }
+
+    get clearButton() {
+        return new CypressWidget('#clearBtn', this);
+    }
+
+    get newBoardButton() {
+        return new CypressWidget('#newBoardBtn', this);
+    }
+
+    get nextButton() {
+        return new CypressWidget('#nextBtn', this);
+    }
+
+    get previousButton() {
+        return new CypressWidget('#prevBtn', this);
     }
 
     get eraserButton() {

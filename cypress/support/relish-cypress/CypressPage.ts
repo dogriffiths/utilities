@@ -1,4 +1,5 @@
 import Component from "../relish-core/Component";
+import CypressWidget from "./CypressWidget";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -36,6 +37,14 @@ class CypressPage extends Component {
 
   getPath(): string {
     return this.path;
+  }
+
+  get body() {
+      return new CypressWidget("body", this);
+  }
+
+  type(s: string) {
+      this.body.type(s)
   }
 
   assertVisible() {

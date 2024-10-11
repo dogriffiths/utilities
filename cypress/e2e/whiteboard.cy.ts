@@ -9,23 +9,31 @@ describe('Whiteboard Application', () => {
     });
 
     it('should create a new whiteboard', () => {
-        cy.get('#newBoardBtn').click();
-        cy.get('#boardInfo').should('contain', 'Whiteboard 2');
+        multiboardPage.newBoardButton.click()
+        multiboardPage.boardInfo.matches('Whiteboard 2 / 2')
     });
 
     it('should navigate between whiteboards', () => {
-        cy.get('#newBoardBtn').click();
-        cy.get('#prevBtn').click();
-        cy.get('#boardInfo').should('contain', 'Whiteboard 1');
-        cy.get('#nextBtn').click();
-        cy.get('#boardInfo').should('contain', 'Whiteboard 2');
+        multiboardPage.newBoardButton.click()
+        multiboardPage.previousButton.click()
+        multiboardPage.boardInfo.matches('Whiteboard 1 / 2')
+        multiboardPage.nextButton.click()
+        multiboardPage.boardInfo.matches('Whiteboard 2 / 2')
+    });
+
+    it('should navigate between whiteboards using arrow keys', () => {
+        multiboardPage.newBoardButton.click()
+        multiboardPage.type("{leftarrow}")
+        multiboardPage.boardInfo.matches('Whiteboard 1 / 2')
+        multiboardPage.type("{rightarrow}")
+        multiboardPage.boardInfo.matches('Whiteboard 2 / 2')
     });
 
     it('should toggle eraser mode', () => {
         multiboardPage.eraserButton.click();
-        cy.get('#eraserBtn').should('have.class', 'active');
+        multiboardPage.eraserButton.assertHasClass('active')
         multiboardPage.eraserButton.click();
-        cy.get('#eraserBtn').should('not.have.class', 'active');
+        multiboardPage.eraserButton.assertDoesNotHaveClass('active')
     });
 
     it('should open and close overview', () => {

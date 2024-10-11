@@ -64,6 +64,14 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
     return e.innerText;
   }
 
+  assertHasClass(className: string) {
+    this.getChainer().should('have.class', className)
+  }
+
+  assertDoesNotHaveClass(className: string) {
+    this.getChainer().should('not.have.class', className)
+  }
+
   assertVisible() {
     if (this.parent) {
       this.parent.assertVisible();
@@ -166,6 +174,10 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
     } else {
       this.getChainer().scrollIntoView();
     }
+  }
+
+  type(s: string): void {
+    this.getChainer().type(s);
   }
 
   assertDisabled() {
