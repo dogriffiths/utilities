@@ -1,8 +1,8 @@
 const CACHE_NAME = 'whiteboard-app-v1';
 const urlsToCache = [
-  '/utiliites/multiboard.html',
-  '/utiliites/multiboard-192x192.png',
-  '/utiliites/multiboard-512x512.png'
+  '/utilities/multiboard.html',
+  '/utilities/multiboard-192x192.png',
+  '/utilities/multiboard-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
