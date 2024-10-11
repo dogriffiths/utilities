@@ -480,6 +480,7 @@
          let initialX = null;
          let initialY = null;
          const directionThreshold = 50;
+         let lastBrushSize = 4;
 
          let whiteboards = [{ name: 'Whiteboard 1', data: null, history: [] }];
          let currentBoardIndex = 0;
@@ -625,10 +626,38 @@
              }
          }
 
+         function drawLine(ctx, lastX, lastY, newX, newY, startWidth, endWidth) {
+             const steps = 8;
+             
+             for (let i = 0; i < steps; i++) {
+                 const t = i / (steps - 1);
+                 const x = lastX + (newX - lastX) * t;
+                 const y = lastY + (newY - lastY) * t;
+                 const width = startWidth + (endWidth - startWidth) * t;
+
+                 tx.beginPath();
+                 ctx.moveTo(lastX, lastY);
+                 
+                 for (let i = 0; i < steps; i++) {
+                     const t = (i + 1) / steps;
+                     const x = lastX + (newX - lastX) * t;
+                     const y = lastY + (newY - lastY) * t;
+                     const width = startWidth + (endWidth - startWidth) * t;
+                     
+                     ctx.lineTo(x, y);
+                     ctx.lineWidth = width;
+                     ctx.stroke();
+                     ctx.beginPath();
+                     ctx.moveTo(x, y);
+                 }                 
+             }
+         }
+
          function draw(e) {
              if (!isDrawing) return;
 
-             ctx.lineWidth = (brushSize.value < 4) ? brushSize.value : brushSize.value * lastPressure;
+             const newBrushSize = (brushSize.value < 4) ? brushSize.value : brushSize.value * (lastPressure < 0.10 ? 0.10 : lastPressure);
+             ctx.lineWidth = newBrushSize;
              ctx.lineCap = 'round';
              ctx.lineJoin = 'round';
 
@@ -647,12 +676,17 @@
              const [newX, newY] = snapToGridEnhanced(e.clientX, e.clientY);
 
              ctx.beginPath();
-             ctx.moveTo(lastX, lastY);
-             ctx.lineTo(newX, newY);
+             if (brushSize.value > 4 && newBrushSize / lastBrushSize < 0.7) {
+                 drawLine(ctx, lastX, lastY, newX, newY, lastBrushSize, newBrushSize);
+             } else {
+                 ctx.moveTo(lastX, lastY);
+                 ctx.lineTo(newX, newY);
+             }
              ctx.stroke();
 
              [lastX, lastY] = [newX, newY];
              saveCurrentBoard();
+             lastBrushSize = newBrushSize;
          }
 
          function stopDrawing() {
