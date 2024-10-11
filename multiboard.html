@@ -943,6 +943,28 @@
                  brushSizeDisplay.value = newSize;
                  updateBrushSizeDisplay();
              }
+
+             switch (event.key.toUpperCase()) {
+                 case 'R':
+                     setColor('#FF0000'); // Red
+                     break;
+                 case 'G':
+                     setColor('#00AA00'); // Green
+                     break;
+                 case 'B':
+                     setColor('#0000FF'); // Blue
+                     break;
+                 case 'M':
+                     setColor('#000000'); // Black (Monochrome)
+                     break;
+             }
+         }
+
+         function setColor(color) {
+             colorPicker.value = color;
+             // If you have any other UI elements or state variables that need updating, do it here
+             // For example, if you have a custom color display:
+             // updateColorDisplay();
          }
 
          function toggleFullscreen() {
