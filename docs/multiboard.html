@@ -571,7 +571,6 @@
          let lastBrushSize = 4;
          let isCtrlPressed = false;
          let isGridVisible = false;
-         let isSnappingEnabled = false;
          let isShiftPressed = false;
          let shiftConstrainedDirection = null;
          let shiftStartX = null;
@@ -791,7 +790,8 @@
                      break;
              }
 
-             let [newX, newY] = snapToGridEnhanced(e.clientX, e.clientY);
+             let newX = e.clientX;
+             let newY = e.clientY;
 
              if (isShiftPressed) {
                  if (!shiftConstrainedDirection) {
@@ -956,28 +956,8 @@
 
          function toggleGrid() {
              isGridVisible = !isGridVisible;
-             isSnappingEnabled = isGridVisible; // Enable snapping when grid is visible
              gridElement.style.display = isGridVisible ? 'block' : 'none';
              gridBtn.classList.toggle('active', isGridVisible);
-         }
-
-         function snapToGridEnhanced(x, y) {
-             if (isErasing || isHighlighting || !isSnappingEnabled) return [x, y];
-
-             const snappedX = Math.round(x / gridSize) * gridSize;
-             const snappedY = Math.round(y / gridSize) * gridSize;
-
-             if (drawingDirection === null) {
-                 drawingDirection = determineDrawingDirection(initialX, initialY, snappedX, snappedY);
-             }
-
-             if (drawingDirection === 'vertical') {
-                 return [initialX, snappedY];
-             } else if (drawingDirection === 'horizontal') {
-                 return [snappedX, initialY];
-             }
-
-             return [snappedX, snappedY];
          }
 
          function updateBrushSizeDisplay() {
@@ -1150,9 +1130,6 @@
 
          function setColor(color) {
              colorPicker.value = color;
-             // If you have any other UI elements or state variables that need updating, do it here
-             // For example, if you have a custom color display:
-             // updateColorDisplay();
          }
 
          function toggleFullscreen() {
