@@ -1,6 +1,6 @@
 // cypress/e2e/whiteboard_spec.js
 
-import {multiboardPage} from "../support/pages";
+import {multiboardPage} from "../../support/pages";
 
 describe('Whiteboard Application', () => {
     beforeEach(() => {

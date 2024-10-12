@@ -561,6 +561,7 @@
          let isPenActive = true;
          let isHighlighting = false;
          let isOverviewVisible = false;
+         let isTemporaryHighlighter = false;
          let currentTool = 'pen';
          let lastX = 0;
          let lastY = 0;
@@ -722,11 +723,11 @@
                  whiteboards[currentBoardIndex].history.shift(); // Remove the oldest state
              }
              whiteboards[currentBoardIndex].history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-             
+
              // Check if Ctrl is pressed and enable highlighting
-             if (isCtrlPressed) {
-                 isHighlighting = true;
-                 highlighterBtn.classList.add('active');
+             if (isCtrlPressed && currentTool !== 'highlighter') {
+                 isTemporaryHighlighter = true;
+                 setActiveTool('highlighter');
              }
          }
 
@@ -834,11 +835,11 @@
                  shiftStartX = null;
                  shiftStartY = null;
                  saveCurrentBoard();
-                 
-                 // Reset highlighting if it was enabled by Ctrl+Drag
-                 if (isCtrlPressed) {
-                     isHighlighting = false;
-                     highlighterBtn.classList.remove('active');
+
+                 // Reset to pen if it was temporarily set to highlighter
+                 if (isTemporaryHighlighter) {
+                     isTemporaryHighlighter = false;
+                     setActiveTool('pen');
                  }
              }
              isShiftPressed = false;
@@ -1206,11 +1207,6 @@
              }
              if (event.key === 'Control') {
                  isCtrlPressed = false;
-                 // Reset highlighting if it was enabled by Ctrl+Drag
-                 if (isHighlighting) {
-                     isHighlighting = false;
-                     highlighterBtn.classList.remove('active');
-                 }
              }
          }
 
