@@ -61,4 +61,24 @@ describe('Stylus functionality', () => {
 
         multiboardPage.canvas.matches('cypress/expectedimages/horizontal_line.png');
     });
+
+    it('should not carry over old brush width', () => {
+        multiboardPage.body.type('3')
+
+        multiboardPage.canvas
+            .trigger('mousedown', {button: 0, clientX: 150, clientY: 150})
+            .trigger('mousemove', {clientX: 300, clientY: 380})
+            .trigger('mouseup')
+
+        multiboardPage.undoButton.click()
+
+        multiboardPage.body.type('2')
+
+        multiboardPage.canvas
+            .trigger('mousedown', {button: 0, clientX: 150, clientY: 150})
+            .trigger('mousemove', {clientX: 300, clientY: 380})
+            .trigger('mouseup')
+
+        multiboardPage.canvas.matches('cypress/expectedimages/even_width_line.png');
+    });
 });

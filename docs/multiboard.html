@@ -554,6 +554,7 @@
          const gridBtn = document.getElementById('gridBtn');
          const gridElement = document.getElementById('grid');
          const penBtn = document.getElementById('penBtn');
+         const undoBtn = document.getElementById('undoBtn');
 
          // State variables
          let isDrawing = false;
@@ -770,6 +771,7 @@
              if (!isDrawing) return;
 
              const newBrushSize = (brushSize.value < 4) ? brushSize.value : brushSize.value * (lastPressure < 0.10 ? 0.10 : lastPressure);
+
              ctx.lineWidth = newBrushSize;
              ctx.lineCap = 'round';
              ctx.lineJoin = 'round';
@@ -963,6 +965,7 @@
 
          function updateBrushSizeDisplay() {
              brushSizeDisplay.value = brushSize.value;
+             lastBrushSize = brushSize.value
          }
 
          function updateBrushSizeSlider() {

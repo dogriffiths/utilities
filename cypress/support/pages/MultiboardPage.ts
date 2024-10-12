@@ -74,6 +74,9 @@ export default class MultiboardPage extends CypressPage {
         return new RoundButtonWidget('#penBtn', this);
     }
 
+    get undoButton() {
+        return new RoundButtonWidget('#undoBtn', this);
+    }
     get eraserButton() {
         return new RoundButtonWidget('#eraserBtn', this);
     }
