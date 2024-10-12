@@ -4,6 +4,7 @@ import {MenuWidget} from "../components/MenuWidget";
 import {multiboardPage} from "./index";
 import RoundButtonWidget from "../components/RoundButtonWidget";
 import InputText from "../relish-cypress/InputText";
+import CanvasWidget from "../components/CanvasWidget";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -35,6 +36,10 @@ export default class MultiboardPage extends CypressPage {
                     });
             }
         });
+    }
+
+    get canvas() {
+        return new CanvasWidget('#canvas', this);
     }
 
     get boardInfo() {
@@ -79,6 +84,10 @@ export default class MultiboardPage extends CypressPage {
 
     get overviewButton() {
         return new CypressWidget('#overviewBtn', this);
+    }
+
+    get saveButton() {
+        return new CypressWidget('#saveBtn', this);
     }
 
     get overviewContainer() {

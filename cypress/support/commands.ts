@@ -23,3 +23,24 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+// @ts-ignore
+
+declare global {
+    namespace Cypress {
+        interface Chainable {
+            compareImages(image1Path: string, image2Path: string, threshold?: number): Chainable;
+        }
+    }
+}
+
+// @ts-ignore
+Cypress.Commands.add('compareImages', (image1Path: string, image2Path: string, threshold: number = 0.1): Cypress.Chainable<boolean> => {
+    return cy.exec(`magick compare -metric MAE "${image1Path}" "${image2Path}" null:`, { failOnNonZeroExit: false })
+        .then((result) => {
+            // ImageMagick returns the comparison value in stderr
+            const difference = parseFloat(result.stderr.split(' ')[0]);
+            return difference <= threshold;
+        });
+});
+
+export {};

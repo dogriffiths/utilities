@@ -63,4 +63,12 @@ describe('Whiteboard Application', () => {
         multiboardPage.overviewContainer.click()
         multiboardPage.overviewContainer.assertInvisible()
     });
+
+    it('should be able to draw a simple line', () => {
+        multiboardPage.canvas.getChainer()
+            .trigger('mousedown', {clientX: 150, clientY: 150})
+            .trigger('mousemove', {clientX: 200, clientY: 200})
+            .trigger('mouseup');
+        multiboardPage.canvas.matches('cypress/expectedimages/simple_line.png');
+    });
 });
