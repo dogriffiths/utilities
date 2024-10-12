@@ -29,18 +29,25 @@ describe('Whiteboard Application', () => {
         multiboardPage.boardInfo.matches('Whiteboard 2 / 2')
     });
 
-    it('should toggle eraser mode', () => {
-        multiboardPage.eraserButton.click();
-        multiboardPage.eraserButton.assertActive()
-        multiboardPage.eraserButton.click();
-        multiboardPage.eraserButton.assertInactive()
-    });
-
-    it('should toggle highlighter mode', () => {
-        multiboardPage.highlighterButton.click();
-        multiboardPage.highlighterButton.assertActive()
-        multiboardPage.highlighterButton.click();
+    it('should select tools in a group', () => {
+        multiboardPage.penButton.assertActive()
         multiboardPage.highlighterButton.assertInactive()
+        multiboardPage.eraserButton.assertInactive()
+
+        multiboardPage.highlighterButton.click();
+        multiboardPage.penButton.assertInactive()
+        multiboardPage.highlighterButton.assertActive()
+        multiboardPage.eraserButton.assertInactive()
+
+        multiboardPage.eraserButton.click();
+        multiboardPage.penButton.assertInactive()
+        multiboardPage.highlighterButton.assertInactive()
+        multiboardPage.eraserButton.assertActive()
+
+        multiboardPage.penButton.click();
+        multiboardPage.penButton.assertActive()
+        multiboardPage.highlighterButton.assertInactive()
+        multiboardPage.eraserButton.assertInactive()
     });
 
     it('should be able to select brush by key press', () => {

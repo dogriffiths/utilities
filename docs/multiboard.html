@@ -77,20 +77,6 @@
          #saveBtn:hover {
              background-color: #6666ff;
          }
-         #eraserBtn {
-             background-color: #f0f0f0;
-             border: 2px solid #999;
-         }
-         #eraserBtn:hover {
-             background-color: #e0e0e0;
-         }
-         #eraserBtn.active {
-             background-color: #ff44ff;
-             border-color: #ff44ff;
-         }
-         #eraserBtn.active svg {
-             stroke: white;
-         }
          #undoBtn {
              background-color: #ffaa44;
          }
@@ -108,17 +94,6 @@
          .round-button:disabled {
              opacity: 0.5;
              cursor: not-allowed;
-         }
-         #highlighterBtn {
-             background-color: #ffff00;
-             border: 2px solid #999;
-         }
-         #highlighterBtn:hover {
-             background-color: #ffff66;
-         }
-         #highlighterBtn.active {
-             background-color: #ffff00;
-             border-color: #000;
          }
          #gridBtn {
              background-color: #44aaff;
@@ -336,6 +311,85 @@
          #fileSelectBtn:hover {
              background-color: #aa66ff;
          }
+
+
+         .tool-group {
+             display: flex;
+             margin-right: 10px; /* Add some space after the group */
+         }
+
+         .tool-group .round-button {
+             border-radius: 0;
+             margin: 0;
+             transition: all 0.3s ease;
+         }
+
+         .tool-group .round-button:first-child {
+             border-top-left-radius: 20px;
+             border-bottom-left-radius: 20px;
+         }
+
+         .tool-group .round-button:last-child {
+             border-top-right-radius: 20px;
+             border-bottom-right-radius: 20px;
+         }
+
+         /* Default state (inactive) */
+         #penBtn, #highlighterBtn, #eraserBtn {
+             background-color: #e0e0e0;
+             filter: grayscale(100%) brightness(1.2);
+         }
+
+         #penBtn svg, #highlighterBtn svg, #eraserBtn svg {
+             stroke: #808080;
+         }
+
+         /* Hover state for inactive buttons */
+         #penBtn:hover, #highlighterBtn:hover, #eraserBtn:hover {
+             background-color: #d0d0d0;
+             filter: grayscale(50%) brightness(1.1);
+         }
+
+         /* Active states */
+         #penBtn.active {
+             background-color: #4CAF50;
+             filter: none;
+         }
+
+         #penBtn.active svg {
+             stroke: white;
+         }
+
+         #highlighterBtn.active {
+             background-color: #FFA500;
+             filter: none;
+         }
+
+         #highlighterBtn.active svg {
+             stroke: black;
+         }
+
+         #eraserBtn.active {
+             background-color: #ff44ff;
+             filter: none;
+         }
+
+         #eraserBtn.active svg {
+             stroke: white;
+         }
+
+         /* Hover state for active buttons */
+         #penBtn.active:hover {
+             background-color: #45a049;
+         }
+
+         #highlighterBtn.active:hover {
+             background-color: #FF8C00;
+         }
+
+         #eraserBtn.active:hover {
+             background-color: #ff66ff;
+         }
         </style>
     </head>
     <body>
@@ -367,17 +421,27 @@
                 <input type="range" id="brushSize" min="2.0" max="50" step="2" value="2">
                 <input type="text" id="brushSizeDisplay" value="2">
             </div>
-            <button id="highlighterBtn" class="round-button" title="Highlighter">
-                <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 11l-6 6v3h9l3-3"></path>
-                    <path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path>
-                </svg>
-            </button>
-            <button id="eraserBtn" class="round-button" title="Eraser">
-                <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 20H7L3 16C2 15 2 13 3 12L11 4C12 3 14 3 15 4L21 10C22 11 22 13 21 14L13 22"></path>
-                </svg>
-            </button>
+            <div class="tool-group">
+                <button id="penBtn" class="round-button active" title="Pen">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                        <path d="M2 2l7.586 7.586"></path>
+                        <circle cx="11" cy="11" r="2"></circle>
+                    </svg>
+                </button>
+                <button id="highlighterBtn" class="round-button" title="Highlighter">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11l-6 6v3h9l3-3"></path>
+                        <path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path>
+                    </svg>
+                </button>
+                <button id="eraserBtn" class="round-button" title="Eraser">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 20H7L3 16C2 15 2 13 3 12L11 4C12 3 14 3 15 4L21 10C22 11 22 13 21 14L13 22"></path>
+                    </svg>
+                </button>
+            </div>
             <button id="undoBtn" class="round-button" title="Undo">
                 <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 7v6h6"></path>
@@ -394,9 +458,9 @@
             </button>
             <button id="saveBtn" class="round-button" title="Save as PNG">
                 <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                    <polyline points="7 3 7 8 15 8"></polyline>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
             </button>
         </div>
@@ -488,12 +552,15 @@
          const brushSizeDisplay = document.getElementById('brushSizeDisplay');
          const gridBtn = document.getElementById('gridBtn');
          const gridElement = document.getElementById('grid');
+         const penBtn = document.getElementById('penBtn');
 
          // State variables
          let isDrawing = false;
          let isErasing = false;
+         let isPenActive = true;
          let isHighlighting = false;
          let isOverviewVisible = false;
+         let currentTool = 'pen';
          let lastX = 0;
          let lastY = 0;
          let lastPressure = 1.0;
@@ -544,16 +611,37 @@
              return null;
          }
 
-         function toggleHighlighter() {
-             isHighlighting = !isHighlighting;
-             isErasing = false;
+         function setActiveTool(tool) {
+             currentTool = tool;
+             isPenActive = tool === 'pen';
+             isErasing = tool === 'eraser';
+             isHighlighting = tool === 'highlighter';
+
+             // Update button states
+             penBtn.classList.toggle('active', isPenActive);
+             eraserBtn.classList.toggle('active', isErasing);
              highlighterBtn.classList.toggle('active', isHighlighting);
-             eraserBtn.classList.remove('active');
-             if (isHighlighting) {
+
+             // Update cursor
+             if (isErasing) {
+                 canvas.style.cursor = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'10\'/%3E%3Cline x1=\'8\' y1=\'12\' x2=\'16\' y2=\'12\'/%3E%3C/svg%3E") 12 12, auto';
+             } else if (isHighlighting) {
                  canvas.style.cursor = 'url("data:image/svg+xml,...") 0 24, auto';
              } else {
                  canvas.style.cursor = 'default';
              }
+         }
+
+         function togglePen() {
+             setActiveTool('pen');
+         }
+
+         function toggleHighlighter() {
+             setActiveTool('highlighter');
+         }
+
+         function toggleEraser() {
+             setActiveTool('eraser');
          }
 
          function debounce(func, wait) {
@@ -685,16 +773,21 @@
              ctx.lineCap = 'round';
              ctx.lineJoin = 'round';
 
-             if (isErasing) {
-                 ctx.globalCompositeOperation = 'destination-out';
-                 ctx.lineWidth = 20;
-             } else if (isHighlighting || isCtrlPressed) {
-                 ctx.globalCompositeOperation = 'multiply';
-                 ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
-                 ctx.lineWidth = 50;
-             } else {
-                 ctx.globalCompositeOperation = 'source-over';
-                 ctx.strokeStyle = colorPicker.value;
+             switch (currentTool) {
+                 case 'eraser':
+                     ctx.globalCompositeOperation = 'destination-out';
+                     ctx.lineWidth = 20;
+                     break;
+                 case 'highlighter':
+                     ctx.globalCompositeOperation = 'multiply';
+                     ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
+                     ctx.lineWidth = 50;
+                     break;
+                 case 'pen':
+                 default:
+                     ctx.globalCompositeOperation = 'source-over';
+                     ctx.strokeStyle = colorPicker.value;
+                     break;
              }
 
              let [newX, newY] = snapToGridEnhanced(e.clientX, e.clientY);
@@ -749,17 +842,6 @@
              }
              isShiftPressed = false;
              shiftConstrainedDirection = null;
-         }
-
-         function toggleEraser() {
-             isErasing = !isErasing;
-             isHighlighting = false;
-             eraserBtn.classList.toggle('active', isErasing);
-             if (isErasing) {
-                 canvas.style.cursor = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'10\'/%3E%3Cline x1=\'8\' y1=\'12\' x2=\'16\' y2=\'12\'/%3E%3C/svg%3E") 12 12, auto';
-             } else {
-                 canvas.style.cursor = 'default';
-             }
          }
 
          function showErrorDialog(message) {
@@ -850,7 +932,6 @@
              link.download = `${whiteboards[currentBoardIndex].name}.png`;
              link.href = canvas.toDataURL('image/png');
              link.click();
-             console.log('XXXXX saved!')
          }
 
          function handleKeyboardShortcuts(e) {
@@ -862,14 +943,12 @@
          }
 
          function handlePointerEvent(event) {
-             // Check if the pointer type is 'pen' (stylus)
              if (event.pointerType === 'pen') {
-                 // Get the pressure level (0 to 1)
                  lastPressure = event.pressure;
-                 if (event.button === 0) {
-                     isErasing = false;
-                 } else if (event.button === 5) {
-                     isErasing = true;
+                 if (event.button === 5) {
+                     setActiveTool('eraser');
+                 } else if (event.button === 0 && currentTool === 'eraser') {
+                     setActiveTool('pen');
                  }
              }
          }
@@ -1044,6 +1123,15 @@
              }
 
              switch (event.key.toUpperCase()) {
+                 case 'P':
+                     setActiveTool('pen');
+                     break;
+                 case 'H':
+                     setActiveTool('highlighter');
+                     break;
+                 case 'E':
+                     setActiveTool('eraser');
+                     break;
                  case 'R':
                      setColor('#FF0000'); // Red
                      break;
@@ -1201,7 +1289,9 @@
          canvas.addEventListener('mousemove', draw);
          canvas.addEventListener('mouseup', stopDrawing);
          canvas.addEventListener('mouseout', stopDrawing);
+         penBtn.addEventListener('click', togglePen);
          eraserBtn.addEventListener('click', toggleEraser);
+         highlighterBtn.addEventListener('click', toggleHighlighter);
          clearBtn.addEventListener('click', () => showConfirmDialog());
          confirmYes.addEventListener('click', () => {
              clearCanvas();
@@ -1216,7 +1306,6 @@
          undoBtn.addEventListener('click', undo);
          document.addEventListener('keydown', handleKeyboardShortcuts);
          window.addEventListener('load', loadWhiteboardsFromIndexedDB);
-         highlighterBtn.addEventListener('click', toggleHighlighter);
          document.addEventListener('pointerdown', handlePointerEvent);
          document.addEventListener('pointermove', handlePointerEvent);
          document.addEventListener('pointerup', handlePointerEvent);
@@ -1234,6 +1323,7 @@
          resizeCanvas();
          updateBoardInfo();
          updateBrushSizeDisplay();
+         setActiveTool('pen');
 
          if ('serviceWorker' in navigator) {
              window.addEventListener('load', () => {
