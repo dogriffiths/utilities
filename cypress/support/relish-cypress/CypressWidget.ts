@@ -65,11 +65,11 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
   }
 
   assertHasClass(className: string) {
-    this.getChainer().should('have.class', className)
+    return this.getChainer().should('have.class', className)
   }
 
   assertDoesNotHaveClass(className: string) {
-    this.getChainer().should('not.have.class', className)
+    return this.getChainer().should('not.have.class', className)
   }
 
   assertVisible() {
@@ -79,7 +79,7 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
     if (typeof this.selector !== "string") {
       return;
     }
-    this.getChainer().should("be.visible");
+    return this.getChainer().should("be.visible");
   }
 
   getChainer(): Cypress.Chainable {
@@ -136,7 +136,7 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
     if (this.isElementBased()) {
       throw "Element exists: " + this.selector;
     }
-    this.getChainer().should("not.be.visible");
+    return this.getChainer().should("not.be.visible");
   }
 
   get(): string | HTMLElement {
@@ -162,33 +162,37 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
     if (this.isElementBased()) {
       throw "Cannot shift click on element yet....";
     } else {
-      this.getChainer().click({
+      return this.getChainer().click({
         shiftKey: true
       } as any);
     }
   }
 
-  scrollTo(): void {
+  scrollTo() {
     if (this.isElementBased()) {
-      this.getElement().scrollIntoView();
+      return this.getElement().scrollIntoView();
     } else {
-      this.getChainer().scrollIntoView();
+      return this.getChainer().scrollIntoView();
     }
   }
 
-  type(s: string): void {
-    this.getChainer().type(s);
+  trigger<K extends keyof DocumentEventMap>(eventName: any, options: Partial<any> | undefined) {
+    return this.getChainer().trigger(eventName, options);
+  }
+
+  type(s: string, options?: Partial<Cypress.TypeOptions> | undefined) {
+    return this.getChainer().type(s, options);
   }
 
   assertDisabled() {
-    this.getChainer().should("be.disabled");
+    return this.getChainer().should("be.disabled");
   }
 
   assertEnabled() {
-    this.getChainer().should("not.be.disabled");
+    return this.getChainer().should("not.be.disabled");
   }
 
   screenshot() {
-    this.getChainer().screenshot();
+    return this.getChainer().screenshot();
   }
 }
