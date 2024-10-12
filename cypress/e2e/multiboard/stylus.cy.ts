@@ -25,4 +25,40 @@ describe('Stylus functionality', () => {
 
         multiboardPage.canvas.matches('cypress/expectedimages/highlighter_line.png');
     });
+
+    it('should draw a vertical line if you go down and hold shift', () => {
+        multiboardPage.body
+            .type('{shift}', {release: false})
+
+        multiboardPage.canvas
+            .trigger('mousedown', {button: 0, clientX: 150, clientY: 150})
+            .trigger('mousemove', {clientX: 160, clientY: 200})
+
+        multiboardPage.body
+            .type('{shift}', {release: true});
+
+        multiboardPage.canvas
+            .trigger('mousemove', {clientX: 170, clientY: 300})
+            .trigger('mouseup')
+
+        multiboardPage.canvas.matches('cypress/expectedimages/vertical_line.png');
+    });
+
+    it('should draw a horizontal line if you go down and hold shift', () => {
+        multiboardPage.body
+            .type('{shift}', {release: false})
+
+        multiboardPage.canvas
+            .trigger('mousedown', {button: 0, clientX: 150, clientY: 150})
+            .trigger('mousemove', {clientX: 220, clientY: 170})
+
+        multiboardPage.body
+            .type('{shift}', {release: true});
+
+        multiboardPage.canvas
+            .trigger('mousemove', {clientX: 300, clientY: 380})
+            .trigger('mouseup')
+
+        multiboardPage.canvas.matches('cypress/expectedimages/horizontal_line.png');
+    });
 });
