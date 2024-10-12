@@ -4,7 +4,7 @@
   "description": "A set of very simple utilities",
   "main": "index.js",
   "scripts": {
-    "start": "http-server src -p 8080",
+    "start": "http-server docs -p 8080",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
   },
