@@ -1,1376 +1,1430 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Multi-Whiteboard App</title>
-        <link rel="manifest" href="multiboard-manifest.json">
-        <meta name="theme-color" content="#ffffff">
-        <link rel="apple-touch-icon" href="icon-192x192.png">
-        <style>
-         body, html {
-             margin: 0;
-             padding: 0;
-             overflow: hidden;
-             font-family: Arial, sans-serif;
-         }
-         #canvas {
-             position: absolute;
-             top: 0;
-             left: 0;
-         }
-         .control-panel {
-             position: fixed;
-             bottom: 20px;
-             z-index: 1000;
-             background-color: rgba(255, 255, 255, 0.8);
-             padding: 15px;
-             border-radius: 10px;
-             display: flex;
-             align-items: center;
-             gap: 10px;
-         }
-         #drawing-controls {
-             right: 20px;
-         }
-         #navigation {
-             left: 20px;
-         }
-         #colorPicker {
-             width: 40px;
-             height: 40px;
-             border: none;
-             padding: 0;
-             border-radius: 50%;
-             overflow: hidden;
-         }
-         #brushSize {
-             width: 100px;
-         }
-         .round-button {
-             width: 40px;
-             height: 40px;
-             border: none;
-             border-radius: 50%;
-             cursor: pointer;
-             display: flex;
-             justify-content: center;
-             align-items: center;
-             padding: 0;
-             transition: all 0.3s ease;
-         }
-         #clearBtn {
-             background-color: #ff4444;
-         }
-         #clearBtn:hover {
-             background-color: #ff6666;
-         }
-         #newBoardBtn {
-             background-color: #44aa44;
-         }
-         #newBoardBtn:hover {
-             background-color: #66cc66;
-         }
-         #saveBtn {
-             background-color: #4444ff;
-         }
-         #saveBtn:hover {
-             background-color: #6666ff;
-         }
-         #undoBtn {
-             background-color: #ffaa44;
-         }
-         #undoBtn:hover {
-             background-color: #ffcc66;
-         }
-         .round-button svg {
-             width: 24px;
-             height: 24px;
-             transition: all 0.3s ease;
-         }
-         #boardInfo {
-             margin: 0 10px;
-         }
-         .round-button:disabled {
-             opacity: 0.5;
-             cursor: not-allowed;
-         }
-         #gridBtn {
-             background-color: #44aaff;
-         }
-         #gridBtn:hover {
-             background-color: #66ccff;
-         }
-         #gridBtn.active {
-             background-color: #2288dd;
-         }
-         .brush-size-container {
-             display: flex;
-             flex-direction: column;
-             align-items: center;
-         }
-         #brushSizeDisplay {
-             font-size: 12px;
-             margin-top: 5px;
-             color: #333;
-             width: 40px;
-             text-align: center;
-             border: 1px solid #ccc;
-             border-radius: 3px;
-             padding: 2px;
-         }
-         #overviewBtn {
-             background-color: #44aaff;
-         }
-         #overviewBtn:hover {
-             background-color: #66ccff;
-         }
-         #overviewBtn.active {
-             background-color: #2288dd;
-         }
-         #overviewContainer {
-             display: none;
-             position: fixed;
-             top: 0;
-             left: 0;
-             width: calc(100% - 40px);
-             height: 100%;
-             background-color: rgba(245, 245, 245, 0.5);
-             z-index: 2000;
-             overflow-y: auto;
-             padding: 20px;
-             opacity: 0;
-             transition: opacity 0.5s ease;
-             backdrop-filter: blur(5px); /* Blurs the content behind the element */
-             -webkit-backdrop-filter: blur(5px); /* For Safari support */
-         }
-         #overviewContainer.visible {
-             opacity: 1;
-         }
-         #overviewGrid {
-             display: grid;
-             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-             gap: 20px;
-             justify-content: center;
-             pointer-events: none;
-         }
-         .overviewItem {
-             display: flex;
-             flex-direction: column;
-             align-items: center;
-             cursor: pointer;
-             position: relative;
-             pointer-events: auto;
-         }
-         .overviewImage {
-             width: 200px;
-             height: 150px;
-             border: 1px solid #ccc;
-             object-fit: contain;
-             box-shadow: 0px 0.5px 2px 2px rgba(0, 0, 0, 0.05);
-             background-color: white;
-         }
-         .blankThumbnail {
-             display: flex;
-             justify-content: center;
-             align-items: center;
-             font-size: 14px;
-             color: #888;
-         }
-         .overviewName {
-             margin-top: 5px;
-             font-size: 14px;
-         }
-         .removeWhiteboardBtn {
-             position: absolute;
-             top: -8px;
-             right: 1.5ex;
-             width: 20px;
-             height: 20px;
-             background-color: rgba(64, 64, 64, 0.3); /* Dark gray with 70% opacity */
-             color: white;
-             border: none;
-             border-radius: 50%;
-             font-size: 12px;
-             line-height: 1;
-             cursor: pointer;
-             display: flex;
-             justify-content: center;
-             align-items: center;
-             z-index: 1;
-         }
-         .removeWhiteboardBtn:hover {
-             background-color: rgba(64, 64, 64, 1); /* Solid dark gray on hover */
-         }
-         #fullscreenBtn {
-             background-color: #8844ff;
-         }
-         #fullscreenBtn:hover {
-             background-color: #aa66ff;
-         }
-         /* MacOS-style Dialog CSS */
-         .dialog {
-             display: none;
-             position: fixed;
-             top: 50%;
-             left: 50%;
-             transform: translate(-50%, -50%);
-             background-color: #f5f5f7;
-             padding: 20px;
-             border-radius: 10px;
-             box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
-             z-index: 2000;
-             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-             min-width: 300px;
-             max-width: 400px;
-         }
-
-         .dialog h2 {
-             font-size: 18px;
-             font-weight: 600;
-             margin-top: 0;
-             margin-bottom: 10px;
-             color: #1d1d1f;
-         }
-
-         .dialog p {
-             font-size: 14px;
-             line-height: 1.4;
-             color: #1d1d1f;
-             margin-bottom: 20px;
-         }
-
-         .dialog-buttons {
-             display: flex;
-             justify-content: flex-end;
-             gap: 8px;
-         }
-
-         .dialog-button {
-             padding: 8px 16px;
-             border: none;
-             border-radius: 6px;
-             font-size: 14px;
-             font-weight: 500;
-             cursor: pointer;
-             transition: background-color 0.2s ease;
-         }
-
-         .dialog-button-primary {
-             background-color: #0071e3;
-             color: white;
-         }
-
-         .dialog-button-primary:hover {
-             background-color: #0077ED;
-         }
-
-         .dialog-button-secondary {
-             background-color: #e3e3e3;
-             color: #1d1d1f;
-         }
-
-         .dialog-button-secondary:hover {
-             background-color: #d9d9d9;
-         }
-
-         /* Add a subtle animation for dialog appearance */
-         @keyframes fadeIn {
-             from { opacity: 0; transform: translate(-50%, -48%); }
-             to { opacity: 1; transform: translate(-50%, -50%); }
-         }
-
-         .dialog {
-             animation: fadeIn 0.2s ease-out;
-         }
-         #fileInput {
-             display: none;
-         }
-         #fileSelectBtn {
-             background-color: #8844ff;
-         }
-         #fileSelectBtn:hover {
-             background-color: #aa66ff;
-         }
-
-
-         .tool-group {
-             display: flex;
-             margin-right: 10px; /* Add some space after the group */
-         }
-
-         .tool-group .round-button {
-             border-radius: 0;
-             margin: 0;
-             transition: all 0.3s ease;
-         }
-
-         .tool-group .round-button:first-child {
-             border-top-left-radius: 20px;
-             border-bottom-left-radius: 20px;
-         }
-
-         .tool-group .round-button:last-child {
-             border-top-right-radius: 20px;
-             border-bottom-right-radius: 20px;
-         }
-
-         /* Default state (inactive) */
-         #penBtn, #highlighterBtn, #eraserBtn {
-             background-color: #e0e0e0;
-             filter: grayscale(100%) brightness(1.2);
-             border: 1px solid #aaa;
-         }
-
-         #penBtn svg, #highlighterBtn svg, #eraserBtn svg {
-             stroke: #808080;
-         }
-
-         /* Hover state for inactive buttons */
-         #penBtn:hover, #highlighterBtn:hover, #eraserBtn:hover {
-             background-color: #d0d0d0;
-             filter: grayscale(50%) brightness(1.1);
-         }
-
-         /* Active states */
-         #penBtn.active {
-             background-color: #4CAF50;
-             filter: none;
-         }
-
-         #penBtn.active svg {
-             stroke: white;
-         }
-
-         #highlighterBtn.active {
-             background-color: #FFA500;
-             filter: none;
-         }
-
-         #highlighterBtn.active svg {
-             stroke: black;
-         }
-
-         #eraserBtn.active {
-             background-color: #ff44ff;
-             filter: none;
-         }
-
-         #eraserBtn.active svg {
-             stroke: white;
-         }
-
-         /* Hover state for active buttons */
-         #penBtn.active:hover {
-             background-color: #45a049;
-         }
-
-         #highlighterBtn.active:hover {
-             background-color: #FF8C00;
-         }
-
-         #eraserBtn.active:hover {
-             background-color: #ff66ff;
-         }
-        </style>
-    </head>
-    <body>
-        <canvas id="canvas"></canvas>
-        <div id="overviewContainer">
-            <div id="overviewGrid"></div>
-        </div>
-        <div id="drawing-controls" class="control-panel">
-            <button id="fileSelectBtn" class="round-button" title="Select Image File">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-            </button>
-            <input type="file" id="fileInput" accept="image/*">
-            <button id="gridBtn" class="round-button" title="Toggle Grid">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="3" y1="9" x2="21" y2="9"></line>
-                    <line x1="3" y1="15" x2="21" y2="15"></line>
-                    <line x1="9" y1="3" x2="9" y2="21"></line>
-                    <line x1="15" y1="3" x2="15" y2="21"></line>
-                </svg>
-            </button>
-            <input type="color" id="colorPicker" value="#000000">
-            <div class="brush-size-container">
-                <input type="range" id="brushSize" min="2.0" max="50" step="2" value="2">
-                <input type="text" id="brushSizeDisplay" value="2">
-            </div>
-            <div class="tool-group">
-                <button id="penBtn" class="round-button active" title="Pen">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-                        <path d="M2 2l7.586 7.586"></path>
-                        <circle cx="11" cy="11" r="2"></circle>
-                    </svg>
-                </button>
-                <button id="highlighterBtn" class="round-button" title="Highlighter">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 11l-6 6v3h9l3-3"></path>
-                        <path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path>
-                    </svg>
-                </button>
-                <button id="eraserBtn" class="round-button" title="Eraser">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 20H7L3 16C2 15 2 13 3 12L11 4C12 3 14 3 15 4L21 10C22 11 22 13 21 14L13 22"></path>
-                    </svg>
-                </button>
-            </div>
-            <button id="undoBtn" class="round-button" title="Undo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 7v6h6"></path>
-                    <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"></path>
-                </svg>
-            </button>
-            <button id="clearBtn" class="round-button" title="Clear canvas">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                </svg>
-            </button>
-            <button id="saveBtn" class="round-button" title="Save as PNG">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-            </button>
-        </div>
-        <div id="navigation" class="control-panel">
-            <button id="prevBtn" class="round-button" title="Previous whiteboard">
-                <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-            </button>
-            <span id="boardInfo">Whiteboard 1 / 1</span>
-            <button id="nextBtn" class="round-button" title="Next whiteboard">
-                <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-            </button>
-            <button id="overviewBtn" class="round-button" title="Whiteboard Overview">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="3" y1="9" x2="21" y2="9"></line>
-                    <line x1="9" y1="21" x2="9" y2="9"></line>
-                </svg>
-            </button>
-            <button id="fullscreenBtn" class="round-button" title="Toggle Fullscreen">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-                </svg>
-            </button>
-            <button id="newBoardBtn" class="round-button" title="New whiteboard">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-            </button>
-        </div>
-        <div id="errorDialog" class="dialog">
-            <h2>Error</h2>
-            <p id="errorMessage"></p>
-            <div class="dialog-buttons">
-                <button class="dialog-button dialog-button-primary" id="errorOkBtn">OK</button>
-            </div>
-        </div>
-        <div id="confirmDialog" class="dialog">
-            <h2>Confirm</h2>
-            <p>Are you sure you want to clear this whiteboard?</p>
-            <div class="dialog-buttons">
-                <button id="confirmNo" class="dialog-button dialog-button-secondary">No</button>
-                <button id="confirmYes" class="dialog-button dialog-button-primary">Yes</button>
-            </div>
-        </div>
-        <div id="removeWhiteboardDialog" class="dialog">
-            <h2>Confirm</h2>
-            <p id="removeWhiteboardMessage"></p>
-            <div class="dialog-buttons">
-                <button id="removeWhiteboardNo" class="dialog-button dialog-button-secondary">No</button>
-                <button id="removeWhiteboardYes" class="dialog-button dialog-button-primary">Yes</button>
-            </div>
-        </div>
-
-        <script>
-         // Constants
-         const GRID_COLUMNS = 5;
-         const GRID_ROWS = 3;
-         const GUTTER_PERCENTAGE = 5;
-
-         // DOM Elements
-         const canvas = document.getElementById('canvas');
-         const ctx = canvas.getContext('2d');
-         const colorPicker = document.getElementById('colorPicker');
-         const brushSize = document.getElementById('brushSize');
-         const eraserBtn = document.getElementById('eraserBtn');
-         const clearBtn = document.getElementById('clearBtn');
-         const saveBtn = document.getElementById('saveBtn');
-         const newBoardBtn = document.getElementById('newBoardBtn');
-         const prevBtn = document.getElementById('prevBtn');
-         const nextBtn = document.getElementById('nextBtn');
-         const boardInfo = document.getElementById('boardInfo');
-         const confirmDialog = document.getElementById('confirmDialog');
-         const confirmYes = document.getElementById('confirmYes');
-         const confirmNo = document.getElementById('confirmNo');
-         const highlighterBtn = document.getElementById('highlighterBtn');
-         const overviewBtn = document.getElementById('overviewBtn');
-         const overviewContainer = document.getElementById('overviewContainer');
-         const overviewGrid = document.getElementById('overviewGrid');
-         const fullscreenBtn = document.getElementById('fullscreenBtn');
-         const fileSelectBtn = document.getElementById('fileSelectBtn');
-         const fileInput = document.getElementById('fileInput');
-         const errorDialog = document.getElementById('errorDialog');
-         const errorMessage = document.getElementById('errorMessage');
-         const errorOkBtn = document.getElementById('errorOkBtn');
-         const brushSizeDisplay = document.getElementById('brushSizeDisplay');
-         const gridBtn = document.getElementById('gridBtn');
-         const gridElement = document.getElementById('grid');
-         const penBtn = document.getElementById('penBtn');
-         const undoBtn = document.getElementById('undoBtn');
-
-         // State variables
-         let isDrawing = false;
-         let isErasing = false;
-         let isPenActive = true;
-         let isHighlighting = false;
-         let isOverviewVisible = false;
-         let isTemporaryHighlighter = false;
-         let currentTool = 'pen';
-         let lastX = 0;
-         let lastY = 0;
-         let lastPressure = 1.0;
-         let drawingDirection = null;
-         let initialX = null;
-         let initialY = null;
-         let lastBrushSize = 4;
-         let isCtrlPressed = false;
-         let isGridVisible = false;
-         let isShiftPressed = false;
-         let shiftConstrainedDirection = null;
-         let shiftStartX = null;
-         let shiftStartY = null;
-         let whiteboards = [{ name: 'Whiteboard 1', data: null, history: [] }];
-         let currentBoardIndex = 0;
-         let saveTimeout;
-         let db;
-
-         // Enable image smoothing for anti-aliasing
-         ctx.imageSmoothingEnabled = true;
-         ctx.imageSmoothingQuality = 'high';
-
-         // Open IndexedDB
-         const dbPromise = indexedDB.open('WhiteboardDB', 1);
-
-         dbPromise.onupgradeneeded = function(event) {
-             db = event.target.result;
-             db.createObjectStore('whiteboards', { keyPath: 'id' });
-         };
-
-         dbPromise.onsuccess = function(event) {
-             db = event.target.result;
-             loadWhiteboardsFromIndexedDB();
-         };
-
-         dbPromise.onerror = function(event) {
-             console.error('IndexedDB error:', event.target.error);
-         };
-
-         function determineDrawingDirection(startX, startY, endX, endY) {
-             const dx = Math.abs(endX - startX);
-             const dy = Math.abs(endY - startY);
-             
-             if (dx > directionThreshold || dy > directionThreshold) {
-                 return dx > dy ? 'horizontal' : 'vertical';
-             }
-             return null;
-         }
-
-         function setActiveTool(tool) {
-             currentTool = tool;
-             isPenActive = tool === 'pen';
-             isErasing = tool === 'eraser';
-             isHighlighting = tool === 'highlighter';
-
-             // Update button states
-             penBtn.classList.toggle('active', isPenActive);
-             eraserBtn.classList.toggle('active', isErasing);
-             highlighterBtn.classList.toggle('active', isHighlighting);
-
-             // Update cursor
-             if (isErasing) {
-                 canvas.style.cursor = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'10\'/%3E%3Cline x1=\'8\' y1=\'12\' x2=\'16\' y2=\'12\'/%3E%3C/svg%3E") 12 12, auto';
-             } else if (isHighlighting) {
-                 canvas.style.cursor = 'url("data:image/svg+xml,...") 0 24, auto';
-             } else {
-                 canvas.style.cursor = 'default';
-             }
-         }
-
-         function togglePen() {
-             setActiveTool('pen');
-         }
-
-         function toggleHighlighter() {
-             setActiveTool('highlighter');
-         }
-
-         function toggleEraser() {
-             setActiveTool('eraser');
-         }
-
-         function debounce(func, wait) {
-             return function executedFunction(...args) {
-                 const later = () => {
-                     clearTimeout(saveTimeout);
-                     func(...args);
-                 };
-                 clearTimeout(saveTimeout);
-                 saveTimeout = setTimeout(later, wait);
-             };
-         }
-
-         // Function to save whiteboards to IndexedDB
-         function saveWhiteboardsToIndexedDB() {
-             if (!db) return;
-
-             const transaction = db.transaction(['whiteboards'], 'readwrite');
-             const store = transaction.objectStore('whiteboards');
-
-             // Clear existing data
-             store.clear();
-
-             // Save each whiteboard
-             whiteboards.forEach((board, index) => {
-                 store.put({ id: index, data: board });
-             });
-
-             transaction.oncomplete = function() {
-                 console.log('All whiteboards saved successfully');
-             };
-
-             transaction.onerror = function(event) {
-                 console.error('Error saving whiteboards:', event.target.error);
-             };
-         }
-
-         const debouncedSave = debounce(saveWhiteboardsToIndexedDB, 1000);
-
-         // Function to load whiteboards from IndexedDB
-         function loadWhiteboardsFromIndexedDB() {
-             if (!db) return;
-
-             const transaction = db.transaction(['whiteboards'], 'readonly');
-             const store = transaction.objectStore('whiteboards');
-             const request = store.getAll();
-
-             request.onsuccess = function(event) {
-                 const savedWhiteboards = event.target.result;
-                 if (savedWhiteboards.length > 0) {
-                     whiteboards = savedWhiteboards.map(item => item.data);
-                     currentBoardIndex = 0;
-                     loadCurrentBoard();
-                     updateBoardInfo();
-                 }
-             };
-
-             request.onerror = function(event) {
-                 console.error('Error loading whiteboards:', event.target.error);
-             };
-         }
-
-         function resizeCanvas() {
-             canvas.width = window.innerWidth;
-             canvas.height = window.innerHeight;
-             ctx.imageSmoothingEnabled = true;
-             ctx.imageSmoothingQuality = 'high';
-             loadCurrentBoard();
-         }
-
-         function startDrawing(e) {
-             isDrawing = true;
-             [lastX, lastY] = [e.clientX, e.clientY];
-             shiftStartX = lastX;
-             shiftStartY = lastY;
-             shiftConstrainedDirection = null;
-             if (whiteboards[currentBoardIndex].history.length >= 5) {
-                 whiteboards[currentBoardIndex].history.shift(); // Remove the oldest state
-             }
-             whiteboards[currentBoardIndex].history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-
-             // Check if Ctrl is pressed and enable highlighting
-             if (isCtrlPressed && currentTool !== 'highlighter') {
-                 isTemporaryHighlighter = true;
-                 setActiveTool('highlighter');
-             }
-         }
-
-         function undo() {
-             if (whiteboards[currentBoardIndex].history.length > 0) {
-                 const previousState = whiteboards[currentBoardIndex].history.pop();
-                 ctx.putImageData(previousState, 0, 0);
-                 saveCurrentBoard();
-             }
-         }
-
-         function drawLine(ctx, lastX, lastY, newX, newY, startWidth, endWidth) {
-             const steps = 8;
-             
-             for (let i = 0; i < steps; i++) {
-                 const t = i / (steps - 1);
-                 const x = lastX + (newX - lastX) * t;
-                 const y = lastY + (newY - lastY) * t;
-                 const width = startWidth + (endWidth - startWidth) * t;
-
-                 ctx.beginPath();
-                 ctx.moveTo(lastX, lastY);
-                 
-                 for (let i = 0; i < steps; i++) {
-                     const t = (i + 1) / steps;
-                     const x = lastX + (newX - lastX) * t;
-                     const y = lastY + (newY - lastY) * t;
-                     const width = startWidth + (endWidth - startWidth) * t;
-                     
-                     ctx.lineTo(x, y);
-                     ctx.lineWidth = width;
-                     ctx.stroke();
-                     ctx.beginPath();
-                     ctx.moveTo(x, y);
-                 }                 
-             }
-         }
-
-         function draw(e) {
-             if (!isDrawing) return;
-
-             const newBrushSize = (brushSize.value < 4) ? brushSize.value : brushSize.value * (lastPressure < 0.10 ? 0.10 : lastPressure);
-
-             ctx.lineWidth = newBrushSize;
-             ctx.lineCap = 'round';
-             ctx.lineJoin = 'round';
-
-             switch (currentTool) {
-                 case 'eraser':
-                     ctx.globalCompositeOperation = 'destination-out';
-                     ctx.lineWidth = 20;
-                     break;
-                 case 'highlighter':
-                     ctx.globalCompositeOperation = 'multiply';
-                     ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
-                     ctx.lineWidth = 50;
-                     break;
-                 case 'pen':
-                 default:
-                     ctx.globalCompositeOperation = 'source-over';
-                     ctx.strokeStyle = colorPicker.value;
-                     break;
-             }
-
-             let newX = e.clientX;
-             let newY = e.clientY;
-
-             if (isShiftPressed) {
-                 if (!shiftConstrainedDirection) {
-                     // Determine the initial direction
-                     const dx = Math.abs(newX - shiftStartX);
-                     const dy = Math.abs(newY - shiftStartY);
-                     if (dx * dy > 25) {
-                         shiftConstrainedDirection = dx > dy ? 'horizontal' : 'vertical';
-                     }
-                 }
-
-                 if (shiftConstrainedDirection === 'horizontal') {
-                     newY = shiftStartY; // Keep Y constant
-                 } else {
-                     newX = shiftStartX; // Keep X constant
-                 }
-             } else {
-                 shiftStartX = newX;
-                 shiftStartY = newY;
-             }
-
-             ctx.beginPath();
-             if (brushSize.value > 4 && newBrushSize / lastBrushSize < 0.7) {
-                 drawLine(ctx, lastX, lastY, newX, newY, lastBrushSize, newBrushSize);
-             } else {
-                 ctx.moveTo(lastX, lastY);
-                 ctx.lineTo(newX, newY);
-             }
-             ctx.stroke();
-
-             [lastX, lastY] = [newX, newY];
-             saveCurrentBoard();
-             lastBrushSize = newBrushSize;
-         }
-
-         function stopDrawing() {
-             if (isDrawing) {
-                 isDrawing = false;
-                 shiftConstrainedDirection = null;
-                 shiftStartX = null;
-                 shiftStartY = null;
-                 saveCurrentBoard();
-
-                 // Reset to pen if it was temporarily set to highlighter
-                 if (isTemporaryHighlighter) {
-                     isTemporaryHighlighter = false;
-                     setActiveTool('pen');
-                 }
-             }
-             isShiftPressed = false;
-             shiftConstrainedDirection = null;
-         }
-
-         function showErrorDialog(message) {
-             errorMessage.textContent = message;
-             errorDialog.style.display = 'block';
-         }
-
-         function showConfirmDialog() {
-             document.getElementById('confirmDialog').style.display = 'block';
-         }
-
-         function hideConfirmDialog() {
-             document.getElementById('confirmDialog').style.display = 'none';
-         }
-
-         function clearCanvas() {
-             ctx.clearRect(0, 0, canvas.width, canvas.height);
-             whiteboards[currentBoardIndex].data = null;
-             whiteboards[currentBoardIndex].history = [];
-             saveCurrentBoard();
-         }
-
-         function createNewBoard() {
-             saveCurrentBoard();
-             const newBoardIndex = whiteboards.length;
-             whiteboards.push({ name: `Whiteboard ${newBoardIndex + 1}`, data: null, history: [] });
-             currentBoardIndex = newBoardIndex;
-             clearCanvas();
-             updateBoardInfo();
-             saveWhiteboardsToIndexedDB();
-             if (isOverviewVisible) {
-                 updateOverviewGrid();
-             }
-         }
-
-         function saveCurrentBoard() {
-             whiteboards[currentBoardIndex].data = canvas.toDataURL();
-             debouncedSave();
-             if (isOverviewVisible) {
-                 updateOverviewGrid();
-             }
-         }
-
-         function loadBoard(index) {
-             if (index !== currentBoardIndex) {
-                 saveCurrentBoard();
-                 currentBoardIndex = index;
-                 loadCurrentBoard();
-                 updateBoardInfo();
-                 // Clear the undo history when switching boards
-                 whiteboards[currentBoardIndex].history = [];
-             }
-         }
-
-         function loadCurrentBoard() {
-             ctx.clearRect(0, 0, canvas.width, canvas.height);
-             ctx.globalCompositeOperation = 'source-over';  // Reset to default
-             if (whiteboards[currentBoardIndex].data) {
-                 const img = new Image();
-                 img.onload = function() {
-                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                 };
-                 img.src = whiteboards[currentBoardIndex].data;
-             }
-             // Reset eraser state
-             isErasing = false;
-             eraserBtn.classList.remove('active');
-             canvas.style.cursor = 'default';
-             // Clear the undo history
-             whiteboards[currentBoardIndex].history = [];
-         }
-
-         function updateBoardInfo() {
-             boardInfo.textContent = `${whiteboards[currentBoardIndex].name} / ${whiteboards.length}`;
-             prevBtn.disabled = currentBoardIndex === 0;
-             nextBtn.disabled = currentBoardIndex === whiteboards.length - 1;
-         }
-
-         function navigateBoards(direction) {
-             const newIndex = currentBoardIndex + direction;
-             if (newIndex >= 0 && newIndex < whiteboards.length) {
-                 loadBoard(newIndex);
-             }
-         }
-
-         function saveAsPNG() {
-             const link = document.createElement('a');
-             link.download = `${whiteboards[currentBoardIndex].name}.png`;
-             link.href = canvas.toDataURL('image/png');
-             link.click();
-         }
-
-         function handleKeyboardShortcuts(e) {
-             // Check if CMD (Mac) or CTRL (Windows/Linux) is pressed along with 'Z'
-             if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
-                 e.preventDefault(); // Prevent the browser's default undo behavior
-                 undo();
-             }
-         }
-
-         function handlePointerEvent(event) {
-             if (event.pointerType === 'pen') {
-                 lastPressure = event.pressure;
-                 if (event.button === 5) {
-                     setActiveTool('eraser');
-                 } else if (event.button === 0 && currentTool === 'eraser') {
-                     setActiveTool('pen');
-                 }
-             }
-         }
-
-         function drawGrid() {
-             const canvas = document.createElement('canvas');
-             canvas.width = window.innerWidth;
-             canvas.height = window.innerHeight;
-             const ctx = canvas.getContext('2d');
-
-             const cellWidth = canvas.width / GRID_COLUMNS;
-             const cellHeight = canvas.height / GRID_ROWS;
-             const gutterSize = Math.min(cellWidth, cellHeight) * (GUTTER_PERCENTAGE / 100);
-
-             ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
-             ctx.lineWidth = 1;
-
-             // Draw vertical lines
-             for (let i = 1; i < GRID_COLUMNS; i++) {
-                 const x = i * cellWidth;
-                 ctx.beginPath();
-                 ctx.moveTo(x - gutterSize / 2, 0);
-                 ctx.lineTo(x - gutterSize / 2, canvas.height);
-                 ctx.stroke();
-
-                 ctx.beginPath();
-                 ctx.moveTo(x + cellWidth / 2, 0);
-                 ctx.lineTo(x + cellWidth / 2, canvas.height);
-                 ctx.stroke();
-
-                 ctx.beginPath();
-                 ctx.moveTo(x + gutterSize / 2, 0);
-                 ctx.lineTo(x + gutterSize / 2, canvas.height);
-                 ctx.stroke();
-             }
-
-             // Draw horizontal lines
-             for (let i = 1; i < GRID_ROWS; i++) {
-                 const y = i * cellHeight;
-                 ctx.beginPath();
-                 ctx.moveTo(0, y - gutterSize / 2);
-                 ctx.lineTo(canvas.width, y - gutterSize / 2);
-                 ctx.stroke();
-
-                 ctx.beginPath();
-                 ctx.moveTo(0, y + cellHeight / 2);
-                 ctx.lineTo(canvas.width, y + cellHeight / 2);
-                 ctx.stroke();
-
-                 ctx.beginPath();
-                 ctx.moveTo(0, y + gutterSize / 2);
-                 ctx.lineTo(canvas.width, y + gutterSize / 2);
-                 ctx.stroke();
-             }
-
-             return canvas;
-         }
-
-         function updateGrid() {
-             const existingGrid = document.getElementById('grid');
-             if (existingGrid) {
-                 existingGrid.remove();
-             }
-
-             const gridCanvas = drawGrid();
-             gridCanvas.id = 'grid';
-             gridCanvas.style.position = 'absolute';
-             gridCanvas.style.top = '0';
-             gridCanvas.style.left = '0';
-             gridCanvas.style.pointerEvents = 'none';
-             gridCanvas.style.zIndex = '-1';
-             document.body.appendChild(gridCanvas);
-         }
-
-         function toggleGrid() {
-             isGridVisible = !isGridVisible;
-             const grid = document.getElementById('grid');
-             if (grid) {
-                 grid.style.display = isGridVisible ? 'block' : 'none';
-             } else if (isGridVisible) {
-                 updateGrid();
-             }
-             gridBtn.classList.toggle('active', isGridVisible);
-         }
-
-         function updateBrushSizeDisplay() {
-             brushSizeDisplay.value = brushSize.value;
-             lastBrushSize = brushSize.value
-         }
-
-         function updateBrushSizeSlider() {
-             let value = parseFloat(brushSizeDisplay.value);
-             if (isNaN(value) || value < 2) {
-                 value = 2;
-             } else if (value > 50) {
-                 value = 50;
-             }
-             brushSize.value = value;
-             brushSizeDisplay.value = value;
-         }
-
-         function toggleOverview() {
-             isOverviewVisible = !isOverviewVisible;
-             overviewContainer.style.display = 'block';
-             setTimeout(() => {
-                 overviewContainer.classList.toggle('visible', isOverviewVisible);
-             }, 10);
-             overviewBtn.classList.toggle('active', isOverviewVisible);
-             if (isOverviewVisible) {
-                 updateOverviewGrid();
-                 // Add click event listener to the overviewContainer
-                 overviewContainer.addEventListener('click', handleOverviewClick);
-             } else {
-                 // Remove click event listener when hiding the overview
-                 overviewContainer.removeEventListener('click', handleOverviewClick);
-                 setTimeout(() => {
-                     overviewContainer.style.display = 'none';
-                 }, 500);
-             }
-         }
-
-         function updateOverviewGrid() {
-             overviewGrid.innerHTML = '';
-             whiteboards.forEach((board, index) => {
-                 const item = document.createElement('div');
-                 item.className = 'overviewItem';
-                 
-                 let thumbnailContent;
-                 if (board.data) {
-                     thumbnailContent = `<img src="${board.data}" alt="${board.name}" class="overviewImage">`;
-                 } else {
-                     thumbnailContent = `<div class="overviewImage blankThumbnail">Blank Whiteboard</div>`;
-                 }
-                 
-                 item.innerHTML = `
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Whiteboard App</title>
+    <link rel="manifest" href="multiboard-manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .control-panel {
+            position: fixed;
+            bottom: 20px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #drawing-controls {
+            right: 20px;
+        }
+
+        #navigation {
+            left: 20px;
+        }
+
+        #colorPicker {
+            width: 40px;
+            height: 40px;
+            border: none;
+            padding: 0;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        #brushSize {
+            width: 100px;
+        }
+
+        .round-button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            transition: all 0.3s ease;
+        }
+
+        #clearBtn {
+            background-color: #ff4444;
+        }
+
+        #clearBtn:hover {
+            background-color: #ff6666;
+        }
+
+        #newBoardBtn {
+            background-color: #44aa44;
+        }
+
+        #newBoardBtn:hover {
+            background-color: #66cc66;
+        }
+
+        #saveBtn {
+            background-color: #4444ff;
+        }
+
+        #saveBtn:hover {
+            background-color: #6666ff;
+        }
+
+        #undoBtn {
+            background-color: #ffaa44;
+        }
+
+        #undoBtn:hover {
+            background-color: #ffcc66;
+        }
+
+        .round-button svg {
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s ease;
+        }
+
+        #boardInfo {
+            margin: 0 10px;
+        }
+
+        .round-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #gridBtn {
+            background-color: #44aaff;
+        }
+
+        #gridBtn:hover {
+            background-color: #66ccff;
+        }
+
+        #gridBtn.active {
+            background-color: #2288dd;
+        }
+
+        .brush-size-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #brushSizeDisplay {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #333;
+            width: 40px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 2px;
+        }
+
+        #overviewBtn {
+            background-color: #44aaff;
+        }
+
+        #overviewBtn:hover {
+            background-color: #66ccff;
+        }
+
+        #overviewBtn.active {
+            background-color: #2288dd;
+        }
+
+        #overviewContainer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: calc(100% - 40px);
+            height: 100%;
+            background-color: rgba(245, 245, 245, 0.5);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(5px); /* Blurs the content behind the element */
+            -webkit-backdrop-filter: blur(5px); /* For Safari support */
+        }
+
+        #overviewContainer.visible {
+            opacity: 1;
+        }
+
+        #overviewGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .overviewItem {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .overviewImage {
+            width: 200px;
+            height: 150px;
+            border: 1px solid #ccc;
+            object-fit: contain;
+            box-shadow: 0px 0.5px 2px 2px rgba(0, 0, 0, 0.05);
+            background-color: white;
+        }
+
+        .blankThumbnail {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .overviewName {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .removeWhiteboardBtn {
+            position: absolute;
+            top: -8px;
+            right: 1.5ex;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(64, 64, 64, 0.3); /* Dark gray with 70% opacity */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .removeWhiteboardBtn:hover {
+            background-color: rgba(64, 64, 64, 1); /* Solid dark gray on hover */
+        }
+
+        #fullscreenBtn {
+            background-color: #8844ff;
+        }
+
+        #fullscreenBtn:hover {
+            background-color: #aa66ff;
+        }
+
+        /* Dark-mode Dialog CSS */
+
+        .dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #1C1C1C;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 300px;
+            z-index: 2000;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        .dialog h1 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .dialog h2 {
+            font-size: 18px;
+            color: #AAAAAA;
+            margin-bottom: 16px;
+        }
+
+        .dialog p {
+            margin-bottom: 20px;
+        }
+
+        .dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .dialog-button {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .dialog-button-secondary {
+            background-color: transparent;
+            color: white;
+            border: 1px solid #444444;
+        }
+
+        .dialog-button-primary {
+            background-color: #E6D6FF;
+            color: black;
+        }
+
+        /* Add a subtle animation for dialog appearance */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -48%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .dialog {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        #fileSelectBtn {
+            background-color: #8844ff;
+        }
+
+        #fileSelectBtn:hover {
+            background-color: #aa66ff;
+        }
+
+
+        .tool-group {
+            display: flex;
+            margin-right: 10px; /* Add some space after the group */
+        }
+
+        .tool-group .round-button {
+            border-radius: 0;
+            margin: 0;
+            transition: all 0.3s ease;
+        }
+
+        .tool-group .round-button:first-child {
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+        }
+
+        .tool-group .round-button:last-child {
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        /* Default state (inactive) */
+        #penBtn, #highlighterBtn, #eraserBtn {
+            background-color: #e0e0e0;
+            filter: grayscale(100%) brightness(1.2);
+            border: 1px solid #aaa;
+        }
+
+        #penBtn svg, #highlighterBtn svg, #eraserBtn svg {
+            stroke: #808080;
+        }
+
+        /* Hover state for inactive buttons */
+        #penBtn:hover, #highlighterBtn:hover, #eraserBtn:hover {
+            background-color: #d0d0d0;
+            filter: grayscale(50%) brightness(1.1);
+        }
+
+        /* Active states */
+        #penBtn.active {
+            background-color: #4CAF50;
+            filter: none;
+        }
+
+        #penBtn.active svg {
+            stroke: white;
+        }
+
+        #highlighterBtn.active {
+            background-color: #FFA500;
+            filter: none;
+        }
+
+        #highlighterBtn.active svg {
+            stroke: black;
+        }
+
+        #eraserBtn.active {
+            background-color: #ff44ff;
+            filter: none;
+        }
+
+        #eraserBtn.active svg {
+            stroke: white;
+        }
+
+        /* Hover state for active buttons */
+        #penBtn.active:hover {
+            background-color: #45a049;
+        }
+
+        #highlighterBtn.active:hover {
+            background-color: #FF8C00;
+        }
+
+        #eraserBtn.active:hover {
+            background-color: #ff66ff;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div id="overviewContainer">
+    <div id="overviewGrid"></div>
+</div>
+<div id="drawing-controls" class="control-panel">
+    <button id="fileSelectBtn" class="round-button" title="Select Image File">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+    </button>
+    <input type="file" id="fileInput" accept="image/*">
+    <button id="gridBtn" class="round-button" title="Toggle Grid">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="3" y1="15" x2="21" y2="15"></line>
+            <line x1="9" y1="3" x2="9" y2="21"></line>
+            <line x1="15" y1="3" x2="15" y2="21"></line>
+        </svg>
+    </button>
+    <input type="color" id="colorPicker" value="#000000">
+    <div class="brush-size-container">
+        <input type="range" id="brushSize" min="2.0" max="50" step="2" value="2">
+        <input type="text" id="brushSizeDisplay" value="2">
+    </div>
+    <div class="tool-group">
+        <button id="penBtn" class="round-button active" title="Pen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                <path d="M2 2l7.586 7.586"></path>
+                <circle cx="11" cy="11" r="2"></circle>
+            </svg>
+        </button>
+        <button id="highlighterBtn" class="round-button" title="Highlighter">
+            <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="M9 11l-6 6v3h9l3-3"></path>
+                <path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path>
+            </svg>
+        </button>
+        <button id="eraserBtn" class="round-button" title="Eraser">
+            <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="M20 20H7L3 16C2 15 2 13 3 12L11 4C12 3 14 3 15 4L21 10C22 11 22 13 21 14L13 22"></path>
+            </svg>
+        </button>
+    </div>
+    <button id="undoBtn" class="round-button" title="Undo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <path d="M3 7v6h6"></path>
+            <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"></path>
+        </svg>
+    </button>
+    <button id="clearBtn" class="round-button" title="Clear canvas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+        </svg>
+    </button>
+    <button id="saveBtn" class="round-button" title="Save as PNG">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+    </button>
+</div>
+<div id="navigation" class="control-panel">
+    <button id="prevBtn" class="round-button" title="Previous whiteboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+    </button>
+    <span id="boardInfo">Whiteboard 1 / 1</span>
+    <button id="nextBtn" class="round-button" title="Next whiteboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+    </button>
+    <button id="overviewBtn" class="round-button" title="Whiteboard Overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="9" y1="21" x2="9" y2="9"></line>
+        </svg>
+    </button>
+    <button id="fullscreenBtn" class="round-button" title="Toggle Fullscreen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+        </svg>
+    </button>
+    <button id="newBoardBtn" class="round-button" title="New whiteboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </button>
+</div>
+<div id="errorDialog" class="dialog">
+    <h1>Error</h1>
+    <p id="errorMessage"></p>
+    <div class="dialog-buttons">
+        <button class="dialog-button dialog-button-primary" id="errorOkBtn">OK</button>
+    </div>
+</div>
+<div id="confirmDialog" class="dialog">
+    <h1>Confirm</h1>
+    <p>Are you sure you want to clear this whiteboard?</p>
+    <div class="dialog-buttons">
+        <button id="confirmNo" class="dialog-button dialog-button-secondary">No</button>
+        <button id="confirmYes" class="dialog-button dialog-button-primary">Yes</button>
+    </div>
+</div>
+<div id="removeWhiteboardDialog" class="dialog">
+    <h1>Confirm</h1>
+    <p id="removeWhiteboardMessage"></p>
+    <div class="dialog-buttons">
+        <button id="removeWhiteboardNo" class="dialog-button dialog-button-secondary">No</button>
+        <button id="removeWhiteboardYes" class="dialog-button dialog-button-primary">Yes</button>
+    </div>
+</div>
+
+<script>
+    // Constants
+    const GRID_COLUMNS = 5;
+    const GRID_ROWS = 3;
+    const GUTTER_PERCENTAGE = 5;
+
+    // DOM Elements
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('colorPicker');
+    const brushSize = document.getElementById('brushSize');
+    const eraserBtn = document.getElementById('eraserBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const newBoardBtn = document.getElementById('newBoardBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const boardInfo = document.getElementById('boardInfo');
+    const confirmDialog = document.getElementById('confirmDialog');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+    const highlighterBtn = document.getElementById('highlighterBtn');
+    const overviewBtn = document.getElementById('overviewBtn');
+    const overviewContainer = document.getElementById('overviewContainer');
+    const overviewGrid = document.getElementById('overviewGrid');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fileSelectBtn = document.getElementById('fileSelectBtn');
+    const fileInput = document.getElementById('fileInput');
+    const errorDialog = document.getElementById('errorDialog');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorOkBtn = document.getElementById('errorOkBtn');
+    const brushSizeDisplay = document.getElementById('brushSizeDisplay');
+    const gridBtn = document.getElementById('gridBtn');
+    const gridElement = document.getElementById('grid');
+    const penBtn = document.getElementById('penBtn');
+    const undoBtn = document.getElementById('undoBtn');
+
+    // State variables
+    let isDrawing = false;
+    let isErasing = false;
+    let isPenActive = true;
+    let isHighlighting = false;
+    let isOverviewVisible = false;
+    let isTemporaryHighlighter = false;
+    let currentTool = 'pen';
+    let lastX = 0;
+    let lastY = 0;
+    let lastPressure = 1.0;
+    let drawingDirection = null;
+    let initialX = null;
+    let initialY = null;
+    let lastBrushSize = 4;
+    let isCtrlPressed = false;
+    let isGridVisible = false;
+    let isShiftPressed = false;
+    let shiftConstrainedDirection = null;
+    let shiftStartX = null;
+    let shiftStartY = null;
+    let whiteboards = [{name: 'Whiteboard 1', data: null, history: []}];
+    let currentBoardIndex = 0;
+    let saveTimeout;
+    let db;
+
+    // Enable image smoothing for anti-aliasing
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // Open IndexedDB
+    const dbPromise = indexedDB.open('WhiteboardDB', 1);
+
+    dbPromise.onupgradeneeded = function (event) {
+        db = event.target.result;
+        db.createObjectStore('whiteboards', {keyPath: 'id'});
+    };
+
+    dbPromise.onsuccess = function (event) {
+        db = event.target.result;
+        loadWhiteboardsFromIndexedDB();
+    };
+
+    dbPromise.onerror = function (event) {
+        console.error('IndexedDB error:', event.target.error);
+    };
+
+    function determineDrawingDirection(startX, startY, endX, endY) {
+        const dx = Math.abs(endX - startX);
+        const dy = Math.abs(endY - startY);
+
+        if (dx > directionThreshold || dy > directionThreshold) {
+            return dx > dy ? 'horizontal' : 'vertical';
+        }
+        return null;
+    }
+
+    function setActiveTool(tool) {
+        currentTool = tool;
+        isPenActive = tool === 'pen';
+        isErasing = tool === 'eraser';
+        isHighlighting = tool === 'highlighter';
+
+        // Update button states
+        penBtn.classList.toggle('active', isPenActive);
+        eraserBtn.classList.toggle('active', isErasing);
+        highlighterBtn.classList.toggle('active', isHighlighting);
+
+        // Update cursor
+        if (isErasing) {
+            canvas.style.cursor = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'10\'/%3E%3Cline x1=\'8\' y1=\'12\' x2=\'16\' y2=\'12\'/%3E%3C/svg%3E") 12 12, auto';
+        } else if (isHighlighting) {
+            canvas.style.cursor = 'url("data:image/svg+xml,...") 0 24, auto';
+        } else {
+            canvas.style.cursor = 'default';
+        }
+    }
+
+    function togglePen() {
+        setActiveTool('pen');
+    }
+
+    function toggleHighlighter() {
+        setActiveTool('highlighter');
+    }
+
+    function toggleEraser() {
+        setActiveTool('eraser');
+    }
+
+    function debounce(func, wait) {
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(saveTimeout);
+                func(...args);
+            };
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(later, wait);
+        };
+    }
+
+    // Function to save whiteboards to IndexedDB
+    function saveWhiteboardsToIndexedDB() {
+        if (!db) return;
+
+        const transaction = db.transaction(['whiteboards'], 'readwrite');
+        const store = transaction.objectStore('whiteboards');
+
+        // Clear existing data
+        store.clear();
+
+        // Save each whiteboard
+        whiteboards.forEach((board, index) => {
+            store.put({id: index, data: board});
+        });
+
+        transaction.oncomplete = function () {
+            console.log('All whiteboards saved successfully');
+        };
+
+        transaction.onerror = function (event) {
+            console.error('Error saving whiteboards:', event.target.error);
+        };
+    }
+
+    const debouncedSave = debounce(saveWhiteboardsToIndexedDB, 1000);
+
+    // Function to load whiteboards from IndexedDB
+    function loadWhiteboardsFromIndexedDB() {
+        if (!db) return;
+
+        const transaction = db.transaction(['whiteboards'], 'readonly');
+        const store = transaction.objectStore('whiteboards');
+        const request = store.getAll();
+
+        request.onsuccess = function (event) {
+            const savedWhiteboards = event.target.result;
+            if (savedWhiteboards.length > 0) {
+                whiteboards = savedWhiteboards.map(item => item.data);
+                currentBoardIndex = 0;
+                loadCurrentBoard();
+                updateBoardInfo();
+            }
+        };
+
+        request.onerror = function (event) {
+            console.error('Error loading whiteboards:', event.target.error);
+        };
+    }
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        loadCurrentBoard();
+    }
+
+    function startDrawing(e) {
+        isDrawing = true;
+        [lastX, lastY] = [e.clientX, e.clientY];
+        shiftStartX = lastX;
+        shiftStartY = lastY;
+        shiftConstrainedDirection = null;
+        if (whiteboards[currentBoardIndex].history.length >= 5) {
+            whiteboards[currentBoardIndex].history.shift(); // Remove the oldest state
+        }
+        whiteboards[currentBoardIndex].history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+
+        // Check if Ctrl is pressed and enable highlighting
+        if (isCtrlPressed && currentTool !== 'highlighter') {
+            isTemporaryHighlighter = true;
+            setActiveTool('highlighter');
+        }
+    }
+
+    function undo() {
+        if (whiteboards[currentBoardIndex].history.length > 0) {
+            const previousState = whiteboards[currentBoardIndex].history.pop();
+            ctx.putImageData(previousState, 0, 0);
+            saveCurrentBoard();
+        }
+    }
+
+    function drawLine(ctx, lastX, lastY, newX, newY, startWidth, endWidth) {
+        const steps = 8;
+
+        for (let i = 0; i < steps; i++) {
+            const t = i / (steps - 1);
+            const x = lastX + (newX - lastX) * t;
+            const y = lastY + (newY - lastY) * t;
+            const width = startWidth + (endWidth - startWidth) * t;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+
+            for (let i = 0; i < steps; i++) {
+                const t = (i + 1) / steps;
+                const x = lastX + (newX - lastX) * t;
+                const y = lastY + (newY - lastY) * t;
+                const width = startWidth + (endWidth - startWidth) * t;
+
+                ctx.lineTo(x, y);
+                ctx.lineWidth = width;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            }
+        }
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+
+        const newBrushSize = (brushSize.value < 4) ? brushSize.value : brushSize.value * (lastPressure < 0.10 ? 0.10 : lastPressure);
+
+        ctx.lineWidth = newBrushSize;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        switch (currentTool) {
+            case 'eraser':
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.lineWidth = 20;
+                break;
+            case 'highlighter':
+                ctx.globalCompositeOperation = 'multiply';
+                ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
+                ctx.lineWidth = 50;
+                break;
+            case 'pen':
+            default:
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = colorPicker.value;
+                break;
+        }
+
+        let newX = e.clientX;
+        let newY = e.clientY;
+
+        if (isShiftPressed) {
+            if (!shiftConstrainedDirection) {
+                // Determine the initial direction
+                const dx = Math.abs(newX - shiftStartX);
+                const dy = Math.abs(newY - shiftStartY);
+                if (dx * dy > 25) {
+                    shiftConstrainedDirection = dx > dy ? 'horizontal' : 'vertical';
+                }
+            }
+
+            if (shiftConstrainedDirection === 'horizontal') {
+                newY = shiftStartY; // Keep Y constant
+            } else {
+                newX = shiftStartX; // Keep X constant
+            }
+        } else {
+            shiftStartX = newX;
+            shiftStartY = newY;
+        }
+
+        ctx.beginPath();
+        if (brushSize.value > 4 && newBrushSize / lastBrushSize < 0.7) {
+            drawLine(ctx, lastX, lastY, newX, newY, lastBrushSize, newBrushSize);
+        } else {
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(newX, newY);
+        }
+        ctx.stroke();
+
+        [lastX, lastY] = [newX, newY];
+        saveCurrentBoard();
+        lastBrushSize = newBrushSize;
+    }
+
+    function stopDrawing() {
+        if (isDrawing) {
+            isDrawing = false;
+            shiftConstrainedDirection = null;
+            shiftStartX = null;
+            shiftStartY = null;
+            saveCurrentBoard();
+
+            // Reset to pen if it was temporarily set to highlighter
+            if (isTemporaryHighlighter) {
+                isTemporaryHighlighter = false;
+                setActiveTool('pen');
+            }
+        }
+        isShiftPressed = false;
+        shiftConstrainedDirection = null;
+    }
+
+    function showErrorDialog(message) {
+        errorMessage.textContent = message;
+        errorDialog.style.display = 'block';
+    }
+
+    function showConfirmDialog() {
+        document.getElementById('confirmDialog').style.display = 'block';
+    }
+
+    function hideConfirmDialog() {
+        document.getElementById('confirmDialog').style.display = 'none';
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        whiteboards[currentBoardIndex].data = null;
+        whiteboards[currentBoardIndex].history = [];
+        saveCurrentBoard();
+    }
+
+    function createNewBoard() {
+        saveCurrentBoard();
+        const newBoardIndex = whiteboards.length;
+        whiteboards.push({name: `Whiteboard ${newBoardIndex + 1}`, data: null, history: []});
+        currentBoardIndex = newBoardIndex;
+        clearCanvas();
+        updateBoardInfo();
+        saveWhiteboardsToIndexedDB();
+        if (isOverviewVisible) {
+            updateOverviewGrid();
+        }
+    }
+
+    function saveCurrentBoard() {
+        whiteboards[currentBoardIndex].data = canvas.toDataURL();
+        debouncedSave();
+        if (isOverviewVisible) {
+            updateOverviewGrid();
+        }
+    }
+
+    function loadBoard(index) {
+        if (index !== currentBoardIndex) {
+            saveCurrentBoard();
+            currentBoardIndex = index;
+            loadCurrentBoard();
+            updateBoardInfo();
+            // Clear the undo history when switching boards
+            whiteboards[currentBoardIndex].history = [];
+        }
+    }
+
+    function loadCurrentBoard() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = 'source-over';  // Reset to default
+        if (whiteboards[currentBoardIndex].data) {
+            const img = new Image();
+            img.onload = function () {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = whiteboards[currentBoardIndex].data;
+        }
+        // Reset eraser state
+        isErasing = false;
+        eraserBtn.classList.remove('active');
+        canvas.style.cursor = 'default';
+        // Clear the undo history
+        whiteboards[currentBoardIndex].history = [];
+    }
+
+    function updateBoardInfo() {
+        boardInfo.textContent = `${whiteboards[currentBoardIndex].name} / ${whiteboards.length}`;
+        prevBtn.disabled = currentBoardIndex === 0;
+        nextBtn.disabled = currentBoardIndex === whiteboards.length - 1;
+    }
+
+    function navigateBoards(direction) {
+        const newIndex = currentBoardIndex + direction;
+        if (newIndex >= 0 && newIndex < whiteboards.length) {
+            loadBoard(newIndex);
+        }
+    }
+
+    function saveAsPNG() {
+        const link = document.createElement('a');
+        link.download = `${whiteboards[currentBoardIndex].name}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    function handleKeyboardShortcuts(e) {
+        // Check if CMD (Mac) or CTRL (Windows/Linux) is pressed along with 'Z'
+        if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+            e.preventDefault(); // Prevent the browser's default undo behavior
+            undo();
+        }
+    }
+
+    function handlePointerEvent(event) {
+        if (event.pointerType === 'pen') {
+            lastPressure = event.pressure;
+            if (event.button === 5) {
+                setActiveTool('eraser');
+            } else if (event.button === 0 && currentTool === 'eraser') {
+                setActiveTool('pen');
+            }
+        }
+    }
+
+    function drawGrid() {
+        const canvas = document.createElement('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const ctx = canvas.getContext('2d');
+
+        const cellWidth = canvas.width / GRID_COLUMNS;
+        const cellHeight = canvas.height / GRID_ROWS;
+        const gutterSize = Math.min(cellWidth, cellHeight) * (GUTTER_PERCENTAGE / 100);
+
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.lineWidth = 1;
+
+        // Draw vertical lines
+        for (let i = 1; i < GRID_COLUMNS; i++) {
+            const x = i * cellWidth;
+            ctx.beginPath();
+            ctx.moveTo(x - gutterSize / 2, 0);
+            ctx.lineTo(x - gutterSize / 2, canvas.height);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + cellWidth / 2, 0);
+            ctx.lineTo(x + cellWidth / 2, canvas.height);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + gutterSize / 2, 0);
+            ctx.lineTo(x + gutterSize / 2, canvas.height);
+            ctx.stroke();
+        }
+
+        // Draw horizontal lines
+        for (let i = 1; i < GRID_ROWS; i++) {
+            const y = i * cellHeight;
+            ctx.beginPath();
+            ctx.moveTo(0, y - gutterSize / 2);
+            ctx.lineTo(canvas.width, y - gutterSize / 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(0, y + cellHeight / 2);
+            ctx.lineTo(canvas.width, y + cellHeight / 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(0, y + gutterSize / 2);
+            ctx.lineTo(canvas.width, y + gutterSize / 2);
+            ctx.stroke();
+        }
+
+        return canvas;
+    }
+
+    function updateGrid() {
+        const existingGrid = document.getElementById('grid');
+        if (existingGrid) {
+            existingGrid.remove();
+        }
+
+        const gridCanvas = drawGrid();
+        gridCanvas.id = 'grid';
+        gridCanvas.style.position = 'absolute';
+        gridCanvas.style.top = '0';
+        gridCanvas.style.left = '0';
+        gridCanvas.style.pointerEvents = 'none';
+        gridCanvas.style.zIndex = '-1';
+        document.body.appendChild(gridCanvas);
+    }
+
+    function toggleGrid() {
+        isGridVisible = !isGridVisible;
+        const grid = document.getElementById('grid');
+        if (grid) {
+            grid.style.display = isGridVisible ? 'block' : 'none';
+        } else if (isGridVisible) {
+            updateGrid();
+        }
+        gridBtn.classList.toggle('active', isGridVisible);
+    }
+
+    function updateBrushSizeDisplay() {
+        brushSizeDisplay.value = brushSize.value;
+        lastBrushSize = brushSize.value
+    }
+
+    function updateBrushSizeSlider() {
+        let value = parseFloat(brushSizeDisplay.value);
+        if (isNaN(value) || value < 2) {
+            value = 2;
+        } else if (value > 50) {
+            value = 50;
+        }
+        brushSize.value = value;
+        brushSizeDisplay.value = value;
+    }
+
+    function toggleOverview() {
+        isOverviewVisible = !isOverviewVisible;
+        overviewContainer.style.display = 'block';
+        setTimeout(() => {
+            overviewContainer.classList.toggle('visible', isOverviewVisible);
+        }, 10);
+        overviewBtn.classList.toggle('active', isOverviewVisible);
+        if (isOverviewVisible) {
+            updateOverviewGrid();
+            // Add click event listener to the overviewContainer
+            overviewContainer.addEventListener('click', handleOverviewClick);
+        } else {
+            // Remove click event listener when hiding the overview
+            overviewContainer.removeEventListener('click', handleOverviewClick);
+            setTimeout(() => {
+                overviewContainer.style.display = 'none';
+            }, 500);
+        }
+    }
+
+    function updateOverviewGrid() {
+        overviewGrid.innerHTML = '';
+        whiteboards.forEach((board, index) => {
+            const item = document.createElement('div');
+            item.className = 'overviewItem';
+
+            let thumbnailContent;
+            if (board.data) {
+                thumbnailContent = `<img src="${board.data}" alt="${board.name}" class="overviewImage">`;
+            } else {
+                thumbnailContent = `<div class="overviewImage blankThumbnail">Blank Whiteboard</div>`;
+            }
+
+            item.innerHTML = `
                     ${thumbnailContent}
                     <span class="overviewName">${board.name}</span>
                     <button class="removeWhiteboardBtn" title="Remove Whiteboard">×</button>
                  `;
-                 
-                 const removeBtn = item.querySelector('.removeWhiteboardBtn');
-                 removeBtn.addEventListener('click', (e) => {
-                     e.stopPropagation();
-                     removeWhiteboard(index);
-                 });
 
-                 item.addEventListener('click', (e) => {
-                     e.stopPropagation(); // Prevent the click from bubbling up to overviewContainer
-                     loadBoard(index);
-                     toggleOverview();
-                 });
-                 overviewGrid.appendChild(item);
-             });
-         }
+            const removeBtn = item.querySelector('.removeWhiteboardBtn');
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeWhiteboard(index);
+            });
 
-         function renameWhiteboards() {
-             whiteboards.forEach((board, index) => {
-                 board.name = `Whiteboard ${index + 1}`;
-             });
-         }
+            item.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent the click from bubbling up to overviewContainer
+                loadBoard(index);
+                toggleOverview();
+            });
+            overviewGrid.appendChild(item);
+        });
+    }
 
-         function removeWhiteboard(index) {
-             const removeWhiteboardDialog = document.getElementById('removeWhiteboardDialog');
-             const removeWhiteboardMessage = document.getElementById('removeWhiteboardMessage');
-             removeWhiteboardMessage.textContent = `Are you sure you want to remove ${whiteboards[index].name}?`;
-             
-             showDialog('removeWhiteboardDialog');
+    function renameWhiteboards() {
+        whiteboards.forEach((board, index) => {
+            board.name = `Whiteboard ${index + 1}`;
+        });
+    }
 
-             document.getElementById('removeWhiteboardYes').onclick = function() {
-                 whiteboards.splice(index, 1);
-                 
-                 if (whiteboards.length === 0) {
-                     whiteboards.push({ name: 'Whiteboard 1', data: null, history: [] });
-                 }
-                 
-                 currentBoardIndex = Math.min(index, whiteboards.length - 1);
-                 renameWhiteboards();
-                 loadCurrentBoard();
-                 updateOverviewGrid();
-                 updateBoardInfo();
-                 saveWhiteboardsToIndexedDB();
-                 hideDialog('removeWhiteboardDialog');
-             };
+    function removeWhiteboard(index) {
+        const removeWhiteboardDialog = document.getElementById('removeWhiteboardDialog');
+        const removeWhiteboardMessage = document.getElementById('removeWhiteboardMessage');
+        removeWhiteboardMessage.textContent = `Are you sure you want to remove ${whiteboards[index].name}?`;
 
-             document.getElementById('removeWhiteboardNo').onclick = function() {
-                 hideDialog('removeWhiteboardDialog');
-             };
-         }
+        showDialog('removeWhiteboardDialog');
 
-         function handleKeyPress(event) {
-             if (document.activeElement === brushSizeDisplay) {
-                 return; // Exit the function if we're typing in the brush size input
-             }
+        document.getElementById('removeWhiteboardYes').onclick = function () {
+            whiteboards.splice(index, 1);
 
-             if (event.key === 'Control') {
-                 isCtrlPressed = true;
-             }
+            if (whiteboards.length === 0) {
+                whiteboards.push({name: 'Whiteboard 1', data: null, history: []});
+            }
 
-             if (event.key === 'Shift' && !isShiftPressed) {
-                 isShiftPressed = true;
-                 if (isDrawing) {
-                     shiftStartX = lastX;
-                     shiftStartY = lastY;
-                 }
-             }
+            currentBoardIndex = Math.min(index, whiteboards.length - 1);
+            renameWhiteboards();
+            loadCurrentBoard();
+            updateOverviewGrid();
+            updateBoardInfo();
+            saveWhiteboardsToIndexedDB();
+            hideDialog('removeWhiteboardDialog');
+        };
 
-             if (event.key === 'Escape' && isOverviewVisible) {
-                 event.preventDefault(); // Prevent default Escape behavior
-                 toggleOverview();
-             }
-             if (event.key === 'ArrowLeft') {
-                 event.preventDefault();
-                 navigateBoards(-1);
-             }
-             if (event.key === 'ArrowRight') {
-                 event.preventDefault();
-                 navigateBoards(1);
-             }
-             
-             // New code to handle numeric key presses
-             const numKey = parseInt(event.key);
-             if (!isNaN(numKey) && numKey >= 0 && numKey <= 4) {
-                 event.preventDefault();
-                 const newSize = [2, 4, 16, 30, 50][numKey]; // Scale the brush size (1-9 becomes 5-45)
-                 brushSize.value = newSize;
-                 brushSizeDisplay.value = newSize;
-                 updateBrushSizeDisplay();
-             }
+        document.getElementById('removeWhiteboardNo').onclick = function () {
+            hideDialog('removeWhiteboardDialog');
+        };
+    }
 
-             switch (event.key.toUpperCase()) {
-                 case 'P':
-                     setActiveTool('pen');
-                     break;
-                 case 'H':
-                     setActiveTool('highlighter');
-                     break;
-                 case 'E':
-                     setActiveTool('eraser');
-                     break;
-                 case 'R':
-                     setColor('#FF0000'); // Red
-                     break;
-                 case 'G':
-                     setColor('#00AA00'); // Green
-                     break;
-                 case 'B':
-                     setColor('#0000FF'); // Blue
-                     break;
-                 case 'M':
-                     setColor('#000000'); // Black (Monochrome)
-                     break;
-             }
-         }
+    function handleKeyPress(event) {
+        if (document.activeElement === brushSizeDisplay) {
+            return; // Exit the function if we're typing in the brush size input
+        }
 
-         function setColor(color) {
-             colorPicker.value = color;
-         }
+        if (event.key === 'Control') {
+            isCtrlPressed = true;
+        }
 
-         function toggleFullscreen() {
-             if (!document.fullscreenElement) {
-                 document.documentElement.requestFullscreen().catch(err => {
-                     console.error(`Error attempting to enable fullscreen mode: ${err.message}`);
-                 });
-             } else {
-                 if (document.exitFullscreen) {
-                     document.exitFullscreen();
-                 }
-             }
-         }
+        if (event.key === 'Shift' && !isShiftPressed) {
+            isShiftPressed = true;
+            if (isDrawing) {
+                shiftStartX = lastX;
+                shiftStartY = lastY;
+            }
+        }
 
-         function updateFullscreenButton() {
-             if (document.fullscreenElement) {
-                 fullscreenBtn.innerHTML = `
+        if (event.key === 'Escape' && isOverviewVisible) {
+            event.preventDefault(); // Prevent default Escape behavior
+            toggleOverview();
+        }
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            navigateBoards(-1);
+        }
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            navigateBoards(1);
+        }
+
+        // New code to handle numeric key presses
+        const numKey = parseInt(event.key);
+        if (!isNaN(numKey) && numKey >= 0 && numKey <= 4) {
+            event.preventDefault();
+            const newSize = [2, 4, 16, 30, 50][numKey]; // Scale the brush size (1-9 becomes 5-45)
+            brushSize.value = newSize;
+            brushSizeDisplay.value = newSize;
+            updateBrushSizeDisplay();
+        }
+
+        switch (event.key.toUpperCase()) {
+            case 'P':
+                setActiveTool('pen');
+                break;
+            case 'H':
+                setActiveTool('highlighter');
+                break;
+            case 'E':
+                setActiveTool('eraser');
+                break;
+            case 'X':
+                toggleGrid();
+                break;
+            case 'R':
+                setColor('#FF0000'); // Red
+                break;
+            case 'G':
+                setColor('#00AA00'); // Green
+                break;
+            case 'B':
+                setColor('#0000FF'); // Blue
+                break;
+            case 'M':
+                setColor('#000000'); // Black (Monochrome)
+                break;
+        }
+    }
+
+    function setColor(color) {
+        colorPicker.value = color;
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable fullscreen mode: ${err.message}`);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    function updateFullscreenButton() {
+        if (document.fullscreenElement) {
+            fullscreenBtn.innerHTML = `
                      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                          <path d="M4 14h6m0 0v6m0-6l-7 7m17-11h-6m0 0V4m0 6l7-7"></path>
                      </svg>
                  `;
-                 fullscreenBtn.title = "Exit Fullscreen";
-             } else {
-                 fullscreenBtn.innerHTML = `
+            fullscreenBtn.title = "Exit Fullscreen";
+        } else {
+            fullscreenBtn.innerHTML = `
                      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
                      </svg>
                  `;
-                 fullscreenBtn.title = "Enter Fullscreen";
-             }
-         }
+            fullscreenBtn.title = "Enter Fullscreen";
+        }
+    }
 
-         function handleOverviewClick(event) {
-             // Check if the click is directly on the overviewContainer (not on a thumbnail)
-             if (event.target === overviewContainer) {
-                 toggleOverview();
-             }
-         }
+    function handleOverviewClick(event) {
+        // Check if the click is directly on the overviewContainer (not on a thumbnail)
+        if (event.target === overviewContainer) {
+            toggleOverview();
+        }
+    }
 
-         function showDialog(dialogId) {
-             document.getElementById(dialogId).style.display = 'block';
-         }
+    function showDialog(dialogId) {
+        document.getElementById(dialogId).style.display = 'block';
+    }
 
-         function hideDialog(dialogId) {
-             document.getElementById(dialogId).style.display = 'none';
-         }
+    function hideDialog(dialogId) {
+        document.getElementById(dialogId).style.display = 'none';
+    }
 
-         function handleDragOver(e) {
-             e.preventDefault();
-             e.stopPropagation();
-         }
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
-         function handleDrop(e) {
-             e.preventDefault();
-             e.stopPropagation();
+    function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
 
-             const files = e.dataTransfer.files;
+        const files = e.dataTransfer.files;
 
-             if (files.length > 0) {
-                 const file = files[0];
+        if (files.length > 0) {
+            const file = files[0];
 
-                 if (file.type.startsWith('image/')) {
-                     loadImageToCanvas(file);
-                 } else {
-                     showErrorDialog('Please drop an image file.');
-                 }
-             }
-         }
+            if (file.type.startsWith('image/')) {
+                loadImageToCanvas(file);
+            } else {
+                showErrorDialog('Please drop an image file.');
+            }
+        }
+    }
 
-         function handleKeyUp(event) {
-             if (event.key === 'Shift' && !isDrawing) {
-                 isShiftPressed = false;
-                 shiftConstrainedDirection = null;
-             }
-             if (event.key === 'Control') {
-                 isCtrlPressed = false;
-             }
-         }
+    function handleKeyUp(event) {
+        if (event.key === 'Shift' && !isDrawing) {
+            isShiftPressed = false;
+            shiftConstrainedDirection = null;
+        }
+        if (event.key === 'Control') {
+            isCtrlPressed = false;
+        }
+    }
 
-         function loadImageToCanvas(file) {
-             const reader = new FileReader();
+    function loadImageToCanvas(file) {
+        const reader = new FileReader();
 
-             reader.onload = function(event) {
-                 const img = new Image();
-                 img.onerror = function(event) {
-                     showErrorDialog('Please drop an image file.');
-                 };
-                 img.onload = function() {
-                     // Clear the canvas
-                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+        reader.onload = function (event) {
+            const img = new Image();
+            img.onerror = function (event) {
+                showErrorDialog('Please drop an image file.');
+            };
+            img.onload = function () {
+                // Clear the canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                     // Calculate scaling to fit the image within the canvas
-                     const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-                     const x = (canvas.width / 2) - (img.width / 2) * scale;
-                     const y = (canvas.height / 2) - (img.height / 2) * scale;
+                // Calculate scaling to fit the image within the canvas
+                const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                const x = (canvas.width / 2) - (img.width / 2) * scale;
+                const y = (canvas.height / 2) - (img.height / 2) * scale;
 
-                     // Draw the image on the canvas
-                     ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                // Draw the image on the canvas
+                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
 
-                     // Save the updated canvas
-                     saveCurrentBoard();
-                 };
-                 img.src = event.target.result;
-             };
+                // Save the updated canvas
+                saveCurrentBoard();
+            };
+            img.src = event.target.result;
+        };
 
-             reader.readAsDataURL(file);
-         }
+        reader.readAsDataURL(file);
+    }
 
-         function handleFileSelect() {
-             fileInput.click();
-         }
+    function handleFileSelect() {
+        fileInput.click();
+    }
 
-         function handleFileChange(e) {
-             const file = e.target.files[0];
-             if (file && file.type.startsWith('image/')) {
-                 loadImageToCanvas(file);
-             } else {
-                 showErrorDialog('Please select an image file.');
-             }
-         }
+    function handleFileChange(e) {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            loadImageToCanvas(file);
+        } else {
+            showErrorDialog('Please select an image file.');
+        }
+    }
 
-         fileSelectBtn.addEventListener('click', handleFileSelect);
-         fileInput.addEventListener('change', handleFileChange);
-         brushSize.addEventListener('input', updateBrushSizeDisplay);
-         brushSizeDisplay.addEventListener('change', updateBrushSizeSlider);
-         overviewBtn.addEventListener('click', toggleOverview);
-         gridBtn.addEventListener('click', toggleGrid);
-         window.addEventListener('resize', resizeCanvas);
-         canvas.addEventListener('mousedown', startDrawing);
-         canvas.addEventListener('mousemove', draw);
-         canvas.addEventListener('mouseup', stopDrawing);
-         canvas.addEventListener('mouseout', stopDrawing);
-         penBtn.addEventListener('click', togglePen);
-         eraserBtn.addEventListener('click', toggleEraser);
-         highlighterBtn.addEventListener('click', toggleHighlighter);
-         clearBtn.addEventListener('click', () => showConfirmDialog());
-         confirmYes.addEventListener('click', () => {
-             clearCanvas();
-             hideConfirmDialog();
-         });
-         confirmNo.addEventListener('click', () => hideConfirmDialog());
-         errorOkBtn.addEventListener('click', () => hideDialog('errorDialog'));
-         newBoardBtn.addEventListener('click', createNewBoard);
-         prevBtn.addEventListener('click', () => navigateBoards(-1));
-         nextBtn.addEventListener('click', () => navigateBoards(1));
-         saveBtn.addEventListener('click', saveAsPNG);
-         undoBtn.addEventListener('click', undo);
-         document.addEventListener('keydown', handleKeyboardShortcuts);
-         window.addEventListener('load', loadWhiteboardsFromIndexedDB);
-         document.addEventListener('pointerdown', handlePointerEvent);
-         document.addEventListener('pointermove', handlePointerEvent);
-         document.addEventListener('pointerup', handlePointerEvent);
-         document.addEventListener('contextmenu', function(event) {
-             event.preventDefault();
-         });
-         document.addEventListener('keydown', handleKeyPress);
-         document.addEventListener('keyup', handleKeyUp);
-         fullscreenBtn.addEventListener('click', toggleFullscreen);
-         document.addEventListener('fullscreenchange', updateFullscreenButton);
-         canvas.addEventListener('dragover', handleDragOver);
-         canvas.addEventListener('drop', handleDrop);
+    fileSelectBtn.addEventListener('click', handleFileSelect);
+    fileInput.addEventListener('change', handleFileChange);
+    brushSize.addEventListener('input', updateBrushSizeDisplay);
+    brushSizeDisplay.addEventListener('change', updateBrushSizeSlider);
+    overviewBtn.addEventListener('click', toggleOverview);
+    gridBtn.addEventListener('click', toggleGrid);
+    window.addEventListener('resize', resizeCanvas);
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    penBtn.addEventListener('click', togglePen);
+    eraserBtn.addEventListener('click', toggleEraser);
+    highlighterBtn.addEventListener('click', toggleHighlighter);
+    clearBtn.addEventListener('click', () => showConfirmDialog());
+    confirmYes.addEventListener('click', () => {
+        clearCanvas();
+        hideConfirmDialog();
+    });
+    confirmNo.addEventListener('click', () => hideConfirmDialog());
+    errorOkBtn.addEventListener('click', () => hideDialog('errorDialog'));
+    newBoardBtn.addEventListener('click', createNewBoard);
+    prevBtn.addEventListener('click', () => navigateBoards(-1));
+    nextBtn.addEventListener('click', () => navigateBoards(1));
+    saveBtn.addEventListener('click', saveAsPNG);
+    undoBtn.addEventListener('click', undo);
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+    window.addEventListener('load', loadWhiteboardsFromIndexedDB);
+    document.addEventListener('pointerdown', handlePointerEvent);
+    document.addEventListener('pointermove', handlePointerEvent);
+    document.addEventListener('pointerup', handlePointerEvent);
+    document.addEventListener('contextmenu', function (event) {
+        event.preventDefault();
+    });
+    document.addEventListener('keydown', handleKeyPress);
+    document.addEventListener('keyup', handleKeyUp);
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    document.addEventListener('fullscreenchange', updateFullscreenButton);
+    canvas.addEventListener('dragover', handleDragOver);
+    canvas.addEventListener('drop', handleDrop);
 
-         // Initial setup
-         resizeCanvas();
-         updateBoardInfo();
-         updateBrushSizeDisplay();
-         setActiveTool('pen');
+    // Initial setup
+    resizeCanvas();
+    updateBoardInfo();
+    updateBrushSizeDisplay();
+    setActiveTool('pen');
 
-         if ('serviceWorker' in navigator) {
-             window.addEventListener('load', () => {
-                 if (!/localhost|127\.0\.0\.1/.test(location.hostname)) {
-                     navigator.serviceWorker.register('/utilities/multiboard-service-worker.js')
-                         .then((registration) => {
-                             console.log('Service Worker registered successfully:', registration.scope);
-                         })
-                         .catch((error) => {
-                             console.log('Service Worker registration failed:', error);
-                         });
-                 }
-             });
-         }
-        </script>
-    </body>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            if (!/localhost|127\.0\.0\.1/.test(location.hostname)) {
+                navigator.serviceWorker.register('/utilities/multiboard-service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            }
+        });
+    }
+</script>
+</body>
 </html>
