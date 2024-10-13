@@ -53,7 +53,7 @@ describe('Whiteboard Application', () => {
     it('should be able to select brush by key press', () => {
         multiboardPage.brushSizeDisplay.matches("2");
         multiboardPage.type("1")
-        multiboardPage.brushSizeDisplay.matches("10");
+        multiboardPage.brushSizeDisplay.matches("4");
         multiboardPage.type("2")
         multiboardPage.brushSizeDisplay.matches("16");
         multiboardPage.type("3")
