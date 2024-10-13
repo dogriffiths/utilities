@@ -1219,7 +1219,7 @@
         const numKey = parseInt(event.key);
         if (!isNaN(numKey) && numKey >= 0 && numKey <= 4) {
             event.preventDefault();
-            const newSize = [2, 4, 16, 30, 50][numKey]; // Scale the brush size (1-9 becomes 5-45)
+            const newSize = [2, 8, 16, 30, 50][numKey];
             brushSize.value = newSize;
             brushSizeDisplay.value = newSize;
             updateBrushSizeDisplay();
