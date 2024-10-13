@@ -960,6 +960,11 @@
                  ctx.stroke();
 
                  ctx.beginPath();
+                 ctx.moveTo(x + cellWidth / 2, 0);
+                 ctx.lineTo(x + cellWidth / 2, canvas.height);
+                 ctx.stroke();
+
+                 ctx.beginPath();
                  ctx.moveTo(x + gutterSize / 2, 0);
                  ctx.lineTo(x + gutterSize / 2, canvas.height);
                  ctx.stroke();
@@ -971,6 +976,11 @@
                  ctx.beginPath();
                  ctx.moveTo(0, y - gutterSize / 2);
                  ctx.lineTo(canvas.width, y - gutterSize / 2);
+                 ctx.stroke();
+
+                 ctx.beginPath();
+                 ctx.moveTo(0, y + cellHeight / 2);
+                 ctx.lineTo(canvas.width, y + cellHeight / 2);
                  ctx.stroke();
 
                  ctx.beginPath();
