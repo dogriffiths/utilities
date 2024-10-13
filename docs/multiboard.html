@@ -356,9 +356,11 @@
 
         /* Default state (inactive) */
         #penBtn, #highlighterBtn, #eraserBtn {
-            background-color: #e0e0e0;
+            /*background-color: #e0e0e0;*/
+            background-color: transparent;
             filter: grayscale(100%) brightness(1.2);
-            border: 1px solid #aaa;
+            border: 1px solid #666;
+            /*border: 1px solid #aaa;*/
         }
 
         #penBtn svg, #highlighterBtn svg, #eraserBtn svg {
@@ -411,6 +413,172 @@
         #eraserBtn.active:hover {
             background-color: #ff66ff;
         }
+
+
+
+        /* Dark mode styles for control panels */
+        .control-panel {
+            background-color: rgba(28, 28, 28, 0.8);
+            color: white;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Dark mode styles for buttons */
+        .round-button {
+            background-color: #555;
+            color: white;
+            border: 1px solid #666;
+        }
+
+        .round-button:hover {
+            background-color: #666;
+        }
+
+        .round-button svg {
+            stroke: white;
+        }
+
+        /* Specific button styles */
+        #clearBtn {
+            background-color: #FF6B6B;
+        }
+
+        #clearBtn:hover {
+            background-color: #FF8787;
+        }
+
+        #newBoardBtn {
+            background-color: #4ECB71;
+        }
+
+        #newBoardBtn:hover {
+            background-color: #69D687;
+        }
+
+        #saveBtn {
+            background-color: #4DA3FF;
+        }
+
+        #saveBtn:hover {
+            background-color: #69B3FF;
+        }
+
+        #undoBtn {
+            background-color: #FFA94D;
+        }
+
+        #undoBtn:hover {
+            background-color: #FFB969;
+        }
+
+        #gridBtn {
+            background-color: #69B3FF;
+        }
+
+        #gridBtn:hover {
+            background-color: #84C1FF;
+        }
+
+        #gridBtn.active {
+            background-color: #3D8BFF;
+        }
+
+        #overviewBtn {
+            background-color: #69B3FF;
+        }
+
+        #overviewBtn:hover {
+            background-color: #84C1FF;
+        }
+
+        #overviewBtn.active {
+            background-color: #3D8BFF;
+        }
+
+        #fullscreenBtn {
+            background-color: #B96BFF;
+        }
+
+        #fullscreenBtn:hover {
+            background-color: #C484FF;
+        }
+
+        #fileSelectBtn {
+            background-color: #B96BFF;
+        }
+
+        #fileSelectBtn:hover {
+            background-color: #C484FF;
+        }
+
+        /* Tool group styles */
+        .tool-group .round-button {
+            background-color: #555;
+            border: 1px solid #666;
+        }
+
+        .tool-group .round-button:hover {
+            background-color: #666;
+        }
+
+        #penBtn.active {
+            background-color: #4ECB71;
+        }
+
+        #penBtn.active:hover {
+            background-color: #69D687;
+        }
+
+        #highlighterBtn.active {
+            background-color: #FFD43B;
+        }
+
+        #highlighterBtn.active:hover {
+            background-color: #FFE066;
+        }
+
+        #eraserBtn.active {
+            background-color: #FF6B6B;
+        }
+
+        #eraserBtn.active:hover {
+            background-color: #FF8787;
+        }
+
+        /* Styles for range inputs and color picker */
+        #brushSize {
+            background-color: #555;
+        }
+
+        #brushSizeDisplay {
+            background-color: #555;
+            color: white;
+            border-color: #666;
+        }
+
+        #colorPicker {
+            background-color: #555;
+            border: 1px solid #666;
+        }
+
+        /* Styles for board info and navigation buttons */
+        #boardInfo {
+            color: white;
+        }
+
+        #prevBtn, #nextBtn {
+            background-color: #555;
+        }
+
+        #prevBtn:hover, #nextBtn:hover {
+            background-color: #666;
+        }
+
+        #prevBtn:disabled, #nextBtn:disabled {
+            opacity: 0.5;
+            background-color: #444;
+        }
+
     </style>
 </head>
 <body>
