@@ -1012,8 +1012,8 @@
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(x + cellWidth / 2, 0);
-            ctx.lineTo(x + cellWidth / 2, canvas.height);
+            ctx.moveTo(x - cellWidth / 2, 0);
+            ctx.lineTo(x - cellWidth / 2, canvas.height);
             ctx.stroke();
 
             ctx.beginPath();
@@ -1021,6 +1021,11 @@
             ctx.lineTo(x + gutterSize / 2, canvas.height);
             ctx.stroke();
         }
+
+        ctx.beginPath();
+        ctx.moveTo(GRID_COLUMNS * cellWidth - cellWidth / 2, 0);
+        ctx.lineTo(GRID_COLUMNS * cellWidth - cellWidth / 2, canvas.height);
+        ctx.stroke();
 
         // Draw horizontal lines
         for (let i = 1; i < GRID_ROWS; i++) {
@@ -1031,8 +1036,8 @@
             ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(0, y + cellHeight / 2);
-            ctx.lineTo(canvas.width, y + cellHeight / 2);
+            ctx.moveTo(0, y - cellHeight / 2);
+            ctx.lineTo(canvas.width, y - cellHeight / 2);
             ctx.stroke();
 
             ctx.beginPath();
@@ -1040,6 +1045,11 @@
             ctx.lineTo(canvas.width, y + gutterSize / 2);
             ctx.stroke();
         }
+
+        ctx.beginPath();
+        ctx.moveTo(0, GRID_ROWS * cellHeight - cellHeight / 2);
+        ctx.lineTo(canvas.width, GRID_ROWS * cellHeight - cellHeight / 2);
+        ctx.stroke();
 
         return canvas;
     }
