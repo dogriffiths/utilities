@@ -25,39 +25,45 @@
             position: fixed;
             bottom: 20px;
             z-index: 1000;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 15px;
+            background-color: rgba(28, 28, 28, 0.8);
+            color: white;
+            padding: 12px;
+            padding-top: 10px;
+            padding-bottom: 10px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
         }
 
         #drawing-controls {
-            right: 20px;
+            right: 36px;
         }
 
         #navigation {
-            left: 20px;
+            left: 36px;
         }
 
         #colorPicker {
             width: 40px;
             height: 40px;
-            border: none;
+            border: 1px solid #666;
             padding: 0;
             border-radius: 50%;
             overflow: hidden;
+            background-color: #555;
         }
 
         #brushSize {
             width: 100px;
+            background-color: #555;
         }
 
         .round-button {
             width: 40px;
             height: 40px;
-            border: none;
+            border: 1px solid #666;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -65,65 +71,82 @@
             align-items: center;
             padding: 0;
             transition: all 0.3s ease;
+            background-color: #555;
+            color: white;
         }
 
-        #clearBtn {
-            background-color: #ff4444;
-        }
-
-        #clearBtn:hover {
-            background-color: #ff6666;
-        }
-
-        #newBoardBtn {
-            background-color: #44aa44;
-        }
-
-        #newBoardBtn:hover {
-            background-color: #66cc66;
-        }
-
-        #saveBtn {
-            background-color: #4444ff;
-        }
-
-        #saveBtn:hover {
-            background-color: #6666ff;
-        }
-
-        #undoBtn {
-            background-color: #ffaa44;
-        }
-
-        #undoBtn:hover {
-            background-color: #ffcc66;
+        .round-button:hover {
+            background-color: #666;
         }
 
         .round-button svg {
             width: 24px;
             height: 24px;
             transition: all 0.3s ease;
-        }
-
-        #boardInfo {
-            margin: 0 10px;
+            stroke: white;
         }
 
         .round-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            background-color: #444;
         }
 
-        #gridBtn {
-            background-color: #44aaff;
+        #clearBtn {
+            background-color: #FF6B6B;
         }
 
-        #gridBtn:hover {
-            background-color: #66ccff;
+        #clearBtn:hover {
+            background-color: #FF8787;
         }
 
-        #gridBtn.active {
-            background-color: #2288dd;
+        #newBoardBtn {
+            background-color: #4ECB71;
+        }
+
+        #newBoardBtn:hover {
+            background-color: #69D687;
+        }
+
+        #saveBtn {
+            background-color: #4DA3FF;
+        }
+
+        #saveBtn:hover {
+            background-color: #69B3FF;
+        }
+
+        #undoBtn {
+            background-color: #FFA94D;
+        }
+
+        #undoBtn:hover {
+            background-color: #FFB969;
+        }
+
+        #gridBtn, #overviewBtn {
+            background-color: #69B3FF;
+        }
+
+        #gridBtn:hover, #overviewBtn:hover {
+            background-color: #84C1FF;
+        }
+
+        #gridBtn.active, #overviewBtn.active {
+            background-color: #3D8BFF;
+        }
+
+        #fullscreenBtn, #fileSelectBtn {
+            background-color: #B96BFF;
+        }
+
+        #fullscreenBtn:hover, #fileSelectBtn:hover {
+            background-color: #C484FF;
+        }
+
+        #boardInfo {
+            margin: 0 10px;
+            color: white;
         }
 
         .brush-size-container {
@@ -135,24 +158,13 @@
         #brushSizeDisplay {
             font-size: 12px;
             margin-top: 5px;
-            color: #333;
             width: 40px;
             text-align: center;
-            border: 1px solid #ccc;
+            border: 1px solid #666;
             border-radius: 3px;
             padding: 2px;
-        }
-
-        #overviewBtn {
-            background-color: #44aaff;
-        }
-
-        #overviewBtn:hover {
-            background-color: #66ccff;
-        }
-
-        #overviewBtn.active {
-            background-color: #2288dd;
+            background-color: #555;
+            color: white;
         }
 
         #overviewContainer {
@@ -168,8 +180,8 @@
             padding: 20px;
             opacity: 0;
             transition: opacity 0.5s ease;
-            backdrop-filter: blur(5px); /* Blurs the content behind the element */
-            -webkit-backdrop-filter: blur(5px); /* For Safari support */
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
 
         #overviewContainer.visible {
@@ -221,7 +233,7 @@
             right: 1.5ex;
             width: 20px;
             height: 20px;
-            background-color: rgba(64, 64, 64, 0.3); /* Dark gray with 70% opacity */
+            background-color: rgba(64, 64, 64, 0.3);
             color: white;
             border: none;
             border-radius: 50%;
@@ -235,18 +247,8 @@
         }
 
         .removeWhiteboardBtn:hover {
-            background-color: rgba(64, 64, 64, 1); /* Solid dark gray on hover */
+            background-color: rgba(64, 64, 64, 1);
         }
-
-        #fullscreenBtn {
-            background-color: #8844ff;
-        }
-
-        #fullscreenBtn:hover {
-            background-color: #aa66ff;
-        }
-
-        /* Dark-mode Dialog CSS */
 
         .dialog {
             display: none;
@@ -261,6 +263,7 @@
             width: 300px;
             z-index: 2000;
             box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
+            animation: fadeIn 0.2s ease-out;
         }
 
         .dialog h1 {
@@ -304,44 +307,18 @@
             color: black;
         }
 
-        /* Add a subtle animation for dialog appearance */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -48%);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%);
-            }
-        }
-
-        .dialog {
-            animation: fadeIn 0.2s ease-out;
-        }
-
         #fileInput {
             display: none;
         }
 
-        #fileSelectBtn {
-            background-color: #8844ff;
-        }
-
-        #fileSelectBtn:hover {
-            background-color: #aa66ff;
-        }
-
-
         .tool-group {
             display: flex;
-            margin-right: 10px; /* Add some space after the group */
+            margin-right: 10px;
         }
 
         .tool-group .round-button {
             border-radius: 0;
             margin: 0;
-            transition: all 0.3s ease;
         }
 
         .tool-group .round-button:first-child {
@@ -354,28 +331,22 @@
             border-bottom-right-radius: 20px;
         }
 
-        /* Default state (inactive) */
         #penBtn, #highlighterBtn, #eraserBtn {
-            /*background-color: #e0e0e0;*/
             background-color: transparent;
             filter: grayscale(100%) brightness(1.2);
-            border: 1px solid #666;
-            /*border: 1px solid #aaa;*/
         }
 
         #penBtn svg, #highlighterBtn svg, #eraserBtn svg {
             stroke: #808080;
         }
 
-        /* Hover state for inactive buttons */
         #penBtn:hover, #highlighterBtn:hover, #eraserBtn:hover {
-            background-color: #d0d0d0;
+            background-color: #666;
             filter: grayscale(50%) brightness(1.1);
         }
 
-        /* Active states */
         #penBtn.active {
-            background-color: #4CAF50;
+            background-color: #4ECB71;
             filter: none;
         }
 
@@ -384,7 +355,7 @@
         }
 
         #highlighterBtn.active {
-            background-color: #FFA500;
+            background-color: #FFD43B;
             filter: none;
         }
 
@@ -393,7 +364,7 @@
         }
 
         #eraserBtn.active {
-            background-color: #ff44ff;
+            background-color: #FF6B6B;
             filter: none;
         }
 
@@ -401,184 +372,28 @@
             stroke: white;
         }
 
-        /* Hover state for active buttons */
-        #penBtn.active:hover {
-            background-color: #45a049;
-        }
-
-        #highlighterBtn.active:hover {
-            background-color: #FF8C00;
-        }
-
-        #eraserBtn.active:hover {
-            background-color: #ff66ff;
-        }
-
-
-
-        /* Dark mode styles for control panels */
-        .control-panel {
-            background-color: rgba(28, 28, 28, 0.8);
-            color: white;
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
-        }
-
-        /* Dark mode styles for buttons */
-        .round-button {
-            background-color: #555;
-            color: white;
-            border: 1px solid #666;
-        }
-
-        .round-button:hover {
-            background-color: #666;
-        }
-
-        .round-button svg {
-            stroke: white;
-        }
-
-        /* Specific button styles */
-        #clearBtn {
-            background-color: #FF6B6B;
-        }
-
-        #clearBtn:hover {
-            background-color: #FF8787;
-        }
-
-        #newBoardBtn {
-            background-color: #4ECB71;
-        }
-
-        #newBoardBtn:hover {
-            background-color: #69D687;
-        }
-
-        #saveBtn {
-            background-color: #4DA3FF;
-        }
-
-        #saveBtn:hover {
-            background-color: #69B3FF;
-        }
-
-        #undoBtn {
-            background-color: #FFA94D;
-        }
-
-        #undoBtn:hover {
-            background-color: #FFB969;
-        }
-
-        #gridBtn {
-            background-color: #69B3FF;
-        }
-
-        #gridBtn:hover {
-            background-color: #84C1FF;
-        }
-
-        #gridBtn.active {
-            background-color: #3D8BFF;
-        }
-
-        #overviewBtn {
-            background-color: #69B3FF;
-        }
-
-        #overviewBtn:hover {
-            background-color: #84C1FF;
-        }
-
-        #overviewBtn.active {
-            background-color: #3D8BFF;
-        }
-
-        #fullscreenBtn {
-            background-color: #B96BFF;
-        }
-
-        #fullscreenBtn:hover {
-            background-color: #C484FF;
-        }
-
-        #fileSelectBtn {
-            background-color: #B96BFF;
-        }
-
-        #fileSelectBtn:hover {
-            background-color: #C484FF;
-        }
-
-        /* Tool group styles */
-        .tool-group .round-button {
-            background-color: #555;
-            border: 1px solid #666;
-        }
-
-        .tool-group .round-button:hover {
-            background-color: #666;
-        }
-
-        #penBtn.active {
-            background-color: #4ECB71;
-        }
-
         #penBtn.active:hover {
             background-color: #69D687;
-        }
-
-        #highlighterBtn.active {
-            background-color: #FFD43B;
         }
 
         #highlighterBtn.active:hover {
             background-color: #FFE066;
         }
 
-        #eraserBtn.active {
-            background-color: #FF6B6B;
-        }
-
         #eraserBtn.active:hover {
             background-color: #FF8787;
         }
 
-        /* Styles for range inputs and color picker */
-        #brushSize {
-            background-color: #555;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -48%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
         }
-
-        #brushSizeDisplay {
-            background-color: #555;
-            color: white;
-            border-color: #666;
-        }
-
-        #colorPicker {
-            background-color: #555;
-            border: 1px solid #666;
-        }
-
-        /* Styles for board info and navigation buttons */
-        #boardInfo {
-            color: white;
-        }
-
-        #prevBtn, #nextBtn {
-            background-color: #555;
-        }
-
-        #prevBtn:hover, #nextBtn:hover {
-            background-color: #666;
-        }
-
-        #prevBtn:disabled, #nextBtn:disabled {
-            opacity: 0.5;
-            background-color: #444;
-        }
-
     </style>
 </head>
 <body>
