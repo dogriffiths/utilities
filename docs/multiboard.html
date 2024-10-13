@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#ffffff">
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <style>
+        /* Global Styles */
         body, html {
             margin: 0;
             padding: 0;
@@ -21,19 +22,18 @@
             left: 0;
         }
 
+        /* Control Panel Styles */
         .control-panel {
             position: fixed;
             bottom: 20px;
             z-index: 1000;
             background-color: rgba(28, 28, 28, 0.8);
             color: white;
-            padding: 12px;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            border-radius: 10px;
+            padding: 8px 9px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
         }
 
@@ -45,24 +45,10 @@
             left: 36px;
         }
 
-        #colorPicker {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #666;
-            padding: 0;
-            border-radius: 50%;
-            overflow: hidden;
-            background-color: #555;
-        }
-
-        #brushSize {
-            width: 100px;
-            background-color: #555;
-        }
-
+        /* Button Styles */
         .round-button {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             border: 1px solid #666;
             border-radius: 50%;
             cursor: pointer;
@@ -80,8 +66,8 @@
         }
 
         .round-button svg {
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
             transition: all 0.3s ease;
             stroke: white;
         }
@@ -92,6 +78,7 @@
             background-color: #444;
         }
 
+        /* Specific Button Styles */
         #clearBtn {
             background-color: #FF6B6B;
         }
@@ -144,21 +131,101 @@
             background-color: #C484FF;
         }
 
-        #boardInfo {
-            margin: 0 10px;
-            color: white;
+        /* Tool Group Styles */
+        .tool-group {
+            display: flex;
+            margin-right: 10px;
+        }
+
+        .tool-group .round-button {
+            border-radius: 0;
+            margin: 0;
+        }
+
+        .tool-group .round-button:first-child {
+            border-top-left-radius: 15px;
+            border-bottom-left-radius: 15px;
+        }
+
+        .tool-group .round-button:last-child {
+            border-top-right-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+
+        #penBtn, #highlighterBtn, #eraserBtn {
+            background-color: transparent;
+            filter: grayscale(100%) brightness(1.2);
+        }
+
+        #penBtn svg, #highlighterBtn svg, #eraserBtn svg {
+            stroke: #808080;
+        }
+
+        #penBtn:hover, #highlighterBtn:hover, #eraserBtn:hover {
+            background-color: #666;
+            filter: grayscale(50%) brightness(1.1);
+        }
+
+        #penBtn.active, #highlighterBtn.active, #eraserBtn.active {
+            filter: none;
+        }
+
+        #penBtn.active {
+            background-color: #4ECB71;
+        }
+
+        #penBtn.active:hover {
+            background-color: #69D687;
+        }
+
+        #highlighterBtn.active {
+            background-color: #FFD43B;
+        }
+
+        #highlighterBtn.active:hover {
+            background-color: #FFE066;
+        }
+
+        #highlighterBtn.active svg {
+            stroke: black;
+        }
+
+        #eraserBtn.active {
+            background-color: #FF6B6B;
+        }
+
+        #eraserBtn.active:hover {
+            background-color: #FF8787;
+        }
+
+        /* Color Picker and Brush Size Styles */
+        #colorPicker {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #666;
+            padding: 0;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #555;
+        }
+
+        #brushSize {
+            width: 250px;
+            background-color: #555;
         }
 
         .brush-size-container {
             display: flex;
             flex-direction: column;
             align-items: center;
+            transform: scale(0.75);
+            transform-origin: center left;
         }
 
         #brushSizeDisplay {
             font-size: 12px;
             margin-top: 5px;
-            width: 40px;
+            width: 38px;
             text-align: center;
             border: 1px solid #666;
             border-radius: 3px;
@@ -167,6 +234,14 @@
             color: white;
         }
 
+        /* Board Info Styles */
+        #boardInfo {
+            margin: 0 8px;
+            color: white;
+            font-size: 0.95em;
+        }
+
+        /* Overview Styles */
         #overviewContainer {
             display: none;
             position: fixed;
@@ -250,6 +325,7 @@
             background-color: rgba(64, 64, 64, 1);
         }
 
+        /* Dialog Styles */
         .dialog {
             display: none;
             position: fixed;
@@ -311,79 +387,7 @@
             display: none;
         }
 
-        .tool-group {
-            display: flex;
-            margin-right: 10px;
-        }
-
-        .tool-group .round-button {
-            border-radius: 0;
-            margin: 0;
-        }
-
-        .tool-group .round-button:first-child {
-            border-top-left-radius: 20px;
-            border-bottom-left-radius: 20px;
-        }
-
-        .tool-group .round-button:last-child {
-            border-top-right-radius: 20px;
-            border-bottom-right-radius: 20px;
-        }
-
-        #penBtn, #highlighterBtn, #eraserBtn {
-            background-color: transparent;
-            filter: grayscale(100%) brightness(1.2);
-        }
-
-        #penBtn svg, #highlighterBtn svg, #eraserBtn svg {
-            stroke: #808080;
-        }
-
-        #penBtn:hover, #highlighterBtn:hover, #eraserBtn:hover {
-            background-color: #666;
-            filter: grayscale(50%) brightness(1.1);
-        }
-
-        #penBtn.active {
-            background-color: #4ECB71;
-            filter: none;
-        }
-
-        #penBtn.active svg {
-            stroke: white;
-        }
-
-        #highlighterBtn.active {
-            background-color: #FFD43B;
-            filter: none;
-        }
-
-        #highlighterBtn.active svg {
-            stroke: black;
-        }
-
-        #eraserBtn.active {
-            background-color: #FF6B6B;
-            filter: none;
-        }
-
-        #eraserBtn.active svg {
-            stroke: white;
-        }
-
-        #penBtn.active:hover {
-            background-color: #69D687;
-        }
-
-        #highlighterBtn.active:hover {
-            background-color: #FFE066;
-        }
-
-        #eraserBtn.active:hover {
-            background-color: #FF8787;
-        }
-
+        /* Animation */
         @keyframes fadeIn {
             from {
                 opacity: 0;
