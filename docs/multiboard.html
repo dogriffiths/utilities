@@ -28,13 +28,15 @@
             overflow: hidden;
             transform: none;
             transform-origin: center;
-            border: none;
+            border-width: 0;
         }
 
         #canvas {
             position: absolute;
-            top: 0;
-            left: 0;
+            width: 1920px;
+            height: 1080px;
+            left: 50%;
+            top: 50%;
         }
 
         /* Control Panel Styles */
@@ -419,7 +421,7 @@
 </head>
 <body>
 <div id="canvasContainer">
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" width="1920" height="1080"></canvas>
 </div>
 <div id="overviewContainer">
     <div id="overviewGrid"></div>
@@ -435,19 +437,21 @@
     </button>
     <input type="file" id="fileInput" accept="image/*">
     <button id="rotateBtn" class="round-button" title="Rotate Clockwise">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
             <path d="M23 4v6h-6"></path>
             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
         </svg>
     </button>
     <button id="resetRotationBtn" class="round-button" title="Reset Rotation">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M12 2L4 20h16L12 2z" fill="#000000" />
-            <path d="M12 5.5L6.5 18.5h11L12 5.5z" fill="#ffffff" />
+            <path d="M12 2L4 20h16L12 2z" fill="#000000"/>
+            <path d="M12 5.5L6.5 18.5h11L12 5.5z" fill="#ffffff"/>
         </svg>
     </button>
     <button id="rotateAntiBtn" class="round-button" title="Rotate Anti-Clockwise">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
             <path d="M1 4v6h6"></path>
             <path d="M3.51 15a9 9 0 1 0 2.12-9.36L1 10"></path>
         </svg>
@@ -583,7 +587,6 @@
     const GUTTER_PERCENTAGE = 5;
 
     // DOM Elements
-    const body = document.querySelector('body');
     const canvasContainer = document.getElementById('canvasContainer');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -638,7 +641,7 @@
     let whiteboards = [{name: 'Whiteboard 1', data: null, history: []}];
     let currentBoardIndex = 0;
     let saveTimeout;
-    let rotationDegrees = 35.0;
+    let rotationDegrees = 0.0;
     let db;
 
     // Enable image smoothing for anti-aliasing
@@ -766,10 +769,18 @@
     }
 
     function resizeCanvas() {
-        canvasContainer.width = window.innerWidth;
-        canvasContainer.height = window.innerHeight;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const scaleX = canvasContainer.clientWidth / canvas.width;
+        const scaleY = canvasContainer.clientHeight / canvas.height;
+        const scale = Math.min(scaleX, scaleY);
+
+        if (rotationDegrees === 0) {
+            canvasContainer.style.transform = 'none';
+            canvas.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        } else {
+            canvasContainer.style.transform = `rotate(${rotationDegrees}deg)`;
+            canvas.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        }
+
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         loadCurrentBoard();
@@ -780,7 +791,6 @@
         const mouseY = event.offsetY;
 
         if (Math.trunc(rotationDegrees) === 0) {
-            console.log('XXXXXX return mouseX, mouseY', mouseX, mouseY)
             return [mouseX, mouseY]
         }
 
@@ -877,9 +887,6 @@
         }
 
         let [newX, newY] = getCanvasXY(e);
-
-        // let newX = e.clientX;
-        // let newY = e.clientY;
 
         if (isShiftPressed) {
             if (!shiftConstrainedDirection) {
@@ -1212,7 +1219,6 @@
     }
 
     function removeWhiteboard(index) {
-        const removeWhiteboardDialog = document.getElementById('removeWhiteboardDialog');
         const removeWhiteboardMessage = document.getElementById('removeWhiteboardMessage');
         removeWhiteboardMessage.textContent = `Are you sure you want to remove ${whiteboards[index].name}?`;
 
@@ -1418,6 +1424,8 @@
     }
 
     function handleFileSelect() {
+        const dataTransfer = new DataTransfer();
+        fileInput.files = dataTransfer.files;
         fileInput.click();
     }
 
@@ -1431,13 +1439,8 @@
     }
 
     function rotateCanvas(r) {
-        if (r === 0) {
-            canvasContainer.style.transform = 'none';
-            canvasContainer.style.border = 'auto';
-        }
-        canvasContainer.style.transform = `rotate(${r}deg)`;
-        canvasContainer.style.border = 'black 1px solid';
         rotationDegrees = r;
+        resizeCanvas()
     }
 
     function rotateClockwise() {
@@ -1497,10 +1500,10 @@
     canvas.addEventListener('drop', handleDrop);
 
     // Initial setup
-    resizeCanvas();
+    rotateCanvas(0)
+    // resizeCanvas();
     updateBoardInfo();
     updateBrushSizeDisplay();
-    rotateCanvas(0)
     setActiveTool('pen');
 
     if ('serviceWorker' in navigator) {
