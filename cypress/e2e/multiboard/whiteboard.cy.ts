@@ -4,6 +4,7 @@ import {multiboardPage} from "../../support/pages";
 
 describe('Whiteboard Application', () => {
     beforeEach(() => {
+        cy.viewport(1280, 720);
         multiboardPage.launch()
         multiboardPage.clearBoards()
     });
@@ -73,8 +74,8 @@ describe('Whiteboard Application', () => {
 
     it('should be able to draw a simple line', () => {
         multiboardPage.canvas.getChainer()
-            .trigger('mousedown', {clientX: 150, clientY: 150})
-            .trigger('mousemove', {clientX: 200, clientY: 200})
+            .trigger('mousedown', {offsetX: 150, offsetY: 150})
+            .trigger('mousemove', {offsetX: 200, offsetY: 200})
             .trigger('mouseup');
         multiboardPage.canvas.matches('cypress/expectedimages/simple_line.png');
     });

@@ -16,6 +16,21 @@
             font-family: Arial, sans-serif;
         }
 
+        #canvasContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            transform: none;
+            transform-origin: center;
+            border: none;
+        }
+
         #canvas {
             position: absolute;
             top: 0;
@@ -403,7 +418,9 @@
     </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
+<div id="canvasContainer">
+    <canvas id="canvas"></canvas>
+</div>
 <div id="overviewContainer">
     <div id="overviewGrid"></div>
 </div>
@@ -417,6 +434,24 @@
         </svg>
     </button>
     <input type="file" id="fileInput" accept="image/*">
+    <button id="rotateBtn" class="round-button" title="Rotate Clockwise">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 4v6h-6"></path>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+    </button>
+    <button id="resetRotationBtn" class="round-button" title="Reset Rotation">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2L4 20h16L12 2z" fill="#000000" />
+            <path d="M12 5.5L6.5 18.5h11L12 5.5z" fill="#ffffff" />
+        </svg>
+    </button>
+    <button id="rotateAntiBtn" class="round-button" title="Rotate Anti-Clockwise">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 4v6h6"></path>
+            <path d="M3.51 15a9 9 0 1 0 2.12-9.36L1 10"></path>
+        </svg>
+    </button>
     <button id="gridBtn" class="round-button" title="Toggle Grid">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round">
@@ -548,6 +583,8 @@
     const GUTTER_PERCENTAGE = 5;
 
     // DOM Elements
+    const body = document.querySelector('body');
+    const canvasContainer = document.getElementById('canvasContainer');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const colorPicker = document.getElementById('colorPicker');
@@ -574,9 +611,11 @@
     const errorOkBtn = document.getElementById('errorOkBtn');
     const brushSizeDisplay = document.getElementById('brushSizeDisplay');
     const gridBtn = document.getElementById('gridBtn');
-    const gridElement = document.getElementById('grid');
     const penBtn = document.getElementById('penBtn');
     const undoBtn = document.getElementById('undoBtn');
+    const rotateBtn = document.getElementById('rotateBtn');
+    const rotateAntiBtn = document.getElementById('rotateAntiBtn');
+    const resetRotationBtn = document.getElementById('resetRotationBtn');
 
     // State variables
     let isDrawing = false;
@@ -589,9 +628,6 @@
     let lastX = 0;
     let lastY = 0;
     let lastPressure = 1.0;
-    let drawingDirection = null;
-    let initialX = null;
-    let initialY = null;
     let lastBrushSize = 4;
     let isCtrlPressed = false;
     let isGridVisible = false;
@@ -602,6 +638,7 @@
     let whiteboards = [{name: 'Whiteboard 1', data: null, history: []}];
     let currentBoardIndex = 0;
     let saveTimeout;
+    let rotationDegrees = 35.0;
     let db;
 
     // Enable image smoothing for anti-aliasing
@@ -729,6 +766,8 @@
     }
 
     function resizeCanvas() {
+        canvasContainer.width = window.innerWidth;
+        canvasContainer.height = window.innerHeight;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         ctx.imageSmoothingEnabled = true;
@@ -736,9 +775,31 @@
         loadCurrentBoard();
     }
 
+    function getCanvasXY(event) {
+        const mouseX = event.offsetX;
+        const mouseY = event.offsetY;
+
+        if (Math.trunc(rotationDegrees) === 0) {
+            console.log('XXXXXX return mouseX, mouseY', mouseX, mouseY)
+            return [mouseX, mouseY]
+        }
+
+        // Get the current transformation matrix
+        const matrix = ctx.getTransform();
+
+        // Invert the transformation matrix to undo the rotation
+        const inverseMatrix = matrix.invertSelf();
+
+        // Use DOMPoint to apply the inverse transformation to the mouse coordinates
+        const point = new DOMPoint(mouseX, mouseY);
+        const transformedPoint = inverseMatrix.transformPoint(point);
+        return [transformedPoint.x, transformedPoint.y];
+    }
+
     function startDrawing(e) {
         isDrawing = true;
-        [lastX, lastY] = [e.clientX, e.clientY];
+        // [lastX, lastY] = [e.clientX, e.clientY];
+        [lastX, lastY] = getCanvasXY(e);
         shiftStartX = lastX;
         shiftStartY = lastY;
         shiftConstrainedDirection = null;
@@ -815,8 +876,10 @@
                 break;
         }
 
-        let newX = e.clientX;
-        let newY = e.clientY;
+        let [newX, newY] = getCanvasXY(e);
+
+        // let newX = e.clientX;
+        // let newY = e.clientY;
 
         if (isShiftPressed) {
             if (!shiftConstrainedDirection) {
@@ -839,6 +902,7 @@
         }
 
         ctx.beginPath();
+
         if (brushSize.value > 4 && newBrushSize / lastBrushSize < 0.7) {
             drawLine(ctx, lastX, lastY, newX, newY, lastBrushSize, newBrushSize);
         } else {
@@ -981,6 +1045,7 @@
 
     function drawGrid() {
         const canvas = document.createElement('canvas');
+        canvas.style.background = 'white';
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         const ctx = canvas.getContext('2d');
@@ -1365,6 +1430,31 @@
         }
     }
 
+    function rotateCanvas(r) {
+        if (r === 0) {
+            canvasContainer.style.transform = 'none';
+            canvasContainer.style.border = 'auto';
+        }
+        canvasContainer.style.transform = `rotate(${r}deg)`;
+        canvasContainer.style.border = 'black 1px solid';
+        rotationDegrees = r;
+    }
+
+    function rotateClockwise() {
+        rotateCanvas(rotationDegrees + 60);
+    }
+
+    function rotateAntiClockwise() {
+        rotateCanvas(rotationDegrees - 60);
+    }
+
+    function resetRotation() {
+        rotateCanvas(0);
+    }
+
+    rotateBtn.addEventListener('click', rotateClockwise);
+    rotateAntiBtn.addEventListener('click', rotateAntiClockwise);
+    resetRotationBtn.addEventListener('click', resetRotation);
     fileSelectBtn.addEventListener('click', handleFileSelect);
     fileInput.addEventListener('change', handleFileChange);
     brushSize.addEventListener('input', updateBrushSizeDisplay);
@@ -1410,6 +1500,7 @@
     resizeCanvas();
     updateBoardInfo();
     updateBrushSizeDisplay();
+    rotateCanvas(0)
     setActiveTool('pen');
 
     if ('serviceWorker' in navigator) {
