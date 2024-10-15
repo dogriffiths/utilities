@@ -6,6 +6,7 @@
     <title>Multi-Whiteboard App</title>
     <link rel="manifest" href="multiboard-manifest.json">
     <meta name="theme-color" content="#ffffff">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <style>
         /* ========== Global Styles ========== */
@@ -298,6 +299,14 @@
             background-color: #69B3FF;
         }
 
+        #pdfExportBtn {
+            background-color: #4CAF50; /* Green background */
+        }
+
+        #pdfExportBtn:hover {
+            background-color: #45a049; /* Darker green on hover */
+        }
+
         #undoBtn {
             background-color: #FFA94D;
         }
@@ -514,6 +523,15 @@
             <line x1="14" y1="11" x2="14" y2="17"></line>
         </svg>
     </button>
+    <button id="pdfExportBtn" class="round-button" title="Export all as PDF">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+    </button>
     <button id="saveBtn" class="round-button" title="Save as PNG">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round">
@@ -598,6 +616,7 @@
     const eraserBtn = document.getElementById('eraserBtn');
     const clearBtn = document.getElementById('clearBtn');
     const saveBtn = document.getElementById('saveBtn');
+    const pdfExportBtn = document.getElementById('pdfExportBtn');
     const newBoardBtn = document.getElementById('newBoardBtn');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
@@ -1064,6 +1083,61 @@
         link.download = `${whiteboards[currentBoardIndex].name}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
+    }
+
+    function saveAsPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'px', [canvas.width, canvas.height]);
+
+        // Function to optimize PNG image
+        function optimizeImage(src) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = this.width;
+                    canvas.height = this.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = 'white';  // Set background to white
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(this, 0, 0);
+                    resolve(canvas.toDataURL('image/png', 0.7));  // Use PNG with some compression
+                };
+                img.src = src;
+            });
+        }
+
+        // Function to add a single whiteboard to the PDF
+        async function addWhiteboardToPDF(index) {
+            const board = whiteboards[index];
+
+            if (index > 0) {
+                doc.addPage();
+            }
+
+            // Set white background
+            doc.setFillColor(255, 255, 255);
+            doc.rect(0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), 'F');
+
+            if (board.data) {
+                const optimizedImage = await optimizeImage(board.data);
+                doc.addImage(optimizedImage, 'PNG', 0, 0, canvas.width, canvas.height, null, 'FAST');
+            }
+
+            doc.setFontSize(20);
+            doc.setTextColor(0, 0, 0);  // Ensure text is black
+            doc.text(board.name + (board.data ? '' : ' (Blank)'), 20, 30);
+        }
+
+        // Use async/await to ensure whiteboards are added sequentially
+        async function generatePDF() {
+            for (let i = 0; i < whiteboards.length; i++) {
+                await addWhiteboardToPDF(i);
+            }
+            doc.save('all_whiteboards.pdf', { compress: true });
+        }
+
+        generatePDF();
     }
 
     function handleKeyboardShortcuts(e) {
@@ -1577,6 +1651,7 @@
     prevBtn.addEventListener('click', () => navigateBoards(-1));
     nextBtn.addEventListener('click', () => navigateBoards(1));
     saveBtn.addEventListener('click', saveAsPNG);
+    pdfExportBtn.addEventListener('click', saveAsPDF);
     undoBtn.addEventListener('click', undo);
     document.addEventListener('keydown', handleKeyboardShortcuts);
     window.addEventListener('load', loadWhiteboardsFromIndexedDB);
