@@ -417,21 +417,6 @@
                 transform: translate(-50%, -50%);
             }
         }
-
-        #rotateBtn {
-            background-color: transparent;
-            filter: grayscale(100%) brightness(1.2);
-        }
-
-        #rotateBtn:hover {
-            background-color: #666;
-            filter: grayscale(50%) brightness(1.1);
-        }
-
-        #rotateBtn.active {
-            background-color: #FF9800;
-            filter: none;
-        }
     </style>
 </head>
 <body>
@@ -507,12 +492,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"
                  stroke-linejoin="round">
                 <path d="M20 20H7L3 16C2 15 2 13 3 12L11 4C12 3 14 3 15 4L21 10C22 11 22 13 21 14L13 22"></path>
-            </svg>
-        </button>
-        <button id="rotateBtn" class="round-button" title="Rotate">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 4v6h-6"></path>
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
             </svg>
         </button>
     </div>
@@ -640,7 +619,6 @@
     const rotateClockwiseBtn = document.getElementById('rotateClockwiseBtn');
     const rotateAntiClockwiseBtn = document.getElementById('rotateAntiClockwiseBtn');
     const resetRotationBtn = document.getElementById('resetRotationBtn');
-    const rotateBtn = document.getElementById('rotateBtn');
 
     // State variables
     let isDrawing = false;
@@ -649,7 +627,6 @@
     let isHighlighting = false;
     let isOverviewVisible = false;
     let isTemporaryHighlighter = false;
-    let isRotating = false;
     let currentTool = 'pen';
     let lastX = 0;
     let lastY = 0;
@@ -665,6 +642,7 @@
     let currentBoardIndex = 0;
     let saveTimeout;
     let rotationDegrees = 0.0;
+    let isAltPressed = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
     let canvasCenterY = canvas.height / 2;
@@ -706,18 +684,14 @@
         isPenActive = tool === 'pen';
         isErasing = tool === 'eraser';
         isHighlighting = tool === 'highlighter';
-        isRotating = tool === 'rotate';
 
         // Update button states
         penBtn.classList.toggle('active', isPenActive);
         eraserBtn.classList.toggle('active', isErasing);
         highlighterBtn.classList.toggle('active', isHighlighting);
-        rotateBtn.classList.toggle('active', isRotating);
 
         // Update cursor
-        if (isRotating) {
-            canvas.style.cursor = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M23 4v6h-6\'%3E%3C/path%3E%3Cpath d=\'M20.49 15a9 9 0 1 1-2.12-9.36L23 10\'%3E%3C/path%3E%3C/svg%3E") 12 12, auto';
-        } else if (isErasing) {
+        if (isErasing) {
             canvas.style.cursor = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Ccircle cx=\'12\' cy=\'12\' r=\'10\'/%3E%3Cline x1=\'8\' y1=\'12\' x2=\'16\' y2=\'12\'/%3E%3C/svg%3E") 12 12, auto';
         } else if (isHighlighting) {
             canvas.style.cursor = 'url("data:image/svg+xml,...") 0 24, auto';
@@ -736,10 +710,6 @@
 
     function toggleEraser() {
         setActiveTool('eraser');
-    }
-
-    function toggleRotate() {
-        setActiveTool('rotate');
     }
 
     function debounce(func, wait) {
@@ -1295,6 +1265,11 @@
             return; // Exit the function if we're typing in the brush size input
         }
 
+        if (event.key === 'Alt') {
+            isAltPressed = true;
+            canvas.style.cursor = 'move';
+        }
+
         if (event.key === 'Control') {
             isCtrlPressed = true;
         }
@@ -1339,9 +1314,6 @@
                 break;
             case 'E':
                 setActiveTool('eraser');
-                break;
-            case 'T':
-                setActiveTool('rotate');
                 break;
             case 'X':
                 toggleGrid();
@@ -1433,6 +1405,10 @@
     }
 
     function handleKeyUp(event) {
+        if (event.key === 'Alt') {
+            isAltPressed = false;
+            canvas.style.cursor = 'default';
+        }
         if (event.key === 'Shift' && !isDrawing) {
             isShiftPressed = false;
             shiftConstrainedDirection = null;
@@ -1508,7 +1484,7 @@
     }
 
     function handleMouseDown(event) {
-        if (isRotating) {
+        if (isAltPressed) {
             lastMouseX = event.clientX;
             lastMouseY = event.clientY;
         } else {
@@ -1517,7 +1493,7 @@
     }
 
     function handleMouseMove(event) {
-        if (isRotating && event.buttons === 1) {
+        if (isAltPressed && event.buttons === 1) {
             const canvasRect = canvas.getBoundingClientRect();
             const canvasCenterX = canvasRect.left + canvasRect.width / 2;
             const canvasCenterY = canvasRect.top + canvasRect.height / 2;
@@ -1548,7 +1524,7 @@
     }
 
     function handleMouseUp(event) {
-        if (!isRotating) {
+        if (!isAltPressed) {
             stopDrawing();
         }
     }
@@ -1570,7 +1546,6 @@
     penBtn.addEventListener('click', togglePen);
     eraserBtn.addEventListener('click', toggleEraser);
     highlighterBtn.addEventListener('click', toggleHighlighter);
-    rotateBtn.addEventListener('click', toggleRotate);
     clearBtn.addEventListener('click', () => showConfirmDialog());
     confirmYes.addEventListener('click', () => {
         clearCanvas();
