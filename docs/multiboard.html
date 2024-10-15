@@ -791,7 +791,10 @@
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        // loadCurrentBoard();
+
+        if (isGridVisible) {
+            updateGrid();
+        }
     }
 
     function calculateAngle(x1, y1, x2, y2) {
@@ -1140,7 +1143,7 @@
         gridCanvas.style.left = '0';
         gridCanvas.style.pointerEvents = 'none';
         gridCanvas.style.zIndex = '-1';
-        document.body.appendChild(gridCanvas);
+        canvasContainer.appendChild(gridCanvas);
     }
 
     function toggleGrid() {
