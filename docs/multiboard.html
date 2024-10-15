@@ -307,6 +307,20 @@
             background-color: #ff5555; /* Darker green on hover */
         }
 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #pdfExportBtn.busy svg {
+            animation: spin 1s linear infinite;
+        }
+
+        #pdfExportBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         #undoBtn {
             background-color: #FFA94D;
         }
@@ -1082,6 +1096,10 @@
     }
 
     function saveAsPDF() {
+        const pdfBtn = document.getElementById('pdfExportBtn');
+        pdfBtn.disabled = true;
+        pdfBtn.classList.add('busy');
+
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'px', [canvas.width, canvas.height]);
 
@@ -1130,6 +1148,10 @@
                 await addWhiteboardToPDF(i);
             }
             doc.save('all_whiteboards.pdf', { compress: true });
+
+            // Re-enable the button and remove the busy class after PDF is saved
+            pdfBtn.disabled = false;
+            pdfBtn.classList.remove('busy');
         }
 
         generatePDF();
