@@ -436,7 +436,7 @@
         </svg>
     </button>
     <input type="file" id="fileInput" accept="image/*">
-    <button id="rotateBtn" class="round-button" title="Rotate Clockwise">
+    <button id="rotateClockwiseBtn" class="round-button" title="Rotate Clockwise">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round">
             <path d="M23 4v6h-6"></path>
@@ -449,7 +449,7 @@
             <path d="M12 5.5L6.5 18.5h11L12 5.5z" fill="#ffffff"/>
         </svg>
     </button>
-    <button id="rotateAntiBtn" class="round-button" title="Rotate Anti-Clockwise">
+    <button id="rotateAntiClockwiseBtn" class="round-button" title="Rotate Anti-Clockwise">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round">
             <path d="M1 4v6h6"></path>
@@ -616,8 +616,8 @@
     const gridBtn = document.getElementById('gridBtn');
     const penBtn = document.getElementById('penBtn');
     const undoBtn = document.getElementById('undoBtn');
-    const rotateBtn = document.getElementById('rotateBtn');
-    const rotateAntiBtn = document.getElementById('rotateAntiBtn');
+    const rotateClockwiseBtn = document.getElementById('rotateClockwiseBtn');
+    const rotateAntiClockwiseBtn = document.getElementById('rotateAntiClockwiseBtn');
     const resetRotationBtn = document.getElementById('resetRotationBtn');
 
     // State variables
@@ -642,6 +642,10 @@
     let currentBoardIndex = 0;
     let saveTimeout;
     let rotationDegrees = 0.0;
+    let isAltPressed = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let canvasCenterY = canvas.height / 2;
     let db;
 
     // Enable image smoothing for anti-aliasing
@@ -781,9 +785,17 @@
             canvas.style.transform = `translate(-50%, -50%) scale(${scale})`;
         }
 
+        // Recalculate canvasCenterY
+        const canvasRect = canvas.getBoundingClientRect();
+        canvasCenterY = canvasRect.top + canvasRect.height / 2;
+
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        loadCurrentBoard();
+        // loadCurrentBoard();
+    }
+
+    function calculateAngle(x1, y1, x2, y2) {
+        return Math.atan2(y2 - y1, x2 - x1);
     }
 
     function getCanvasXY(event) {
@@ -1250,6 +1262,11 @@
             return; // Exit the function if we're typing in the brush size input
         }
 
+        if (event.key === 'Alt') {
+            isAltPressed = true;
+            canvas.style.cursor = 'move';
+        }
+
         if (event.key === 'Control') {
             isCtrlPressed = true;
         }
@@ -1385,6 +1402,10 @@
     }
 
     function handleKeyUp(event) {
+        if (event.key === 'Alt') {
+            isAltPressed = false;
+            canvas.style.cursor = 'default';
+        }
         if (event.key === 'Shift' && !isDrawing) {
             isShiftPressed = false;
             shiftConstrainedDirection = null;
@@ -1438,25 +1459,75 @@
         }
     }
 
-    function rotateCanvas(r) {
-        rotationDegrees = r;
-        resizeCanvas()
+    function setRotation(r) {
+        rotationDegrees = (r + 360) % 360; // This ensures the angle stays between 0 and 359
+        resizeCanvas();
+    }
+
+    function rotateBy(by) {
+        setRotation(rotationDegrees + by);
     }
 
     function rotateClockwise() {
-        rotateCanvas(rotationDegrees + 60);
+        rotateBy(90);
     }
 
     function rotateAntiClockwise() {
-        rotateCanvas(rotationDegrees - 60);
+        rotateBy(-90);
     }
 
     function resetRotation() {
-        rotateCanvas(0);
+        setRotation(0);
     }
 
-    rotateBtn.addEventListener('click', rotateClockwise);
-    rotateAntiBtn.addEventListener('click', rotateAntiClockwise);
+    function handleMouseDown(event) {
+        if (isAltPressed) {
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+        } else {
+            startDrawing(event);
+        }
+    }
+
+    function handleMouseMove(event) {
+        if (isAltPressed && event.buttons === 1) {
+            const canvasRect = canvas.getBoundingClientRect();
+            const canvasCenterX = canvasRect.left + canvasRect.width / 2;
+            const canvasCenterY = canvasRect.top + canvasRect.height / 2;
+
+            // Calculate angles from center to start and end points
+            const startAngle = calculateAngle(canvasCenterX, canvasCenterY, lastMouseX, lastMouseY);
+            const endAngle = calculateAngle(canvasCenterX, canvasCenterY, event.clientX, event.clientY);
+
+            // Calculate the angle difference
+            let angleDiff = endAngle - startAngle;
+
+            // Normalize the angle difference to be between -PI and PI
+            if (angleDiff > Math.PI) {
+                angleDiff -= 2 * Math.PI;
+            } else if (angleDiff < -Math.PI) {
+                angleDiff += 2 * Math.PI;
+            }
+
+            // Convert the angle from radians to degrees
+            const rotationAmount = angleDiff * (180 / Math.PI);
+
+            rotateBy(rotationAmount);
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+        } else {
+            draw(event);
+        }
+    }
+
+    function handleMouseUp(event) {
+        if (!isAltPressed) {
+            stopDrawing();
+        }
+    }
+
+    rotateClockwiseBtn.addEventListener('click', rotateClockwise);
+    rotateAntiClockwiseBtn.addEventListener('click', rotateAntiClockwise);
     resetRotationBtn.addEventListener('click', resetRotation);
     fileSelectBtn.addEventListener('click', handleFileSelect);
     fileInput.addEventListener('change', handleFileChange);
@@ -1465,10 +1536,10 @@
     overviewBtn.addEventListener('click', toggleOverview);
     gridBtn.addEventListener('click', toggleGrid);
     window.addEventListener('resize', resizeCanvas);
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mouseout', handleMouseUp);
     penBtn.addEventListener('click', togglePen);
     eraserBtn.addEventListener('click', toggleEraser);
     highlighterBtn.addEventListener('click', toggleHighlighter);
@@ -1500,7 +1571,7 @@
     canvas.addEventListener('drop', handleDrop);
 
     // Initial setup
-    rotateCanvas(0)
+    setRotation(0)
     // resizeCanvas();
     updateBoardInfo();
     updateBrushSizeDisplay();
