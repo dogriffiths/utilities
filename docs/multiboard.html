@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#ffffff">
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <style>
-        /* Global Styles */
+        /* ========== Global Styles ========== */
         body, html {
             margin: 0;
             padding: 0;
@@ -16,6 +16,7 @@
             font-family: Arial, sans-serif;
         }
 
+        /* ========== Layout ========== */
         #canvasContainer {
             position: absolute;
             top: 0;
@@ -39,7 +40,8 @@
             top: 50%;
         }
 
-        /* Control Panel Styles */
+        /* ========== Component Styles ========== */
+        /* Control Panel */
         .control-panel {
             position: fixed;
             bottom: 20px;
@@ -62,7 +64,7 @@
             left: 36px;
         }
 
-        /* Button Styles */
+        /* Buttons */
         .round-button {
             width: 30px;
             height: 30px;
@@ -95,63 +97,7 @@
             background-color: #444;
         }
 
-        /* Specific Button Styles */
-        #clearBtn {
-            background-color: #FF6B6B;
-        }
-
-        #clearBtn:hover {
-            background-color: #FF8787;
-        }
-
-        #newBoardBtn {
-            background-color: #4ECB71;
-        }
-
-        #newBoardBtn:hover {
-            background-color: #69D687;
-        }
-
-        #saveBtn {
-            background-color: #4DA3FF;
-        }
-
-        #saveBtn:hover {
-            background-color: #69B3FF;
-        }
-
-        #undoBtn {
-            background-color: #FFA94D;
-        }
-
-        #undoBtn:hover {
-            background-color: #FFB969;
-        }
-
-        #gridBtn, #overviewBtn {
-            background-color: transparent;
-            filter: grayscale(100%) brightness(1.2);
-        }
-
-        #gridBtn:hover, #overviewBtn:hover {
-            background-color: #666;
-            filter: grayscale(50%) brightness(1.1);
-        }
-
-        #gridBtn.active, #overviewBtn.active {
-            background-color: #3D8BFF;
-            filter: none;
-        }
-
-        #fullscreenBtn, #fileSelectBtn {
-            background-color: #B96BFF;
-        }
-
-        #fullscreenBtn:hover, #fileSelectBtn:hover {
-            background-color: #C484FF;
-        }
-
-        /* Tool Group Styles */
+        /* Tool Group */
         .tool-group {
             display: flex;
             margin-right: 10px;
@@ -172,53 +118,7 @@
             border-bottom-right-radius: 15px;
         }
 
-        #penBtn, #highlighterBtn, #eraserBtn {
-            background-color: transparent;
-            filter: grayscale(100%) brightness(1.2);
-        }
-
-        #penBtn svg, #highlighterBtn svg, #eraserBtn svg {
-            stroke: #808080;
-        }
-
-        #penBtn:hover, #highlighterBtn:hover, #eraserBtn:hover {
-            background-color: #666;
-            filter: grayscale(50%) brightness(1.1);
-        }
-
-        #penBtn.active, #highlighterBtn.active, #eraserBtn.active {
-            filter: none;
-        }
-
-        #penBtn.active {
-            background-color: #4ECB71;
-        }
-
-        #penBtn.active:hover {
-            background-color: #69D687;
-        }
-
-        #highlighterBtn.active {
-            background-color: #FFD43B;
-        }
-
-        #highlighterBtn.active:hover {
-            background-color: #FFE066;
-        }
-
-        #highlighterBtn.active svg {
-            stroke: black;
-        }
-
-        #eraserBtn.active {
-            background-color: #FF6B6B;
-        }
-
-        #eraserBtn.active:hover {
-            background-color: #FF8787;
-        }
-
-        /* Color Picker and Brush Size Styles */
+        /* Color Picker and Brush Size */
         #colorPicker {
             width: 30px;
             height: 30px;
@@ -253,14 +153,7 @@
             color: white;
         }
 
-        /* Board Info Styles */
-        #boardInfo {
-            margin: 0 8px;
-            color: white;
-            font-size: 0.95em;
-        }
-
-        /* Overview Styles */
+        /* Overview */
         #overviewContainer {
             display: none;
             position: fixed;
@@ -321,30 +214,7 @@
             font-size: 14px;
         }
 
-        .removeWhiteboardBtn {
-            position: absolute;
-            top: -8px;
-            right: 1.5ex;
-            width: 20px;
-            height: 20px;
-            background-color: rgba(64, 64, 64, 0.3);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 12px;
-            line-height: 1;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1;
-        }
-
-        .removeWhiteboardBtn:hover {
-            background-color: rgba(64, 64, 64, 1);
-        }
-
-        /* Dialog Styles */
+        /* Dialog */
         .dialog {
             display: none;
             position: fixed;
@@ -402,11 +272,144 @@
             color: black;
         }
 
+        /* ========== Specific Element Styles ========== */
+        /* Buttons */
+        #clearBtn {
+            background-color: #FF6B6B;
+        }
+
+        #clearBtn:hover {
+            background-color: #FF8787;
+        }
+
+        #newBoardBtn {
+            background-color: #4ECB71;
+        }
+
+        #newBoardBtn:hover {
+            background-color: #69D687;
+        }
+
+        #saveBtn {
+            background-color: #4DA3FF;
+        }
+
+        #saveBtn:hover {
+            background-color: #69B3FF;
+        }
+
+        #undoBtn {
+            background-color: #FFA94D;
+        }
+
+        #undoBtn:hover {
+            background-color: #FFB969;
+        }
+
+        #gridBtn, #overviewBtn {
+            background-color: transparent;
+            filter: grayscale(100%) brightness(1.2);
+        }
+
+        #gridBtn:hover, #overviewBtn:hover {
+            background-color: #666;
+            filter: grayscale(50%) brightness(1.1);
+        }
+
+        #gridBtn.active, #overviewBtn.active {
+            background-color: #3D8BFF;
+            filter: none;
+        }
+
+        #fullscreenBtn, #fileSelectBtn {
+            background-color: #B96BFF;
+        }
+
+        #fullscreenBtn:hover, #fileSelectBtn:hover {
+            background-color: #C484FF;
+        }
+
+        #penBtn, #highlighterBtn, #eraserBtn {
+            background-color: transparent;
+            filter: grayscale(100%) brightness(1.2);
+        }
+
+        #penBtn svg, #highlighterBtn svg, #eraserBtn svg {
+            stroke: #808080;
+        }
+
+        #penBtn:hover, #highlighterBtn:hover, #eraserBtn:hover {
+            background-color: #666;
+            filter: grayscale(50%) brightness(1.1);
+        }
+
+        #penBtn.active, #highlighterBtn.active, #eraserBtn.active {
+            filter: none;
+        }
+
+        #penBtn.active {
+            background-color: #4ECB71;
+        }
+
+        #penBtn.active:hover {
+            background-color: #69D687;
+        }
+
+        #highlighterBtn.active {
+            background-color: #FFD43B;
+        }
+
+        #highlighterBtn.active:hover {
+            background-color: #FFE066;
+        }
+
+        #highlighterBtn.active svg {
+            stroke: black;
+        }
+
+        #eraserBtn.active {
+            background-color: #FF6B6B;
+        }
+
+        #eraserBtn.active:hover {
+            background-color: #FF8787;
+        }
+
+        /* Other Elements */
+        #boardInfo {
+            margin: 0 8px;
+            color: white;
+            font-size: 0.95em;
+        }
+
+        .removeWhiteboardBtn {
+            position: absolute;
+            top: -8px;
+            right: 1.5ex;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(64, 64, 64, 0.3);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .removeWhiteboardBtn:hover {
+            background-color: rgba(64, 64, 64, 1);
+        }
+
         #fileInput {
             display: none;
         }
 
-        /* Animation */
+        /* ========== Animations ========== */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -621,31 +624,48 @@
     const resetRotationBtn = document.getElementById('resetRotationBtn');
 
     // State variables
+    // Canvas and drawing state
     let isDrawing = false;
-    let isErasing = false;
-    let isPenActive = true;
-    let isHighlighting = false;
-    let isOverviewVisible = false;
-    let isTemporaryHighlighter = false;
-    let currentTool = 'pen';
     let lastX = 0;
     let lastY = 0;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
     let lastPressure = 1.0;
+    let canvasCenterY = canvas.height / 2;
+
+    // Tools and modes
+    let currentTool = 'pen';
+    let isPenActive = true;
+    let isErasing = false;
+    let isHighlighting = false;
+    let isTemporaryHighlighter = false;
+
+    // Brush properties
     let lastBrushSize = 4;
-    let isCtrlPressed = false;
+
+    // UI state
+    let isOverviewVisible = false;
     let isGridVisible = false;
+
+    // Keyboard modifiers
+    let isCtrlPressed = false;
     let isShiftPressed = false;
+    let isAltPressed = false;
+
+    // Shift key constraining
     let shiftConstrainedDirection = null;
     let shiftStartX = null;
     let shiftStartY = null;
+
+    // Whiteboard management
     let whiteboards = [{name: 'Whiteboard 1', data: null, history: []}];
     let currentBoardIndex = 0;
+
+    // Miscellaneous
     let saveTimeout;
     let rotationDegrees = 0.0;
-    let isAltPressed = false;
-    let lastMouseX = 0;
-    let lastMouseY = 0;
-    let canvasCenterY = canvas.height / 2;
+
+    // Index db
     let db;
 
     // Enable image smoothing for anti-aliasing
