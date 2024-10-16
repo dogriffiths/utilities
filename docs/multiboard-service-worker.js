@@ -1,6 +1,7 @@
 const CACHE_NAME = 'whiteboard-app-v2';
 const urlsToCache = [
   '/utilities/multiboard.html',
+  '/utilities/favicon.ico',
   '/utilities/multiboard-192x192.png',
   '/utilities/multiboard-512x512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
