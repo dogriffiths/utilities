@@ -927,8 +927,14 @@
     }
 
     function getCanvasXY(event) {
-        const mouseX = event.offsetX;
-        const mouseY = event.offsetY;
+        let mouseX, mouseY;
+        if (event.touches) {
+            mouseX = event.touches[0].clientX - canvas.getBoundingClientRect().left;
+            mouseY = event.touches[0].clientY - canvas.getBoundingClientRect().top;
+        } else {
+            mouseX = event.offsetX;
+            mouseY = event.offsetY;
+        }
 
         if (Math.trunc(rotationDegrees) === 0) {
             return [mouseX, mouseY]
@@ -1940,12 +1946,13 @@
             lastMouseX = event.clientX;
             lastMouseY = event.clientY;
         } else {
-            startDrawing(event);
+            const [x, y] = getCanvasXY(event);
+            startDrawing({ offsetX: x, offsetY: y });
         }
     }
 
     function handleMouseMove(event) {
-        if (isAltPressed && event.buttons === 1) {
+        if (isAltPressed && (event.buttons === 1 || event.touches)) {
             const canvasRect = canvas.getBoundingClientRect();
             const canvasCenterX = canvasRect.left + canvasRect.width / 2;
             const canvasCenterY = canvasRect.top + canvasRect.height / 2;
@@ -1971,7 +1978,8 @@
             lastMouseX = event.clientX;
             lastMouseY = event.clientY;
         } else {
-            draw(event);
+            const [x, y] = getCanvasXY(event);
+            draw({ offsetX: x, offsetY: y });
         }
     }
 
@@ -1980,6 +1988,69 @@
             stopDrawing();
         }
     }
+
+    // Touch event handlers
+    function handleTouchStart(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        handleMouseDown(mouseEvent);
+    }
+
+    function handleTouchMove(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        handleMouseMove(mouseEvent);
+    }
+
+    function handleTouchEnd(e) {
+        const mouseEvent = new MouseEvent('mouseup', {});
+        handleMouseUp(mouseEvent);
+    }
+
+    // Pointer event handlers
+    function handlePointerDown(e) {
+        e.preventDefault();
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+            canvas.setPointerCapture(e.pointerId);
+        }
+        const mouseEvent = new MouseEvent('mousedown', {
+            clientX: e.clientX,
+            clientY: e.clientY
+        });
+        handleMouseDown(mouseEvent);
+    }
+
+    function handlePointerMove(e) {
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+            e.preventDefault();
+        }
+        const mouseEvent = new MouseEvent('mousemove', {
+            clientX: e.clientX,
+            clientY: e.clientY
+        });
+        handleMouseMove(mouseEvent);
+    }
+
+    function handlePointerUp(e) {
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+            canvas.releasePointerCapture(e.pointerId);
+        }
+        const mouseEvent = new MouseEvent('mouseup', {});
+        handleMouseUp(mouseEvent);
+    }
+
+
+
+
+
 
     resetRotationBtn.addEventListener('click', resetRotation);
     fileSelectBtn.addEventListener('click', handleFileSelect);
@@ -2035,6 +2106,9 @@
             e.preventDefault();
         }
     });
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd);
 
     // Initial setup
     setRotation(0)
