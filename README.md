@@ -11,13 +11,37 @@ Welcome to this collection of web-based tools! This project is a group of simple
 
 ### [Simple Whiteboard App](https://dogriffiths.github.io/utilities/multiboard.html) (Made with Claude.AI)
 
-This is a light and easy-to-use web tool for drawing and sharing ideas. The whiteboard app lets you sketch, write, and organize your thoughts visually. Made with Claude.AI, it is simple but useful for brainstorming or note-taking.
+A feature-rich, responsive, and user-friendly digital whiteboard with support for multiple devices and input methods.
 
 #### Main Features:
-- **Multiple Whiteboards**: You can create more than one whiteboard. Easily switch between boards to organize your ideas better.
-- **Undo Option**: If you make a mistake, use the undo button to go back and fix it.
-- **Local Save**: Your boards are saved in your browser. Even if you close the browser or refresh the page, your work will not be lost.
-- **Save as PNG**: You can save your whiteboard drawings as PNG image files. This makes it easy to share or keep for later use.
+- Multiple whiteboards with navigation
+- Drawing tools: pen, highlighter, and eraser
+- Color picker for drawing
+- Adjustable brush size
+- Undo functionality
+- Clear canvas option with confirmation dialog
+- Save whiteboard as PNG
+- Export all whiteboards as PDF
+- Fullscreen mode
+- Grid overlay toggle
+- Overview mode to see all whiteboards
+- Drag and drop reordering of whiteboards in overview mode
+- Keyboard shortcuts for various actions
+- Copy and paste whiteboards
+- Drag an image from your desktop to replace the current whiteboard
+- Invert colors mode (chalkboard)
+- Pressure sensitivity support for stylus input
+- Duplicate whiteboard feature
+- Whiteboards stored offline, so nothing it sent to the net
+- Shift key constraining for straight lines
+- Ctrl key for temporary highlighter mode
+- Alt key for canvas rotation
+- Service worker for offline functionality
+- Remove individual whiteboards
+- Drag and drop image import
+- Auto-save functionality
+- Multiple brush size presets accessible via number keys
+- Reset rotation button
 
 ---
 
