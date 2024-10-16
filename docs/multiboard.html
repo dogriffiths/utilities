@@ -462,24 +462,10 @@
         </svg>
     </button>
     <input type="file" id="fileInput" accept="image/*">
-    <button id="rotateClockwiseBtn" class="round-button" title="Rotate Clockwise">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round">
-            <path d="M23 4v6h-6"></path>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-        </svg>
-    </button>
     <button id="resetRotationBtn" class="round-button" title="Reset Rotation">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path d="M12 2L4 20h16L12 2z" fill="#000000"/>
             <path d="M12 5.5L6.5 18.5h11L12 5.5z" fill="#ffffff"/>
-        </svg>
-    </button>
-    <button id="rotateAntiClockwiseBtn" class="round-button" title="Rotate Anti-Clockwise">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round">
-            <path d="M1 4v6h6"></path>
-            <path d="M3.51 15a9 9 0 1 0 2.12-9.36L1 10"></path>
         </svg>
     </button>
     <button id="gridBtn" class="round-button" title="Toggle Grid">
@@ -579,6 +565,13 @@
             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
         </svg>
     </button>
+    <button id="duplicateBtn" class="round-button" title="Duplicate whiteboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+    </button>
     <button id="newBoardBtn" class="round-button" title="New whiteboard">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round">
@@ -648,9 +641,8 @@
     const gridBtn = document.getElementById('gridBtn');
     const penBtn = document.getElementById('penBtn');
     const undoBtn = document.getElementById('undoBtn');
-    const rotateClockwiseBtn = document.getElementById('rotateClockwiseBtn');
-    const rotateAntiClockwiseBtn = document.getElementById('rotateAntiClockwiseBtn');
     const resetRotationBtn = document.getElementById('resetRotationBtn');
+    const duplicateBtn = document.getElementById('duplicateBtn');
 
     // State variables
     // Canvas and drawing state
@@ -717,16 +709,6 @@
     dbPromise.onerror = function (event) {
         console.error('IndexedDB error:', event.target.error);
     };
-
-    function determineDrawingDirection(startX, startY, endX, endY) {
-        const dx = Math.abs(endX - startX);
-        const dy = Math.abs(endY - startY);
-
-        if (dx > directionThreshold || dy > directionThreshold) {
-            return dx > dy ? 'horizontal' : 'vertical';
-        }
-        return null;
-    }
 
     function setActiveTool(tool) {
         currentTool = tool;
@@ -868,6 +850,31 @@
         const point = new DOMPoint(mouseX, mouseY);
         const transformedPoint = inverseMatrix.transformPoint(point);
         return [transformedPoint.x, transformedPoint.y];
+    }
+
+    function duplicateWhiteboard() {
+        const currentBoard = whiteboards[currentBoardIndex];
+        const newBoard = {
+            name: `${currentBoard.name} (Copy)`,
+            data: currentBoard.data,
+            history: []  // Start with an empty history for the new board
+        };
+
+        // Insert the new board right after the current one
+        whiteboards.splice(currentBoardIndex + 1, 0, newBoard);
+
+        renameWhiteboards();
+
+        // Switch to the new board
+        currentBoardIndex++;
+
+        // Update the UI
+        loadCurrentBoard();
+        updateBoardInfo();
+        saveWhiteboardsToIndexedDB();
+        if (isOverviewVisible) {
+            updateOverviewGrid();
+        }
     }
 
     function startDrawing(e) {
@@ -1605,19 +1612,12 @@
 
     function setRotation(r) {
         rotationDegrees = (r + 360) % 360; // This ensures the angle stays between 0 and 359
+        resetRotationBtn.disabled = rotationDegrees === 0;
         resizeCanvas();
     }
 
     function rotateBy(by) {
         setRotation(rotationDegrees + by);
-    }
-
-    function rotateClockwise() {
-        rotateBy(90);
-    }
-
-    function rotateAntiClockwise() {
-        rotateBy(-90);
     }
 
     function resetRotation() {
@@ -1670,8 +1670,6 @@
         }
     }
 
-    rotateClockwiseBtn.addEventListener('click', rotateClockwise);
-    rotateAntiClockwiseBtn.addEventListener('click', rotateAntiClockwise);
     resetRotationBtn.addEventListener('click', resetRotation);
     fileSelectBtn.addEventListener('click', handleFileSelect);
     fileInput.addEventListener('change', handleFileChange);
@@ -1715,6 +1713,7 @@
     canvas.addEventListener('dragover', handleDragOver);
     canvas.addEventListener('drop', handleDrop);
     document.addEventListener('paste', handlePaste);
+    duplicateBtn.addEventListener('click', duplicateWhiteboard);
 
     // Initial setup
     setRotation(0)
