@@ -1157,12 +1157,42 @@
         generatePDF();
     }
 
+    function copyCurrentWhiteboard() {
+        canvas.toBlob(function(blob) {
+            const item = new ClipboardItem({ "image/png": blob });
+            navigator.clipboard.write([item]).then(function() {
+                showNotification('Whiteboard copied to clipboard');
+            }, function(err) {
+                console.error("Could not copy image: ", err);
+                showNotification('Failed to copy whiteboard');
+            });
+        });
+    }
+
     function handleKeyboardShortcuts(e) {
-        // Check if CMD (Mac) or CTRL (Windows/Linux) is pressed along with 'Z'
         if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
             e.preventDefault(); // Prevent the browser's default undo behavior
             undo();
         }
+        if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
+            e.preventDefault(); // Prevent the browser's default copy behavior
+            copyCurrentWhiteboard();
+        }
+    }
+
+    function handlePaste(e) {
+        e.preventDefault();
+        const items = e.clipboardData.items;
+
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                loadImageToCanvas(blob);
+                return;
+            }
+        }
+
+        showErrorDialog('No image found in clipboard. Please copy an image and try again.');
     }
 
     function handlePointerEvent(event) {
@@ -1529,13 +1559,13 @@
         }
     }
 
-    function loadImageToCanvas(file) {
+    function loadImageToCanvas(blob) {
         const reader = new FileReader();
 
         reader.onload = function (event) {
             const img = new Image();
-            img.onerror = function (event) {
-                showErrorDialog('Please drop an image file.');
+            img.onerror = function () {
+                showErrorDialog('Error loading the image. Please try again with a different image.');
             };
             img.onload = function () {
                 // Clear the canvas
@@ -1555,7 +1585,7 @@
             img.src = event.target.result;
         };
 
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(blob);
     }
 
     function handleFileSelect() {
@@ -1684,6 +1714,7 @@
     document.addEventListener('fullscreenchange', updateFullscreenButton);
     canvas.addEventListener('dragover', handleDragOver);
     canvas.addEventListener('drop', handleDrop);
+    document.addEventListener('paste', handlePaste);
 
     // Initial setup
     setRotation(0)
