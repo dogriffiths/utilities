@@ -1305,6 +1305,9 @@
             img.onload = function () {
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             };
+            img.onerror = function() {
+                console.error('Failed to load image');
+            }
             img.src = whiteboards[currentBoardIndex].data;
             renderStickyNotes();
         }
