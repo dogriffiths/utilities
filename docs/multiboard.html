@@ -187,11 +187,16 @@
 
         .overviewItem {
             display: flex;
+            cursor: move;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
             position: relative;
             pointer-events: auto;
+        }
+
+        .overviewItem.over {
+            border: 2px dashed #000;
         }
 
         .overviewImage {
@@ -1377,6 +1382,7 @@
         whiteboards.forEach((board, index) => {
             const item = document.createElement('div');
             item.className = 'overviewItem';
+            item.dataset.index = index;
 
             let thumbnailContent;
             if (board.data) {
@@ -1386,10 +1392,10 @@
             }
 
             item.innerHTML = `
-                    ${thumbnailContent}
-                    <span class="overviewName">${board.name}</span>
-                    <button class="removeWhiteboardBtn" title="Remove Whiteboard">×</button>
-                 `;
+            ${thumbnailContent}
+            <span class="overviewName">${board.name}</span>
+            <button class="removeWhiteboardBtn" title="Remove Whiteboard">×</button>
+        `;
 
             const removeBtn = item.querySelector('.removeWhiteboardBtn');
             removeBtn.addEventListener('click', (e) => {
@@ -1398,10 +1404,12 @@
             });
 
             item.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent the click from bubbling up to overviewContainer
+                e.stopPropagation();
                 loadBoard(index);
                 toggleOverview();
             });
+
+            makeDraggable(item);
             overviewGrid.appendChild(item);
         });
     }
@@ -1565,17 +1573,22 @@
     }
 
     function handleDragOver(e) {
-        e.preventDefault();
-        e.stopPropagation();
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        e.dataTransfer.dropEffect = 'move';
+        return false;
     }
 
     function handleDrop(e) {
-        e.preventDefault();
-        e.stopPropagation();
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
 
         const files = e.dataTransfer.files;
 
         if (files.length > 0) {
+            e.preventDefault();
             const file = files[0];
 
             if (file.type.startsWith('image/')) {
@@ -1583,7 +1596,61 @@
             } else {
                 showErrorDialog('Please drop an image file.');
             }
+        } else if (this !== e.target) {
+            const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            const toIndex = parseInt(this.dataset.index);
+
+            // Reorder the whiteboards array
+            const [removed] = whiteboards.splice(fromIndex, 1);
+            whiteboards.splice(toIndex, 0, removed);
+
+            // Update currentBoardIndex if necessary
+            if (currentBoardIndex === fromIndex) {
+                currentBoardIndex = toIndex;
+            } else if (fromIndex < currentBoardIndex && toIndex >= currentBoardIndex) {
+                currentBoardIndex--;
+            } else if (fromIndex > currentBoardIndex && toIndex <= currentBoardIndex) {
+                currentBoardIndex++;
+            }
+
+            // Rename whiteboards and update the UI
+            renameWhiteboards();
+            updateOverviewGrid();
+            updateBoardInfo();
+            saveWhiteboardsToIndexedDB();
         }
+
+        return false;
+    }
+
+    function makeDraggable(item) {
+        item.draggable = true;
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('dragenter', handleDragEnter);
+        item.addEventListener('dragleave', handleDragLeave);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragend', handleDragEnd);
+    }
+
+    function handleDragEnd(e) {
+        this.style.opacity = '1';
+        const items = document.querySelectorAll('.overviewItem');
+        items.forEach(item => item.classList.remove('over'));
+    }
+
+    function handleDragLeave(e) {
+        this.classList.remove('over');
+    }
+
+    function handleDragEnter(e) {
+        this.classList.add('over');
+    }
+
+    function handleDragStart(e) {
+        this.style.opacity = '0.4';
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.index);
     }
 
     function handleKeyUp(event) {
