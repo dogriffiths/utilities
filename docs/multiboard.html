@@ -1180,6 +1180,15 @@
         whiteboards[currentBoardIndex].stickyNotes.push(note);
         renderStickyNotes();
         saveCurrentBoard();
+
+        setTimeout(() => {
+            const noteElement = document.querySelector(`.sticky-note[data-id="${note.id}"]`);
+            if (noteElement) {
+                const textarea = noteElement.querySelector('.note-content');
+                textarea.focus();
+                textarea.select();
+            }
+        }, 0);
     }
 
 
@@ -1195,6 +1204,7 @@
         whiteboards[currentBoardIndex].stickyNotes.forEach(note => {
             const noteElement = document.createElement('div');
             noteElement.className = 'sticky-note';
+            noteElement.dataset.id = note.id;
             noteElement.style.left = `${note.x * scale}px`;
             noteElement.style.top = `${note.y * scale}px`;
             noteElement.style.width = `200px`;
