@@ -1129,7 +1129,7 @@
     function createNewBoard() {
         saveCurrentBoard();
         const newBoardIndex = whiteboards.length;
-        whiteboards.push({name: `Whiteboard ${newBoardIndex + 1}`, data: null, history: []});
+        whiteboards.push({name: `Whiteboard ${newBoardIndex + 1}`, data: null, history: [], stickyNotes: []});
         currentBoardIndex = newBoardIndex;
         clearCanvas();
         updateBoardInfo();
@@ -1167,12 +1167,13 @@
     }
 
     function createStickyNote(x, y) {
+        const scale = getCanvasScale();
         const note = {
             id: Date.now(),
-            x: x,
-            y: y,
-            width: 200,
-            height: 150,
+            x: x / scale,
+            y: y / scale,
+            width: 200 / scale,
+            height: 150 / scale,
             text: 'New note',
             color: getRandomPastelColor()
         };
@@ -1180,6 +1181,7 @@
         renderStickyNotes();
         saveCurrentBoard();
     }
+
 
     function getRandomPastelColor() {
         const hue = Math.floor(Math.random() * 360);
@@ -1189,12 +1191,12 @@
     function renderStickyNotes() {
         const notesContainer = document.getElementById('stickyNotesContainer');
         notesContainer.innerHTML = '';
-        let stickyNotes1 = whiteboards[currentBoardIndex].stickyNotes;
-        stickyNotes1?.forEach(note => {
+        const scale = getCanvasScale();
+        whiteboards[currentBoardIndex].stickyNotes.forEach(note => {
             const noteElement = document.createElement('div');
             noteElement.className = 'sticky-note';
-            noteElement.style.left = `${note.x}px`;
-            noteElement.style.top = `${note.y}px`;
+            noteElement.style.left = `${note.x * scale}px`;
+            noteElement.style.top = `${note.y * scale}px`;
             noteElement.style.width = `200px`;
             // noteElement.style.width = `${note.width}px`;
             noteElement.style.height = `150px`;
@@ -1223,17 +1225,19 @@
 
         noteElement.querySelector('.drag-handle').addEventListener('mousedown', (e) => {
             isDragging = true;
-            startX = e.clientX - note.x;
-            startY = e.clientY - note.y;
+            const scale = getCanvasScale();
+            startX = e.clientX - note.x * scale;
+            startY = e.clientY - note.y * scale;
             noteElement.style.zIndex = getHighestZIndex() + 1;
         });
 
         document.addEventListener('mousemove', (e) => {
             if (isDragging) {
-                note.x = (e.clientX - startX);
-                note.y = (e.clientY - startY);
-                noteElement.style.left = `${note.x}px`;
-                noteElement.style.top = `${note.y}px`;
+                const scale = getCanvasScale();
+                note.x = (e.clientX - startX) / scale;
+                note.y = (e.clientY - startY) / scale;
+                noteElement.style.left = `${note.x * scale}px`;
+                noteElement.style.top = `${note.y * scale}px`;
             }
         });
 
@@ -1252,11 +1256,10 @@
 
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
-                if (entry.contentRect.width !== 0 && entry.contentRect.width !== 0) {
-                    note.width = entry.contentRect.width;
-                    note.height = entry.contentRect.height;
-                    saveCurrentBoard();
-                }
+                const scale = getCanvasScale();
+                note.width = entry.contentRect.width / scale;
+                note.height = entry.contentRect.height / scale;
+                saveCurrentBoard();
             }
         });
 
@@ -1383,6 +1386,12 @@
         }
 
         generatePDF();
+    }
+
+    function getCanvasScale() {
+        const scaleX = canvasContainer.clientWidth / canvas.width;
+        const scaleY = canvasContainer.clientHeight / canvas.height;
+        return Math.min(scaleX, scaleY);
     }
 
     function copyCurrentWhiteboard() {
