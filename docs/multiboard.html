@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="apple-touch-icon" href="multiboard-192x192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Delicious+Handrawn&display=swap" rel="stylesheet">
     <style>
         /* ========== Global Styles ========== */
         body, html {
@@ -493,11 +494,20 @@
             border: 1px solid #e8e8e8;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             padding: 10px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
+            font-family: 'Delicious Handrawn', cursive; /* Update the font-family here */
+            font-size: 24px; /* Slightly increase font size for better readability */
             pointer-events: auto;
             display: flex;
             flex-direction: column;
+        }
+        .note-content {
+            flex-grow: 1;
+            resize: none;
+            overflow: auto;
+            background: transparent;
+            border: none;
+            font-family: inherit;
+            font-size: inherit;
         }
         .note-header {
             display: flex;

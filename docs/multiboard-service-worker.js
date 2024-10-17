@@ -4,7 +4,9 @@ const urlsToCache = [
   '/utilities/favicon.ico',
   '/utilities/multiboard-192x192.png',
   '/utilities/multiboard-512x512.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+  'https://fonts.googleapis.com/css2?family=Delicious+Handrawn&display=swap',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
 ];
 
 self.addEventListener('install', (event) => {
