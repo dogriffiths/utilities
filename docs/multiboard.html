@@ -528,6 +528,32 @@
         #toggleStickyNotesBtn.active:hover {
             background-color: #eeee00;
         }
+
+        .popup-menu {
+            display: none;
+            position: absolute;
+            background-color: #1C1C1C;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 5px 0;
+            z-index: 1000;
+            min-width: 150px; /* Ensure the menu has a minimum width */
+        }
+
+        .popup-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            text-align: left;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .popup-menu button:hover {
+            background-color: #333;
+        }
     </style>
 </head>
 <body>
@@ -538,15 +564,14 @@
 <div id="overviewContainer">
     <div id="overviewGrid"></div>
 </div>
+<div id="fileMenu" class="popup-menu">
+    <button id="savePdfBtn">Save to PDF</button>
+    <button id="savePngBtn">Save to PNG</button>
+    <button id="importPngBtn">Import PNG</button>
+    <button id="exportDbBtn">Export Database</button>
+    <button id="importDbBtn">Import Database</button>
+</div>
 <div id="drawing-controls" class="control-panel">
-    <button id="fileSelectBtn" class="round-button" title="Select Image File">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-        </svg>
-    </button>
     <input type="file" id="fileInput" accept="image/*">
     <button id="invertBtn" class="round-button" title="Invert Colors">
         <svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
@@ -624,35 +649,10 @@
             <line x1="14" y1="11" x2="14" y2="17"></line>
         </svg>
     </button>
-    <button id="exportDbBtn" class="round-button" title="Export Database as ZIP">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-            <path d="M12 3v12"></path>
-            <path d="M8 7h8"></path>
-            <path d="M8 11h8"></path>
-        </svg>
-    </button>
-    <button id="importDbBtn" class="round-button" title="Import Database from ZIP">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-        </svg>
-    </button>
     <input type="file" id="importFileInput" accept=".zip" style="display: none;">
-    <button id="pdfExportBtn" class="round-button" title="Export all as PDF">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <text x="12" y="15" font-size="12" text-anchor="middle" fill="#000" font-family="Arial, sans-serif">PDF</text>
-        </svg>
-    </button>
-    <button id="saveBtn" class="round-button" title="Save as PNG">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
+    <button id="fileMenuBtn" class="round-button" title="File Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
         </svg>
     </button>
 </div>
@@ -737,8 +737,6 @@
     const brushSize = document.getElementById('brushSize');
     const eraserBtn = document.getElementById('eraserBtn');
     const clearBtn = document.getElementById('clearBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    const pdfExportBtn = document.getElementById('pdfExportBtn');
     const newBoardBtn = document.getElementById('newBoardBtn');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
@@ -751,7 +749,6 @@
     const overviewContainer = document.getElementById('overviewContainer');
     const overviewGrid = document.getElementById('overviewGrid');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const fileSelectBtn = document.getElementById('fileSelectBtn');
     const fileInput = document.getElementById('fileInput');
     const errorDialog = document.getElementById('errorDialog');
     const errorMessage = document.getElementById('errorMessage');
@@ -765,10 +762,14 @@
     const invertBtn = document.getElementById('invertBtn');
     const stickyNotesContainer = document.getElementById('stickyNotesContainer');
     const toggleStickyNotesBtn = document.getElementById('toggleStickyNotesBtn');
+    const importFileInput = document.getElementById('importFileInput');
+    const fileMenuBtn = document.getElementById('fileMenuBtn');
+    const fileMenu = document.getElementById('fileMenu');
+    const savePdfBtn = document.getElementById('savePdfBtn');
+    const savePngBtn = document.getElementById('savePngBtn');
+    const importPngBtn = document.getElementById('importPngBtn');
     const exportDbBtn = document.getElementById('exportDbBtn');
     const importDbBtn = document.getElementById('importDbBtn');
-    const importFileInput = document.getElementById('importFileInput');
-
 
     // State variables
     // Canvas and drawing state
@@ -1360,10 +1361,7 @@
     }
 
     function saveAsPDF() {
-        const pdfBtn = document.getElementById('pdfExportBtn');
-        pdfBtn.disabled = true;
-        pdfBtn.classList.add('busy');
-
+        closeFileMenu()
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('l', 'px', [canvas.width, canvas.height]);
 
@@ -1412,10 +1410,6 @@
                 await addWhiteboardToPDF(i);
             }
             doc.save('all_whiteboards.pdf', { compress: true });
-
-            // Re-enable the button and remove the busy class after PDF is saved
-            pdfBtn.disabled = false;
-            pdfBtn.classList.remove('busy');
         }
 
         generatePDF();
@@ -1935,6 +1929,7 @@
     }
 
     function handleFileSelect() {
+        closeFileMenu()
         const dataTransfer = new DataTransfer();
         fileInput.files = dataTransfer.files;
         fileInput.click();
@@ -2010,6 +2005,7 @@
     }
 
     function exportDatabase() {
+        closeFileMenu()
         const transaction = db.transaction(['whiteboards'], 'readonly');
         const store = transaction.objectStore('whiteboards');
         const request = store.getAll();
@@ -2070,8 +2066,9 @@
 
                     transaction.oncomplete = function() {
                         console.log('Database import completed successfully');
-                        showErrorDialog('Database imported successfully. The page will now reload.');
-                        setTimeout(() => location.reload(), 2000);
+                        // showErrorDialog('Database imported successfully. The page will now reload.');
+                        // setTimeout(() => location.reload(), 2000);
+                        location.reload()
                     };
 
                     transaction.onerror = function(event) {
@@ -2087,8 +2084,36 @@
         reader.readAsArrayBuffer(file);
     }
 
+    function closeFileMenu() {
+        fileMenu.style.display = 'none';
+    }
+
+    function toggleFileMenu(event) {
+        event.stopPropagation();
+        const rect = fileMenuBtn.getBoundingClientRect();
+
+        if (fileMenu.style.display === 'block') {
+            closeFileMenu();
+        } else {
+            fileMenu.style.display = 'block';
+
+            // Position the menu above the button
+            fileMenu.style.bottom = `${window.innerHeight - rect.top}px`;
+
+            // Align the right side of the menu with the right side of the button
+            fileMenu.style.right = `${window.innerWidth - rect.right}px`;
+
+            // Remove left positioning
+            fileMenu.style.left = 'auto';
+        }
+    }
+
+    document.addEventListener('click', (event) => {
+        if (!fileMenu.contains(event.target) && event.target !== fileMenuBtn) {
+            fileMenu.style.display = 'none';
+        }
+    });
     resetRotationBtn.addEventListener('click', resetRotation);
-    fileSelectBtn.addEventListener('click', handleFileSelect);
     fileInput.addEventListener('change', handleFileChange);
     brushSize.addEventListener('input', updateBrushSizeDisplay);
     brushSizeDisplay.addEventListener('change', updateBrushSizeSlider);
@@ -2112,8 +2137,6 @@
     newBoardBtn.addEventListener('click', createNewBoard);
     prevBtn.addEventListener('click', () => navigateBoards(-1));
     nextBtn.addEventListener('click', () => navigateBoards(1));
-    saveBtn.addEventListener('click', saveAsPNG);
-    pdfExportBtn.addEventListener('click', saveAsPDF);
     undoBtn.addEventListener('click', undo);
     document.addEventListener('keydown', handleKeyboardShortcuts);
     window.addEventListener('load', loadWhiteboardsFromIndexedDB);
@@ -2142,13 +2165,22 @@
         }
     });
     toggleStickyNotesBtn.addEventListener('click', toggleStickyNotes);
-    exportDbBtn.addEventListener('click', exportDatabase);
-    importDbBtn.addEventListener('click', () => document.getElementById('importFileInput').click());
     importFileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             importDatabase(e.target.files[0]);
         }
     });
+
+
+
+    fileMenuBtn.addEventListener('click', toggleFileMenu);
+    savePdfBtn.addEventListener('click', saveAsPDF);
+    savePngBtn.addEventListener('click', saveAsPNG);
+    importPngBtn.addEventListener('click', handleFileSelect);
+    exportDbBtn.addEventListener('click', exportDatabase);
+    importDbBtn.addEventListener('click', () => document.getElementById('importFileInput').click());
+
+
 
     // Initial setup
     setRotation(0)
