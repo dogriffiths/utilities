@@ -1182,7 +1182,7 @@
 
     function createStickyNote(x, y) {
         if (!areStickyNotesVisible) {
-            toggleStickyNotes(); // Turn on sticky notes visibility
+            return;
         }
         const scale = getCanvasScale();
         const note = {
