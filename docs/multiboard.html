@@ -190,7 +190,6 @@
             cursor: move;
             flex-direction: column;
             align-items: center;
-            cursor: pointer;
             position: relative;
             pointer-events: auto;
         }
@@ -514,7 +513,7 @@
         }
         .note-content {
             flex-grow: 1;
-            resize: both;
+            resize: none;
             overflow: auto;
             background: transparent;
             border: none;
@@ -973,7 +972,6 @@
 
     function startDrawing(e) {
         isDrawing = true;
-        // [lastX, lastY] = [e.clientX, e.clientY];
         [lastX, lastY] = getCanvasXY(e);
         shiftStartX = lastX;
         shiftStartY = lastY;
@@ -1142,12 +1140,6 @@
     function saveCurrentBoard() {
         whiteboards[currentBoardIndex].data = canvas.toDataURL();
 
-        // Ensure sticky note dimensions are valid before saving
-        whiteboards[currentBoardIndex].stickyNotes?.forEach(note => {
-            note.width = note.width > 0 ? note.width : 200;
-            note.height = note.height > 0 ? note.height : 150;
-        });
-
         debouncedSave();
 
         if (isOverviewVisible) {
@@ -1172,8 +1164,6 @@
             id: Date.now(),
             x: x / scale,
             y: y / scale,
-            width: 200 / scale,
-            height: 150 / scale,
             text: 'New note',
             color: getRandomPastelColor()
         };
@@ -1208,9 +1198,7 @@
             noteElement.style.left = `${note.x * scale}px`;
             noteElement.style.top = `${note.y * scale}px`;
             noteElement.style.width = `200px`;
-            // noteElement.style.width = `${note.width}px`;
             noteElement.style.height = `150px`;
-            // noteElement.style.height = `${note.height}px`;
             noteElement.style.backgroundColor = note.color;
             noteElement.innerHTML = `
             <div class="note-header">
@@ -1222,7 +1210,6 @@
             notesContainer.appendChild(noteElement);
 
             makeStickyNoteDraggable(noteElement, note);
-            makeTextareaResizable(noteElement.querySelector('.note-content'), note);
 
             noteElement.querySelector('.delete-note').addEventListener('click', () => deleteStickyNote(note.id));
             noteElement.querySelector('.note-content').addEventListener('input', (e) => updateStickyNoteText(note.id, e.target.value));
@@ -1257,23 +1244,6 @@
                 saveCurrentBoard();
             }
         });
-    }
-
-    function makeTextareaResizable(textarea, note) {
-        textarea.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-        });
-
-        const resizeObserver = new ResizeObserver(entries => {
-            for (let entry of entries) {
-                const scale = getCanvasScale();
-                note.width = entry.contentRect.width / scale;
-                note.height = entry.contentRect.height / scale;
-                saveCurrentBoard();
-            }
-        });
-
-        resizeObserver.observe(textarea);
     }
 
     function getHighestZIndex() {
@@ -1315,6 +1285,7 @@
         isErasing = false;
         eraserBtn.classList.remove('active');
         canvas.style.cursor = 'default';
+
         // Clear the undo history
         whiteboards[currentBoardIndex].history = [];
     }
@@ -1418,6 +1389,10 @@
     }
 
     function handleKeyboardShortcuts(e) {
+        if (document.activeElement === brushSizeDisplay || document.activeElement?.className === 'note-content') {
+            return; // Exit the function if we're typing in the brush size input
+        }
+
         if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
             e.preventDefault(); // Prevent the browser's default undo behavior
             undo();
@@ -1429,6 +1404,10 @@
     }
 
     function handlePaste(e) {
+        if (document.activeElement === brushSizeDisplay || document.activeElement?.className === 'note-content') {
+            return; // Exit the function if we're typing in the brush size input
+        }
+
         e.preventDefault();
         const items = e.clipboardData.items;
 
@@ -1596,7 +1575,7 @@
 
             let thumbnailContent;
             if (board.data) {
-                thumbnailContent = `<img src="${board.data}" alt="${board.name}" class="overviewImage">`;
+                thumbnailContent = `<img src="${board.data}" alt="${board.name}" class="overviewImage" id="overviewItem-${index}">`;
             } else {
                 thumbnailContent = `<div class="overviewImage blankThumbnail">Blank Whiteboard</div>`;
             }

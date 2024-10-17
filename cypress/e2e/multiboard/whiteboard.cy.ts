@@ -5,8 +5,9 @@ import {multiboardPage} from "../../support/pages";
 describe('Whiteboard Application', () => {
     beforeEach(() => {
         cy.viewport(1280, 720);
+        // @ts-ignore
+        cy.deleteDatabase('WhiteboardDB')
         multiboardPage.launch()
-        multiboardPage.clearBoards()
     });
 
     it('should create a new whiteboard', () => {

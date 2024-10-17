@@ -5,8 +5,9 @@ import {multiboardPage} from "../../support/pages";
 describe('Stylus functionality', () => {
     beforeEach(() => {
         cy.viewport(1280, 720);
+        // @ts-ignore
+        cy.deleteDatabase('WhiteboardDB')
         multiboardPage.launch()
-        multiboardPage.clearBoards()
     });
 
     it('should use the highlighter if you hold down CTRL', () => {

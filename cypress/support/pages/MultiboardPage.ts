@@ -5,6 +5,9 @@ import {multiboardPage} from "./index";
 import RoundButtonWidget from "../components/RoundButtonWidget";
 import InputText from "../relish-cypress/InputText";
 import CanvasWidget from "../components/CanvasWidget";
+import InputWidget from "../relish-cypress/InputWidget";
+import InputBrushSize from "../components/InputBrushSize";
+import ImgWidget from "../components/ImgWidget";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -22,6 +25,7 @@ export default class MultiboardPage extends CypressPage {
     }
 
     public removeAllBoards(maxAttempts = 10) {
+        cy.log('XXXXXX')
         if (maxAttempts <= 0) {
             throw new Error('Max deletion attempts reached');
         }
@@ -82,7 +86,11 @@ export default class MultiboardPage extends CypressPage {
     }
 
     get brushSizeDisplay() {
-        return new InputText('#brushSizeDisplay', this);
+        return new InputBrushSize('#brushSizeDisplay', this);
+    }
+
+    get brushSize() {
+        return new InputText('#brushSize', this);
     }
 
     get highlighterButton() {
@@ -99,5 +107,9 @@ export default class MultiboardPage extends CypressPage {
 
     get overviewContainer() {
         return new CypressWidget('#overviewContainer', this);
+    }
+
+    overviewItem(index: Number) {
+        return new ImgWidget(`#overviewItem-${index}`, this);
     }
 }

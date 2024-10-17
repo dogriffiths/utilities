@@ -12,5 +12,6 @@ module.exports = defineConfig({
     "chromeBrowser": {
       "args": ["--no-sandbox", "--disable-cache"]
     },
+
   },
 });

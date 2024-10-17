@@ -43,4 +43,19 @@ Cypress.Commands.add('compareImages', (image1Path: string, image2Path: string, t
         });
 });
 
+// @ts-ignore
+Cypress.Commands.add('deleteDatabase', (dbName: string) => {
+    cy.window().then((win) => {
+        const deleteRequest = win.indexedDB.deleteDatabase('WhiteboardDB');
+
+        deleteRequest.onerror = (event) => {
+            console.error("Error deleting database:", event);
+        };
+
+        deleteRequest.onsuccess = (event) => {
+            console.log("Database deleted successfully");
+        };
+    });
+});
+
 export {};
