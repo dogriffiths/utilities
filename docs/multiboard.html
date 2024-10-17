@@ -565,6 +565,44 @@
         .popup-menu button:hover {
             background-color: #333;
         }
+
+        #sticky-notes-menu {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .sticky-note-item {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+            cursor: pointer;
+        }
+
+        .sticky-note-item:hover {
+            background-color: #333;
+        }
+
+        .sticky-note-content {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .sticky-note-info {
+            font-size: 12px;
+            color: #888;
+        }
+
+        #showStickyNotesMenuBtn {
+            background-color: #9c27b0;
+        }
+
+        #showStickyNotesMenuBtn:hover {
+            background-color: #b52cc7;
+        }
+
+        #showStickyNotesMenuBtn.active {
+            background-color: #6a0080;
+        }
     </style>
 </head>
 <body>
@@ -582,6 +620,9 @@
     <button id="exportDbBtn">Export Database</button>
     <button id="importDbBtn">Import Database</button>
 </div>
+<div id="sticky-notes-menu" class="popup-menu">
+    <div id="sticky-notes-list"></div>
+</div>
 <div id="drawing-controls" class="control-panel">
     <input type="file" id="fileInput" accept="image/*">
     <button id="invertBtn" class="round-button" title="Invert Colors">
@@ -597,6 +638,11 @@
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="4" width="10" height="6" rx="1" ry="1" stroke="white" fill="none"/>
             <rect x="12" y="15" width="10" height="6" rx="1" ry="1" stroke="white" fill="none"/>
+        </svg>
+    </button>
+    <button id="showStickyNotesMenuBtn" class="round-button" title="Show All Sticky Notes">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
         </svg>
     </button>
     <button id="resetRotationBtn" class="round-button" title="Reset Rotation">
@@ -781,6 +827,10 @@
     const importPngBtn = document.getElementById('importPngBtn');
     const exportDbBtn = document.getElementById('exportDbBtn');
     const importDbBtn = document.getElementById('importDbBtn');
+    const stickyNotesMenu = document.getElementById('sticky-notes-menu');
+    const stickyNotesList = document.getElementById('sticky-notes-list');
+    const showStickyNotesMenuBtn = document.getElementById('showStickyNotesMenuBtn');
+
 
     // State variables
     // Canvas and drawing state
@@ -1201,6 +1251,7 @@
         if (isOverviewVisible) {
             updateOverviewGrid();
         }
+        updateStickyNotesMenu();
     }
 
     function loadBoard(index) {
@@ -1212,6 +1263,7 @@
             // Clear the undo history when switching boards
             whiteboards[currentBoardIndex].history = [];
         }
+        updateStickyNotesMenu();
     }
 
     function createStickyNote(x, y) {
@@ -1238,6 +1290,7 @@
                 textarea.select();
             }
         }, 0);
+        updateStickyNotesMenu();
     }
 
 
@@ -1318,6 +1371,7 @@
         whiteboards[currentBoardIndex].stickyNotes = whiteboards[currentBoardIndex].stickyNotes.filter(note => note.id !== id);
         renderStickyNotes();
         saveCurrentBoard();
+        updateStickyNotesMenu();
     }
 
     function updateStickyNoteText(id, text) {
@@ -1326,6 +1380,7 @@
             note.text = text;
             saveCurrentBoard();
         }
+        updateStickyNotesMenu();
     }
 
     function loadCurrentBoard() {
@@ -2119,7 +2174,53 @@
         }
     }
 
+    function updateStickyNotesMenu() {
+        stickyNotesList.innerHTML = '';
+        whiteboards.forEach((board, boardIndex) => {
+            board.stickyNotes.forEach((note, noteIndex) => {
+                const noteItem = document.createElement('div');
+                noteItem.className = 'sticky-note-item';
+                noteItem.innerHTML = `
+                <div class="sticky-note-content">${note.text.substring(0, 50)}${note.text.length > 50 ? '...' : ''}</div>
+                <div class="sticky-note-info">Whiteboard ${boardIndex + 1}</div>
+            `;
+                noteItem.addEventListener('click', () => {
+                    loadBoard(boardIndex);
+                    if (!areStickyNotesVisible) {
+                        toggleStickyNotes();
+                    }
+                    stickyNotesMenu.style.display = 'none';
+                    showStickyNotesMenuBtn.classList.remove('active');
+                });
+                stickyNotesList.appendChild(noteItem);
+            });
+        });
+    }
+
+    function toggleStickyNotesMenu(event) {
+        event.stopPropagation();
+        const rect = showStickyNotesMenuBtn.getBoundingClientRect();
+
+        if (stickyNotesMenu.style.display === 'block') {
+            stickyNotesMenu.style.display = 'none';
+            showStickyNotesMenuBtn.classList.remove('active');
+        } else {
+            updateStickyNotesMenu();
+            stickyNotesMenu.style.display = 'block';
+            showStickyNotesMenuBtn.classList.add('active');
+
+            // Position the menu above the button
+            stickyNotesMenu.style.bottom = `${window.innerHeight - rect.top}px`;
+            stickyNotesMenu.style.right = `${window.innerWidth - rect.right}px`;
+            stickyNotesMenu.style.left = 'auto';
+        }
+    }
+
     document.addEventListener('click', (event) => {
+        if (!stickyNotesMenu.contains(event.target) && event.target !== showStickyNotesMenuBtn) {
+            stickyNotesMenu.style.display = 'none';
+            showStickyNotesMenuBtn.classList.remove('active');
+        }
         if (!fileMenu.contains(event.target) && event.target !== fileMenuBtn) {
             fileMenu.style.display = 'none';
         }
@@ -2181,15 +2282,13 @@
             importDatabase(e.target.files[0]);
         }
     });
-
-
-
     fileMenuBtn.addEventListener('click', toggleFileMenu);
     savePdfBtn.addEventListener('click', saveAsPDF);
     savePngBtn.addEventListener('click', saveAsPNG);
     importPngBtn.addEventListener('click', handleFileSelect);
     exportDbBtn.addEventListener('click', exportDatabase);
     importDbBtn.addEventListener('click', () => document.getElementById('importFileInput').click());
+    showStickyNotesMenuBtn.addEventListener('click', toggleStickyNotesMenu);
 
 
 
