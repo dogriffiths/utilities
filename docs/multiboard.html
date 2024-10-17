@@ -8,6 +8,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico">
     <meta name="theme-color" content="#ffffff">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="apple-touch-icon" href="multiboard-192x192.png">
     <style>
         /* ========== Global Styles ========== */
@@ -623,6 +624,24 @@
             <line x1="14" y1="11" x2="14" y2="17"></line>
         </svg>
     </button>
+    <button id="exportDbBtn" class="round-button" title="Export Database as ZIP">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+            <path d="M12 3v12"></path>
+            <path d="M8 7h8"></path>
+            <path d="M8 11h8"></path>
+        </svg>
+    </button>
+    <button id="importDbBtn" class="round-button" title="Import Database from ZIP">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+    </button>
+    <input type="file" id="importFileInput" accept=".zip" style="display: none;">
     <button id="pdfExportBtn" class="round-button" title="Export all as PDF">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <text x="12" y="15" font-size="12" text-anchor="middle" fill="#000" font-family="Arial, sans-serif">PDF</text>
@@ -746,6 +765,9 @@
     const invertBtn = document.getElementById('invertBtn');
     const stickyNotesContainer = document.getElementById('stickyNotesContainer');
     const toggleStickyNotesBtn = document.getElementById('toggleStickyNotesBtn');
+    const exportDbBtn = document.getElementById('exportDbBtn');
+    const importDbBtn = document.getElementById('importDbBtn');
+    const importFileInput = document.getElementById('importFileInput');
 
 
     // State variables
@@ -1987,6 +2009,84 @@
         }
     }
 
+    function exportDatabase() {
+        const transaction = db.transaction(['whiteboards'], 'readonly');
+        const store = transaction.objectStore('whiteboards');
+        const request = store.getAll();
+
+        request.onsuccess = function(event) {
+            const data = event.target.result;
+
+            // Filter out the history from each whiteboard
+            const filteredData = data.map(item => {
+                const { history, ...rest } = item.data;
+                return { ...item, data: rest };
+            });
+
+            const jsonString = JSON.stringify(filteredData, null, 2);
+
+            const zip = new JSZip();
+            zip.file("whiteboard_data.json", jsonString);
+
+            zip.generateAsync({type:"blob"})
+                .then(function(content) {
+                    const url = URL.createObjectURL(content);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'whiteboard_database_export.zip';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                });
+        };
+
+        request.onerror = function(event) {
+            console.error('Error exporting database:', event.target.error);
+            showErrorDialog('Failed to export database. Please try again.');
+        };
+    }
+
+    function importDatabase(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            JSZip.loadAsync(e.target.result)
+                .then(function(zip) {
+                    return zip.file("whiteboard_data.json").async("string");
+                })
+                .then(function(jsonString) {
+                    const importedData = JSON.parse(jsonString);
+
+                    const transaction = db.transaction(['whiteboards'], 'readwrite');
+                    const store = transaction.objectStore('whiteboards');
+
+                    // Clear existing data
+                    store.clear();
+
+                    // Import new data
+                    importedData.forEach((item, index) => {
+                        store.put({id: index, data: item.data});
+                    });
+
+                    transaction.oncomplete = function() {
+                        console.log('Database import completed successfully');
+                        showErrorDialog('Database imported successfully. The page will now reload.');
+                        setTimeout(() => location.reload(), 2000);
+                    };
+
+                    transaction.onerror = function(event) {
+                        console.error('Error importing database:', event.target.error);
+                        showErrorDialog('Failed to import database. Please try again.');
+                    };
+                })
+                .catch(function(error) {
+                    console.error('Error reading ZIP file:', error);
+                    showErrorDialog('Failed to read the import file. Please make sure it\'s a valid ZIP file.');
+                });
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
     resetRotationBtn.addEventListener('click', resetRotation);
     fileSelectBtn.addEventListener('click', handleFileSelect);
     fileInput.addEventListener('change', handleFileChange);
@@ -2042,6 +2142,13 @@
         }
     });
     toggleStickyNotesBtn.addEventListener('click', toggleStickyNotes);
+    exportDbBtn.addEventListener('click', exportDatabase);
+    importDbBtn.addEventListener('click', () => document.getElementById('importFileInput').click());
+    importFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            importDatabase(e.target.files[0]);
+        }
+    });
 
     // Initial setup
     setRotation(0)
