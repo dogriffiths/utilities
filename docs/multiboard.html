@@ -1404,6 +1404,7 @@
 
         // Clear the undo history
         whiteboards[currentBoardIndex].history = [];
+        updateStickyNotesButtonVisibility();
     }
 
     function updateBoardInfo() {
@@ -2195,6 +2196,7 @@
                 stickyNotesList.appendChild(noteItem);
             });
         });
+        updateStickyNotesButtonVisibility();
     }
 
     function toggleStickyNotesMenu(event) {
@@ -2214,6 +2216,11 @@
             stickyNotesMenu.style.right = `${window.innerWidth - rect.right}px`;
             stickyNotesMenu.style.left = 'auto';
         }
+    }
+
+    function updateStickyNotesButtonVisibility() {
+        const hasNotes = whiteboards.some(board => board.stickyNotes.length > 0);
+        showStickyNotesMenuBtn.style.display = hasNotes ? 'block' : 'none';
     }
 
     document.addEventListener('click', (event) => {
