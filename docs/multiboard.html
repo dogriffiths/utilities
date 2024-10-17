@@ -520,6 +520,13 @@
             font-family: inherit;
             font-size: inherit;
         }
+        #toggleStickyNotesBtn.active {
+            background-color: #cccc00;
+        }
+
+        #toggleStickyNotesBtn.active:hover {
+            background-color: #eeee00;
+        }
     </style>
 </head>
 <body>
@@ -547,6 +554,12 @@
                 <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 12 5.542969 C 11.28125 5.542969 10.703125 6.125 10.703125 6.84375 C 10.703125 7.558594 11.28125 8.140625 12 8.140625 C 12.71875 8.140625 13.296875 7.558594 13.296875 6.84375 C 13.296875 6.125 12.71875 5.542969 12 5.542969 Z M 12 5.542969 "/>
                 <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 23.054688 7.328125 C 22.453125 5.902344 21.585938 4.613281 20.484375 3.515625 C 19.386719 2.414062 18.097656 1.546875 16.671875 0.945312 C 15.191406 0.316406 13.617188 0 12 0 C 10.382812 0 8.808594 0.316406 7.328125 0.945312 C 5.902344 1.546875 4.613281 2.414062 3.515625 3.515625 C 2.414062 4.613281 1.546875 5.902344 0.945312 7.328125 C 0.320312 8.808594 0 10.382812 0 12 C 0 13.617188 0.320312 15.191406 0.945312 16.671875 C 1.546875 18.097656 2.414062 19.386719 3.515625 20.484375 C 4.613281 21.585938 5.902344 22.453125 7.328125 23.054688 C 8.808594 23.683594 10.382812 24 12 24 C 13.617188 24 15.191406 23.683594 16.671875 23.054688 C 18.097656 22.453125 19.386719 21.585938 20.484375 20.484375 C 21.585938 19.386719 22.453125 18.097656 23.054688 16.671875 C 23.683594 15.191406 24 13.617188 24 12 C 24 10.382812 23.683594 8.808594 23.054688 7.328125 Z M 12 18.457031 C 11.28125 18.457031 10.703125 17.875 10.703125 17.160156 C 10.703125 16.441406 11.28125 15.859375 12 15.859375 C 12.71875 15.859375 13.296875 16.441406 13.296875 17.160156 C 13.296875 17.875 12.71875 18.457031 12 18.457031 Z M 15.640625 10.480469 C 14.707031 11.414062 13.421875 11.988281 12 11.988281 C 9.144531 11.988281 6.832031 14.304688 6.832031 17.160156 C 6.832031 19.847656 8.886719 22.058594 11.511719 22.304688 C 6.042969 22.050781 1.683594 17.535156 1.683594 12 C 1.683594 6.300781 6.300781 1.683594 12 1.683594 L 12 1.695312 C 13.421875 1.695312 14.707031 2.269531 15.640625 3.203125 C 16.570312 4.132812 17.148438 5.421875 17.148438 6.84375 C 17.148438 8.261719 16.570312 9.550781 15.640625 10.480469 Z M 15.640625 10.480469 "/>
             </g>
+        </svg>
+    </button>
+    <button id="toggleStickyNotesBtn" class="round-button" title="Toggle Sticky Notes">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="10" height="6" rx="1" ry="1" stroke="white" fill="none"/>
+            <rect x="12" y="15" width="10" height="6" rx="1" ry="1" stroke="white" fill="none"/>
         </svg>
     </button>
     <button id="resetRotationBtn" class="round-button" title="Reset Rotation">
@@ -732,6 +745,8 @@
     const duplicateBtn = document.getElementById('duplicateBtn');
     const invertBtn = document.getElementById('invertBtn');
     const stickyNotesContainer = document.getElementById('stickyNotesContainer');
+    const toggleStickyNotesBtn = document.getElementById('toggleStickyNotesBtn');
+
 
     // State variables
     // Canvas and drawing state
@@ -749,6 +764,7 @@
     let isErasing = false;
     let isHighlighting = false;
     let isTemporaryHighlighter = false;
+    let areStickyNotesVisible = false;
 
     // Brush properties
     let lastBrushSize = 4;
@@ -821,6 +837,12 @@
         } else {
             canvas.style.cursor = 'default';
         }
+    }
+
+    function toggleStickyNotes() {
+        areStickyNotesVisible = !areStickyNotesVisible;
+        toggleStickyNotesBtn.classList.toggle('active', areStickyNotesVisible);
+        renderStickyNotes();
     }
 
     function togglePen() {
@@ -1159,6 +1181,9 @@
     }
 
     function createStickyNote(x, y) {
+        if (!areStickyNotesVisible) {
+            toggleStickyNotes(); // Turn on sticky notes visibility
+        }
         const scale = getCanvasScale();
         const note = {
             id: Date.now(),
@@ -1188,8 +1213,10 @@
     }
 
     function renderStickyNotes() {
-        const notesContainer = document.getElementById('stickyNotesContainer');
-        notesContainer.innerHTML = '';
+        stickyNotesContainer.innerHTML = '';
+        if (!areStickyNotesVisible) {
+            return;
+        }
         const scale = getCanvasScale();
         whiteboards[currentBoardIndex].stickyNotes.forEach(note => {
             const noteElement = document.createElement('div');
@@ -1207,7 +1234,7 @@
             </div>
             <textarea class="note-content">${note.text}</textarea>
         `;
-            notesContainer.appendChild(noteElement);
+            stickyNotesContainer.appendChild(noteElement);
 
             makeStickyNoteDraggable(noteElement, note);
 
@@ -2014,10 +2041,10 @@
             e.preventDefault();
         }
     });
+    toggleStickyNotesBtn.addEventListener('click', toggleStickyNotes);
 
     // Initial setup
     setRotation(0)
-    // resizeCanvas();
     updateBoardInfo();
     updateBrushSizeDisplay();
     setActiveTool('pen');
