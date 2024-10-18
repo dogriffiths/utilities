@@ -411,6 +411,17 @@
             margin: 0 8px;
             color: white;
             font-size: 0.95em;
+            cursor: pointer;
+        }
+
+        #boardTitleInput {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 0.95em;
+            padding: 2px 5px;
+            width: 150px;
         }
 
         .removeWhiteboardBtn {
@@ -720,7 +731,8 @@
             <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
     </button>
-    <span id="boardInfo">Whiteboard 1 / 1</span>
+    <span id="boardInfo"></span>
+    <input type="text" id="boardTitleInput" maxlength="20">
     <button id="nextBtn" class="round-button" title="Next whiteboard">
         <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round">
@@ -830,6 +842,7 @@
     const stickyNotesMenu = document.getElementById('sticky-notes-menu');
     const stickyNotesList = document.getElementById('sticky-notes-list');
     const showStickyNotesMenuBtn = document.getElementById('showStickyNotesMenuBtn');
+    const boardTitleInput = document.getElementById('boardTitleInput');
 
 
     // State variables
@@ -871,7 +884,7 @@
     let stickyNotes = [];
 
     // Whiteboard management
-    let whiteboards = [{name: 'Whiteboard 1', data: null, history: [], stickyNotes: []}];
+    let whiteboards = [{name: 'Whiteboard', title: 'Whiteboard', data: null, history: [], stickyNotes: []}];
     let currentBoardIndex = 0;
 
     // Miscellaneous
@@ -1233,7 +1246,7 @@
     function createNewBoard() {
         saveCurrentBoard();
         const newBoardIndex = whiteboards.length;
-        whiteboards.push({name: `Whiteboard ${newBoardIndex + 1}`, data: null, history: [], stickyNotes: []});
+        whiteboards.push({name: 'Whiteboard', title: 'Whiteboard', data: null, history: [], stickyNotes: []});
         currentBoardIndex = newBoardIndex;
         clearCanvas();
         updateBoardInfo();
@@ -1408,7 +1421,8 @@
     }
 
     function updateBoardInfo() {
-        boardInfo.textContent = `${whiteboards[currentBoardIndex].name} / ${whiteboards.length}`;
+        const currentBoard = whiteboards[currentBoardIndex];
+        boardInfo.textContent = `${currentBoard.title || 'Whiteboard'} ${currentBoardIndex + 1} / ${whiteboards.length}`;
         prevBtn.disabled = currentBoardIndex === 0;
         nextBtn.disabled = currentBoardIndex === whiteboards.length - 1;
     }
@@ -1499,7 +1513,7 @@
     }
 
     function handleKeyboardShortcuts(e) {
-        if (document.activeElement === brushSizeDisplay || document.activeElement?.className === 'note-content') {
+        if (document.activeElement === brushSizeDisplay || document.activeElement?.className === 'note-content' || document.activeElement === boardTitleInput) {
             return; // Exit the function if we're typing in the brush size input
         }
 
@@ -1685,16 +1699,16 @@
 
             let thumbnailContent;
             if (board.data) {
-                thumbnailContent = `<img src="${board.data}" alt="${board.name}" class="overviewImage" id="overviewItem-${index}">`;
+                thumbnailContent = `<img src="${board.data}" alt="${board.title}" class="overviewImage" id="overviewItem-${index}">`;
             } else {
                 thumbnailContent = `<div class="overviewImage blankThumbnail">Blank Whiteboard</div>`;
             }
 
             item.innerHTML = `
             ${thumbnailContent}
-            <span class="overviewName">${board.name}</span>
+            <span class="overviewName">${board.title || 'Whiteboard'} ${index + 1}/${whiteboards.length}</span>
             <button class="removeWhiteboardBtn" title="Remove Whiteboard">×</button>
-        `;
+            `;
 
             const removeBtn = item.querySelector('.removeWhiteboardBtn');
             removeBtn.addEventListener('click', (e) => {
@@ -1715,7 +1729,11 @@
 
     function renameWhiteboards() {
         whiteboards.forEach((board, index) => {
-            board.name = `Whiteboard ${index + 1}`;
+            if (board.title === 'Whiteboard') {
+                board.name = 'Whiteboard';
+            } else {
+                board.name = board.title;
+            }
         });
     }
 
@@ -1747,7 +1765,7 @@
     }
 
     function handleKeyPress(event) {
-        if (document.activeElement === brushSizeDisplay || document.activeElement?.className === 'note-content') {
+        if (document.activeElement === brushSizeDisplay || document.activeElement?.className === 'note-content' || document.activeElement === boardTitleInput) {
             return; // Exit the function if we're typing in the brush size input
         }
 
@@ -2223,6 +2241,33 @@
         showStickyNotesMenuBtn.style.display = hasNotes ? 'block' : 'none';
     }
 
+    function editBoardTitle() {
+        const currentBoard = whiteboards[currentBoardIndex];
+        boardInfo.style.display = 'none';
+        boardTitleInput.style.display = 'inline-block';
+        boardTitleInput.value = currentBoard.title || 'Whiteboard';
+        boardTitleInput.focus();
+    }
+
+    function saveBoardTitle() {
+        const newTitle = boardTitleInput.value.trim();
+        if (newTitle) {
+            whiteboards[currentBoardIndex].title = newTitle;
+            whiteboards[currentBoardIndex].name = newTitle;
+        } else {
+            whiteboards[currentBoardIndex].title = 'Whiteboard';
+            whiteboards[currentBoardIndex].name = 'Whiteboard';
+        }
+        boardTitleInput.style.display = 'none';
+        boardInfo.style.display = 'inline-block';
+        updateBoardInfo();
+        saveWhiteboardsToIndexedDB();
+        if (isOverviewVisible) {
+            updateOverviewGrid();
+        }
+    }
+
+
     document.addEventListener('click', (event) => {
         if (!stickyNotesMenu.contains(event.target) && event.target !== showStickyNotesMenuBtn) {
             stickyNotesMenu.style.display = 'none';
@@ -2296,6 +2341,14 @@
     exportDbBtn.addEventListener('click', exportDatabase);
     importDbBtn.addEventListener('click', () => document.getElementById('importFileInput').click());
     showStickyNotesMenuBtn.addEventListener('click', toggleStickyNotesMenu);
+    boardInfo.addEventListener('click', editBoardTitle);
+    boardTitleInput.addEventListener('blur', saveBoardTitle);
+    boardTitleInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            saveBoardTitle();
+        }
+    });
+
 
 
 
