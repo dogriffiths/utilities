@@ -195,6 +195,35 @@
             align-items: center;
             position: relative;
             pointer-events: auto;
+            transition: transform 0.2s ease;
+        }
+
+        .overviewItem.current-board {
+            border: 2px solid #3D8BFF;
+            box-shadow: 0 0 10px rgba(61, 139, 255, 0.5);
+        }
+
+        .insert-indicator {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #3D8BFF;
+            display: none;
+            z-index: 10;
+        }
+
+        .insert-indicator.left {
+            left: -2px;
+        }
+
+        .insert-indicator.right {
+            right: -2px;
+        }
+
+        .overviewItem.insert-left .insert-indicator.left,
+        .overviewItem.insert-right .insert-indicator.right {
+            display: block;
         }
 
         .overviewItem.dragging {
@@ -203,6 +232,19 @@
 
         .overviewItem.over {
             border: 2px dashed #000;
+        }
+
+        .overviewItem.insert-left {
+            transform: translateX(2px);
+        }
+
+        .overviewItem.insert-right {
+            transform: translateX(-2px);
+        }
+
+        .overviewItem.dragging {
+            opacity: 0.5;
+            z-index: 1000;
         }
 
         .overviewImage {
@@ -1718,7 +1760,9 @@
             ${thumbnailContent}
             <span class="overviewName">${board.title || 'Whiteboard'} ${index + 1}/${whiteboards.length}</span>
             <button class="removeWhiteboardBtn" title="Remove Whiteboard">×</button>
-            `;
+            <div class="insert-indicator left"></div>
+            <div class="insert-indicator right"></div>
+        `;
 
             const removeBtn = item.querySelector('.removeWhiteboardBtn');
             removeBtn.addEventListener('click', (e) => {
@@ -1735,6 +1779,12 @@
             makeDraggable(item);
             overviewGrid.appendChild(item);
         });
+
+        // Ensure the current board is visually indicated
+        const currentItem = overviewGrid.children[currentBoardIndex];
+        if (currentItem) {
+            currentItem.classList.add('current-board');
+        }
     }
 
     function renameWhiteboards() {
@@ -1904,67 +1954,89 @@
             e.preventDefault();
         }
         e.dataTransfer.dropEffect = 'move';
+
+        const rect = this.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
+
+        // Remove indicators from all items
+        document.querySelectorAll('.overviewItem').forEach(item => {
+            item.classList.remove('insert-left', 'insert-right');
+        });
+
+        // Add indicator to current item
+        if (e.clientX < midX) {
+            this.classList.add('insert-left');
+        } else {
+            this.classList.add('insert-right');
+        }
+
         return false;
     }
 
     function handleDrop(e) {
-        if (e.stopPropagation) {
-            e.stopPropagation();
-        }
+        e.preventDefault();
+        e.stopPropagation();
 
-        const files = e.dataTransfer.files;
+        const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        const toIndex = parseInt(this.dataset.index);
 
-        if (files.length > 0) {
-            e.preventDefault();
-            const file = files[0];
+        if (fromIndex !== toIndex) {
+            const rect = this.getBoundingClientRect();
+            const midX = rect.left + rect.width / 2;
+            const insertAfter = e.clientX >= midX;
 
-            if (file.type.startsWith('image/')) {
-                loadImageToCanvas(file);
-            } else {
-                showErrorDialog('Please drop an image file.');
-            }
-        } else if (this !== e.target) {
-            const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-            const toIndex = parseInt(this.dataset.index);
-
-            // Reorder the whiteboards array
+            // Remove the dragged item
             const [removed] = whiteboards.splice(fromIndex, 1);
-            whiteboards.splice(toIndex, 0, removed);
+
+            // Calculate the new index
+            let newIndex = insertAfter ? toIndex + 1 : toIndex;
+            if (fromIndex < toIndex) {
+                newIndex--;
+            }
+            newIndex = Math.max(0, Math.min(newIndex, whiteboards.length));
+
+            // Insert the item at the new position
+            whiteboards.splice(newIndex, 0, removed);
 
             // Update currentBoardIndex if necessary
             if (currentBoardIndex === fromIndex) {
-                currentBoardIndex = toIndex;
-            } else if (fromIndex < currentBoardIndex && toIndex >= currentBoardIndex) {
+                currentBoardIndex = newIndex;
+            } else if (fromIndex < currentBoardIndex && newIndex >= currentBoardIndex) {
                 currentBoardIndex--;
-            } else if (fromIndex > currentBoardIndex && toIndex <= currentBoardIndex) {
+            } else if (fromIndex > currentBoardIndex && newIndex <= currentBoardIndex) {
                 currentBoardIndex++;
             }
 
-            // Rename whiteboards and update the UI
-            renameWhiteboards();
+            // Update the UI
             updateOverviewGrid();
             updateBoardInfo();
             saveWhiteboardsToIndexedDB();
         }
+
+        // Remove all insertion indicators
+        document.querySelectorAll('.overviewItem').forEach(item => {
+            item.classList.remove('insert-left', 'insert-right', 'over');
+        });
 
         return false;
     }
 
     function makeDraggable(item) {
         item.draggable = true;
-        item.addEventListener('dragstart', handleDragStart);
-        item.addEventListener('dragover', handleDragOver);
-        item.addEventListener('dragenter', handleDragEnter);
-        item.addEventListener('dragleave', handleDragLeave);
-        item.addEventListener('drop', handleDrop);
-        item.addEventListener('dragend', handleDragEnd);
+        item.addEventListener('dragstart', handleDragStart, false);
+        item.addEventListener('dragenter', handleDragEnter, false);
+        item.addEventListener('dragover', handleDragOver, false);
+        item.addEventListener('dragleave', handleDragLeave, false);
+        item.addEventListener('drop', handleDrop, false);
+        item.addEventListener('dragend', handleDragEnd, false);
     }
 
     function handleDragEnd(e) {
         this.style.opacity = '1';
-        this.classList.remove('dragging'); // Add this line
-        const items = document.querySelectorAll('.overviewItem');
-        items.forEach(item => item.classList.remove('over'));
+        this.classList.remove('dragging');
+        document.querySelectorAll('.overviewItem').forEach(item => {
+            item.classList.remove('insert-left', 'insert-right', 'over');
+        });
     }
 
     function handleDragLeave(e) {
@@ -1972,9 +2044,18 @@
     }
 
     function handleDragEnter(e) {
-        this.classList.add('over');
-    }
+        const rect = this.getBoundingClientRect();
+        const midX = rect.left + rect.width / 2;
 
+        if (e.clientX < midX) {
+            this.classList.add('insert-left');
+            this.classList.remove('insert-right');
+        } else {
+            this.classList.add('insert-right');
+            this.classList.remove('insert-left');
+        }
+    }
+    
     function handleDragStart(e) {
         this.style.opacity = '0.4';
         this.classList.add('dragging'); // Add this line
