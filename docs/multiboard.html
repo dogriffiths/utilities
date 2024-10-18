@@ -416,6 +416,9 @@
             color: white;
             font-size: 0.95em;
             cursor: pointer;
+            min-width: 140px;
+            max-width: 140px;
+            text-align: center;
         }
 
         #boardTitleInput {
@@ -425,7 +428,7 @@
             color: white;
             font-size: 0.95em;
             padding: 2px 5px;
-            width: 150px;
+            width: 146px;
         }
 
         .removeWhiteboardBtn {
@@ -2253,6 +2256,7 @@
         boardTitleInput.style.display = 'inline-block';
         boardTitleInput.value = currentBoard.title || 'Whiteboard';
         boardTitleInput.focus();
+        boardTitleInput.select();  // Add this line
     }
 
     function saveBoardTitle() {
@@ -2354,7 +2358,9 @@
             saveBoardTitle();
         }
     });
-
+    boardTitleInput.addEventListener('focus', function() {
+        this.select();
+    });
 
 
 
