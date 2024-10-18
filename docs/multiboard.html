@@ -190,11 +190,15 @@
 
         .overviewItem {
             display: flex;
-            cursor: move;
+            cursor: default; /* Change this line */
             flex-direction: column;
             align-items: center;
             position: relative;
             pointer-events: auto;
+        }
+
+        .overviewItem.dragging {
+            cursor: move; /* Add this new class */
         }
 
         .overviewItem.over {
@@ -1952,6 +1956,7 @@
 
     function handleDragEnd(e) {
         this.style.opacity = '1';
+        this.classList.remove('dragging'); // Add this line
         const items = document.querySelectorAll('.overviewItem');
         items.forEach(item => item.classList.remove('over'));
     }
@@ -1966,6 +1971,7 @@
 
     function handleDragStart(e) {
         this.style.opacity = '0.4';
+        this.classList.add('dragging'); // Add this line
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', this.dataset.index);
     }
