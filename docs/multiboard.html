@@ -2202,7 +2202,7 @@
     function updateStickyNotesMenu() {
         stickyNotesList.innerHTML = '';
         whiteboards.forEach((board, boardIndex) => {
-            board.stickyNotes.forEach((note, noteIndex) => {
+            board.stickyNotes?.forEach((note, noteIndex) => {
                 const noteItem = document.createElement('div');
                 noteItem.className = 'sticky-note-item';
                 noteItem.innerHTML = `
@@ -2243,7 +2243,7 @@
     }
 
     function updateStickyNotesButtonVisibility() {
-        const hasNotes = whiteboards.some(board => board.stickyNotes.length > 0);
+        const hasNotes = whiteboards.some(board => board.stickyNotes?.length > 0);
         showStickyNotesMenuBtn.style.display = hasNotes ? 'block' : 'none';
     }
 
