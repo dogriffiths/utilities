@@ -1974,49 +1974,92 @@
     }
 
     function handleDrop(e) {
-        e.preventDefault();
-        e.stopPropagation();
+        if (isOverviewVisible) {
+            e.preventDefault();
+            e.stopPropagation();
 
-        const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-        const toIndex = parseInt(this.dataset.index);
+            const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            const toIndex = parseInt(this.dataset.index);
 
-        if (fromIndex !== toIndex) {
-            const rect = this.getBoundingClientRect();
-            const midX = rect.left + rect.width / 2;
-            const insertAfter = e.clientX >= midX;
+            if (fromIndex !== toIndex) {
+                const rect = this.getBoundingClientRect();
+                const midX = rect.left + rect.width / 2;
+                const insertAfter = e.clientX >= midX;
 
-            // Remove the dragged item
-            const [removed] = whiteboards.splice(fromIndex, 1);
+                // Remove the dragged item
+                const [removed] = whiteboards.splice(fromIndex, 1);
 
-            // Calculate the new index
-            let newIndex = insertAfter ? toIndex + 1 : toIndex;
-            if (fromIndex < toIndex) {
-                newIndex--;
+                // Calculate the new index
+                let newIndex = insertAfter ? toIndex + 1 : toIndex;
+                if (fromIndex < toIndex) {
+                    newIndex--;
+                }
+                newIndex = Math.max(0, Math.min(newIndex, whiteboards.length));
+
+                // Insert the item at the new position
+                whiteboards.splice(newIndex, 0, removed);
+
+                // Update currentBoardIndex if necessary
+                if (currentBoardIndex === fromIndex) {
+                    currentBoardIndex = newIndex;
+                } else if (fromIndex < currentBoardIndex && newIndex >= currentBoardIndex) {
+                    currentBoardIndex--;
+                } else if (fromIndex > currentBoardIndex && newIndex <= currentBoardIndex) {
+                    currentBoardIndex++;
+                }
+
+                // Update the UI
+                updateOverviewGrid();
+                updateBoardInfo();
+                saveWhiteboardsToIndexedDB();
             }
-            newIndex = Math.max(0, Math.min(newIndex, whiteboards.length));
 
-            // Insert the item at the new position
-            whiteboards.splice(newIndex, 0, removed);
+            // Remove all insertion indicators
+            document.querySelectorAll('.overviewItem').forEach(item => {
+                item.classList.remove('insert-left', 'insert-right', 'over');
+            });
+
+            return false;
+        }
+
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+
+        const files = e.dataTransfer.files;
+
+        if (files.length > 0) {
+            e.preventDefault();
+            const file = files[0];
+
+            if (file.type.startsWith('image/')) {
+                loadImageToCanvas(file);
+            } else {
+                showErrorDialog('Please drop an image file.');
+            }
+        } else if (this !== e.target) {
+            const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            const toIndex = parseInt(this.dataset.index);
+
+            // Reorder the whiteboards array
+            const [removed] = whiteboards.splice(fromIndex, 1);
+            whiteboards.splice(toIndex, 0, removed);
 
             // Update currentBoardIndex if necessary
             if (currentBoardIndex === fromIndex) {
-                currentBoardIndex = newIndex;
-            } else if (fromIndex < currentBoardIndex && newIndex >= currentBoardIndex) {
+                currentBoardIndex = toIndex;
+            } else if (fromIndex < currentBoardIndex && toIndex >= currentBoardIndex) {
                 currentBoardIndex--;
-            } else if (fromIndex > currentBoardIndex && newIndex <= currentBoardIndex) {
+            } else if (fromIndex > currentBoardIndex && toIndex <= currentBoardIndex) {
                 currentBoardIndex++;
             }
 
-            // Update the UI
+            // Rename whiteboards and update the UI
+            renameWhiteboards();
             updateOverviewGrid();
             updateBoardInfo();
             saveWhiteboardsToIndexedDB();
         }
-
-        // Remove all insertion indicators
-        document.querySelectorAll('.overviewItem').forEach(item => {
-            item.classList.remove('insert-left', 'insert-right', 'over');
-        });
 
         return false;
     }
