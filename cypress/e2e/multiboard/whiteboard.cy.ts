@@ -33,42 +33,42 @@ describe('Whiteboard Application', () => {
     });
 
     it('should select tools in a group', () => {
-        multiboardPage.penButton.assertActive()
-        multiboardPage.highlighterButton.assertInactive()
-        multiboardPage.eraserButton.assertInactive()
+        multiboardPage.tools.penButton.assertActive()
+        multiboardPage.tools.highlighterButton.assertInactive()
+        multiboardPage.tools.eraserButton.assertInactive()
 
-        multiboardPage.highlighterButton.click();
-        multiboardPage.penButton.assertInactive()
-        multiboardPage.highlighterButton.assertActive()
-        multiboardPage.eraserButton.assertInactive()
+        multiboardPage.tools.highlighter();
+        multiboardPage.tools.penButton.assertInactive()
+        multiboardPage.tools.highlighterButton.assertActive()
+        multiboardPage.tools.eraserButton.assertInactive()
 
-        multiboardPage.eraserButton.click();
-        multiboardPage.penButton.assertInactive()
-        multiboardPage.highlighterButton.assertInactive()
-        multiboardPage.eraserButton.assertActive()
+        multiboardPage.tools.eraser();
+        multiboardPage.tools.penButton.assertInactive()
+        multiboardPage.tools.highlighterButton.assertInactive()
+        multiboardPage.tools.eraserButton.assertActive()
 
-        multiboardPage.penButton.click();
-        multiboardPage.penButton.assertActive()
-        multiboardPage.highlighterButton.assertInactive()
-        multiboardPage.eraserButton.assertInactive()
+        multiboardPage.tools.pen();
+        multiboardPage.tools.penButton.assertActive()
+        multiboardPage.tools.highlighterButton.assertInactive()
+        multiboardPage.tools.eraserButton.assertInactive()
     });
 
     it('should be able to select brush by key press', () => {
-        multiboardPage.brushSizeDisplay.matches("2");
+        multiboardPage.matches("2");
         multiboardPage.type("1")
-        multiboardPage.brushSizeDisplay.matches("8");
+        multiboardPage.matches("8");
         multiboardPage.type("2")
-        multiboardPage.brushSizeDisplay.matches("16");
+        multiboardPage.matches("16");
         multiboardPage.type("3")
-        multiboardPage.brushSizeDisplay.matches("30");
+        multiboardPage.matches("30");
         multiboardPage.type("4")
-        multiboardPage.brushSizeDisplay.matches("50");
+        multiboardPage.matches("50");
         multiboardPage.type("0")
-        multiboardPage.brushSizeDisplay.matches("2");
+        multiboardPage.matches("2");
     });
 
     it('should open and close overview', () => {
-        multiboardPage.overviewButton.click()
+        multiboardPage.navigation.overview()
         multiboardPage.overviewContainer.assertVisible()
         multiboardPage.overviewContainer.click()
         multiboardPage.overviewContainer.assertInvisible()
@@ -80,7 +80,7 @@ describe('Whiteboard Application', () => {
         multiboardPage.navigation.set("Whiteboard2")
         multiboardPage.navigation.new()
         multiboardPage.navigation.set("Whiteboard3")
-        multiboardPage.overviewButton.click()
+        multiboardPage.navigation.overview()
         multiboardPage.overviewContainer.assertVisible()
         multiboardPage.overviewContainer.matches(table`
         | name            |

@@ -11,7 +11,7 @@ describe('Sticky notes', () => {
     });
 
     it('should not blank out images', () => {
-        multiboardPage.brushSizeDisplay.set("40")
+        multiboardPage.tools.brushSizeDisplay.set("40")
 
         multiboardPage.canvas
             .trigger('mousedown', {button: 0, offsetX: 150, offsetY: 150})
@@ -29,7 +29,7 @@ describe('Sticky notes', () => {
 
         multiboardPage.navigation.previous()
 
-        multiboardPage.overviewButton.click()
+        multiboardPage.navigation.overview()
 
         multiboardPage.overviewContainer.item(0).image.matches('cypress/expectedImages/thickline-item0.png');
         multiboardPage.overviewContainer.item(1).image.matches('cypress/expectedImages/thickline-item1.png');

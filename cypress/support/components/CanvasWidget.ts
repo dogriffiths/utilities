@@ -12,4 +12,10 @@ export default class CanvasWidget extends VisualWidget {
             this.canvasMatches($canvas[0], expectedResult);
         });
     }
+
+    draw(x1: Number, y1: Number, x2: Number, y2: Number) {
+        this.getChainer().trigger('mousedown', {button: 0, offsetX: x1, offsetY: y1})
+            .trigger('mousemove', {offsetX: x2, offsetY: y2})
+            .trigger('mouseup')
+    }
 }

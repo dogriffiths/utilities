@@ -29,6 +29,14 @@ export default class Navigation extends InputWidget {
     return new CypressWidget('#newBoardBtn', this);
   }
 
+  overview() {
+    this.overviewButton.click();
+  }
+
+  get overviewButton() {
+    return new CypressWidget('#overviewBtn', this);
+  }
+
   new() {
     this.newBoardButton.click()
   }

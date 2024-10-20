@@ -67,19 +67,13 @@ describe('Stylus functionality', () => {
     it('should not carry over old brush width', () => {
         multiboardPage.body.type('3')
 
-        multiboardPage.canvas
-            .trigger('mousedown', {button: 0, offsetX: 150, offsetY: 150})
-            .trigger('mousemove', {offsetX: 300, offsetY: 380})
-            .trigger('mouseup')
+        multiboardPage.canvas.draw(150, 150, 300, 380)
 
-        multiboardPage.undoButton.click()
+        multiboardPage.tools.undo()
 
         multiboardPage.body.type('2')
 
-        multiboardPage.canvas
-            .trigger('mousedown', {button: 0, offsetX: 150, offsetY: 150})
-            .trigger('mousemove', {offsetX: 300, offsetY: 380})
-            .trigger('mouseup')
+        multiboardPage.canvas.draw(150, 150, 300, 380)
 
         multiboardPage.canvas.matches('cypress/expectedimages/even_width_line.png');
     });
