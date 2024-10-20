@@ -75,13 +75,13 @@ describe('Whiteboard Application', () => {
     });
 
     it('should be able to drag in the overview', () => {
-        multiboardPage.navigation.set("Whiteboard1")
-        multiboardPage.navigation.new()
-        multiboardPage.navigation.set("Whiteboard2")
-        multiboardPage.navigation.new()
-        multiboardPage.navigation.set("Whiteboard3")
+        multiboardPage.set(table`
+        | name        |
+        | Whiteboard1 |
+        | Whiteboard2 |
+        | Whiteboard3 |
+        `)
         multiboardPage.navigation.overview()
-        multiboardPage.overviewContainer.assertVisible()
         multiboardPage.overviewContainer.matches(table`
         | name            |
         | Whiteboard1 1/3 |
