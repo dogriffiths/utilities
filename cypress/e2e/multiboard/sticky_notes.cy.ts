@@ -1,6 +1,7 @@
 // cypress/e2e/whiteboard_spec.js
 
 import {multiboardPage} from "../../support/pages";
+import {table} from "../../support/utils";
 
 describe('Sticky notes', () => {
     beforeEach(() => {
@@ -11,19 +12,11 @@ describe('Sticky notes', () => {
     });
 
     it('should not blank out images', () => {
-        multiboardPage.tools.brushSizeDisplay.set("40")
-
-        multiboardPage.canvas
-            .trigger('mousedown', {button: 0, offsetX: 150, offsetY: 150})
-            .trigger('mousemove', {offsetX: 175, offsetY: 175})
-            .trigger('mouseup')
+        multiboardPage.tools.set("40")
+        multiboardPage.canvas.draw(150, 150, 175, 175)
 
         multiboardPage.navigation.new()
-
-        multiboardPage.canvas
-            .trigger('mousedown', {button: 0, offsetX: 150, offsetY: 400})
-            .trigger('mousemove', {offsetX: 175, offsetY: 200})
-            .trigger('mouseup')
+        multiboardPage.canvas.draw(150, 400, 175, 200)
 
         multiboardPage.canvas.getChainer().dblclick(500, 500);
 
@@ -31,7 +24,10 @@ describe('Sticky notes', () => {
 
         multiboardPage.navigation.overview()
 
-        multiboardPage.overviewContainer.item(0).image.matches('cypress/expectedImages/thickline-item0.png');
-        multiboardPage.overviewContainer.item(1).image.matches('cypress/expectedImages/thickline-item1.png');
+        multiboardPage.overviewContainer.matches(table`
+        | name           | image                                      |
+        | Whiteboard 1/2 | cypress/expectedImages/thickline-item0.png |
+        | Whiteboard 2/2 | cypress/expectedImages/thickline-item1.png |
+        `)
     });
 });

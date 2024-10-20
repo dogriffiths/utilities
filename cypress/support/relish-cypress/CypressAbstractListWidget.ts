@@ -101,11 +101,11 @@ export default abstract class CypressAbstractListWidget<
     ) {
       this.getChainer()
         .xpath(this.subSelector)
-        .should(assertion);
+        .then(assertion);
     } else {
       this.getChainer()
         .find(this.subSelector)
-        .should(assertion);
+        .then(assertion);
     }
   }
 

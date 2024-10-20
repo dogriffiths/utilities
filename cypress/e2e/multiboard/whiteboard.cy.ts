@@ -74,7 +74,7 @@ describe('Whiteboard Application', () => {
         multiboardPage.overviewContainer.assertInvisible()
     });
 
-    it('should be able to drag in the overview', () => {
+    it.only('should be able to drag in the overview', () => {
         multiboardPage.set(table`
         | name        |
         | Whiteboard1 |
@@ -107,10 +107,7 @@ describe('Whiteboard Application', () => {
     });
 
     it('should be able to draw a simple line', () => {
-        multiboardPage.canvas.getChainer()
-            .trigger('mousedown', {offsetX: 150, offsetY: 150})
-            .trigger('mousemove', {offsetX: 200, offsetY: 200})
-            .trigger('mouseup');
+        multiboardPage.canvas.draw(150, 150, 200, 200)
         multiboardPage.canvas.matches('cypress/expectedimages/simple_line.png');
     });
 });

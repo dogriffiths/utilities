@@ -14,15 +14,14 @@ function table(s: TemplateStringsArray) {
         );
     const [keys, ...values] = input;
 
-    let map: TableRow[] = values.map(row =>
-        keys.reduce((obj, key, index) => {
+    return values.map(row => {
+        const obj = {}
+        keys.forEach((key, index) => {
             // @ts-ignore
             obj[key] = row[index];
-            return new TableRow(obj);
-        // }, new TableRow([]))
-        }, {} as TableRow)
-    );
-    return map;
+        })
+        return new TableRow(obj)
+    });
 }
 
 const stringSized = (n: number): string => Array(n + 1).join("x");
