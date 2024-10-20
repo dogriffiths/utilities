@@ -59,6 +59,7 @@ export default class TableRow implements Getable {
     if (value == null) {
       return "";
     }
+    console.log('XXXXXXXX value = ', value)
     return value.replace("<today>", new Date().toString());
   }
 }

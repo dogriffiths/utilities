@@ -1749,11 +1749,12 @@
         whiteboards.forEach((board, index) => {
             const item = document.createElement('div');
             item.className = 'overviewItem';
+            item.id = `overviewItem-${index}`;
             item.dataset.index = index;
 
             let thumbnailContent;
             if (board.data) {
-                thumbnailContent = `<img src="${board.data}" alt="${board.title}" class="overviewImage" id="overviewItem-${index}">`;
+                thumbnailContent = `<img src="${board.data}" alt="${board.title}" class="overviewImage">`;
             } else {
                 thumbnailContent = `<div class="overviewImage blankThumbnail">Blank Whiteboard</div>`;
             }

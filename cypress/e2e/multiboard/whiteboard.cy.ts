@@ -1,6 +1,7 @@
 // cypress/e2e/whiteboard_spec.js
 
 import {multiboardPage} from "../../support/pages";
+import {table} from "../../support/utils";
 
 describe('Whiteboard Application', () => {
     beforeEach(() => {
@@ -11,24 +12,24 @@ describe('Whiteboard Application', () => {
     });
 
     it('should create a new whiteboard', () => {
-        multiboardPage.newBoardButton.click()
-        multiboardPage.boardInfo.matches('Whiteboard 2 / 2')
+        multiboardPage.navigation.new()
+        multiboardPage.navigation.matches('Whiteboard 2 / 2')
     });
 
     it('should navigate between whiteboards', () => {
-        multiboardPage.newBoardButton.click()
-        multiboardPage.previousButton.click()
-        multiboardPage.boardInfo.matches('Whiteboard 1 / 2')
-        multiboardPage.nextButton.click()
-        multiboardPage.boardInfo.matches('Whiteboard 2 / 2')
+        multiboardPage.navigation.new()
+        multiboardPage.navigation.previous()
+        multiboardPage.navigation.matches('Whiteboard 1 / 2')
+        multiboardPage.navigation.next()
+        multiboardPage.navigation.matches('Whiteboard 2 / 2')
     });
 
     it('should navigate between whiteboards using arrow keys', () => {
-        multiboardPage.newBoardButton.click()
+        multiboardPage.navigation.new()
         multiboardPage.type("{leftarrow}")
-        multiboardPage.boardInfo.matches('Whiteboard 1 / 2')
+        multiboardPage.navigation.matches('Whiteboard 1 / 2')
         multiboardPage.type("{rightarrow}")
-        multiboardPage.boardInfo.matches('Whiteboard 2 / 2')
+        multiboardPage.navigation.matches('Whiteboard 2 / 2')
     });
 
     it('should select tools in a group', () => {
@@ -71,6 +72,38 @@ describe('Whiteboard Application', () => {
         multiboardPage.overviewContainer.assertVisible()
         multiboardPage.overviewContainer.click()
         multiboardPage.overviewContainer.assertInvisible()
+    });
+
+    it('should be able to drag in the overview', () => {
+        multiboardPage.navigation.set("Whiteboard1")
+        multiboardPage.navigation.new()
+        multiboardPage.navigation.set("Whiteboard2")
+        multiboardPage.navigation.new()
+        multiboardPage.navigation.set("Whiteboard3")
+        multiboardPage.overviewButton.click()
+        multiboardPage.overviewContainer.assertVisible()
+        multiboardPage.overviewContainer.matches(table`
+        | name            |
+        | Whiteboard1 1/3 |
+        | Whiteboard2 2/3 |
+        | Whiteboard3 3/3 |
+        `)
+
+        multiboardPage.overviewContainer.drag(2, 0, -10)
+        multiboardPage.overviewContainer.matches(table`
+        | name            |
+        | Whiteboard3 1/3 |
+        | Whiteboard1 2/3 |
+        | Whiteboard2 3/3 |
+        `)
+
+        multiboardPage.overviewContainer.drag(0, 1, 10)
+        multiboardPage.overviewContainer.matches(table`
+        | name            |
+        | Whiteboard1 1/3 |
+        | Whiteboard3 2/3 |
+        | Whiteboard2 3/3 |
+        `)
     });
 
     it('should be able to draw a simple line', () => {

@@ -6,8 +6,11 @@ import RoundButtonWidget from "../components/RoundButtonWidget";
 import InputText from "../relish-cypress/InputText";
 import CanvasWidget from "../components/CanvasWidget";
 import InputWidget from "../relish-cypress/InputWidget";
-import InputBrushSize from "../components/InputBrushSize";
+import InputTextNeedingEnter from "../components/InputTextNeedingEnter";
 import ImgWidget from "../components/ImgWidget";
+import OverviewItemWidget from "../components/OverviewItemWidget";
+import OverviewContainer from "../components/OverviewContainer";
+import Navigation from "../components/Navigation";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -25,7 +28,6 @@ export default class MultiboardPage extends CypressPage {
     }
 
     public removeAllBoards(maxAttempts = 10) {
-        cy.log('XXXXXX')
         if (maxAttempts <= 0) {
             throw new Error('Max deletion attempts reached');
         }
@@ -46,8 +48,8 @@ export default class MultiboardPage extends CypressPage {
         return new CanvasWidget('#canvas', this);
     }
 
-    get boardInfo() {
-        return new CypressWidget('#boardInfo', this);
+    get navigation() {
+        return new Navigation('#navigation', this);
     }
 
     get confirmNoButton() {
@@ -62,18 +64,6 @@ export default class MultiboardPage extends CypressPage {
         return new CypressWidget('#clearBtn', this);
     }
 
-    get newBoardButton() {
-        return new CypressWidget('#newBoardBtn', this);
-    }
-
-    get nextButton() {
-        return new CypressWidget('#nextBtn', this);
-    }
-
-    get previousButton() {
-        return new CypressWidget('#prevBtn', this);
-    }
-
     get penButton() {
         return new RoundButtonWidget('#penBtn', this);
     }
@@ -86,11 +76,7 @@ export default class MultiboardPage extends CypressPage {
     }
 
     get brushSizeDisplay() {
-        return new InputBrushSize('#brushSizeDisplay', this);
-    }
-
-    get brushSize() {
-        return new InputText('#brushSize', this);
+        return new InputTextNeedingEnter('#brushSizeDisplay', this);
     }
 
     get highlighterButton() {
@@ -101,15 +87,7 @@ export default class MultiboardPage extends CypressPage {
         return new CypressWidget('#overviewBtn', this);
     }
 
-    get saveButton() {
-        return new CypressWidget('#saveBtn', this);
-    }
-
     get overviewContainer() {
-        return new CypressWidget('#overviewContainer', this);
-    }
-
-    overviewItem(index: Number) {
-        return new ImgWidget(`#overviewItem-${index}`, this);
+        return new OverviewContainer('#overviewContainer', this);
     }
 }

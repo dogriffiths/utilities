@@ -4,6 +4,7 @@ import Component from "../relish-core/Component";
 import TableRow from "../relish-core/TableRow";
 import "cypress-xpath";
 import {Buffer} from "buffer";
+import {multiboardPage} from "../pages";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -198,5 +199,29 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
         } else {
             return this.getChainer().screenshot();
         }
+    }
+
+    dragTo(target: CypressWidget, options: any = {}) {
+        const dataTransfer = options?.dataTransfer || new DataTransfer();
+        const offsetX = options?.offsetX || 0;
+        const offsetY = options?.offsetY || 0;
+        this.trigger('dragstart', {dataTransfer});
+
+
+        target.getChainer().then(($el) => {
+                const rect = $el[0].getBoundingClientRect();
+                const x = rect.left + (rect.width / 2) + offsetX;
+                const y = rect.top + (rect.height / 2) + offsetY;
+
+                cy.get($el).trigger('dragover', {dataTransfer, clientX: x, clientY: y});
+            });
+
+        target.getChainer().then(($el) => {
+                const rect = $el[0].getBoundingClientRect();
+                const x = rect.left + (rect.width / 2) + offsetX;
+                const y = rect.top + (rect.height / 2) + offsetY;
+
+                cy.get($el).trigger('drop', {dataTransfer, clientX: x, clientY: y});
+            });
     }
 }

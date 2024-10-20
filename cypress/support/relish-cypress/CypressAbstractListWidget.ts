@@ -87,6 +87,7 @@ export default abstract class CypressAbstractListWidget<
           cypressWidget.matches(tableRow);
         }
       } catch (e) {
+        // @ts-ignore
         if (e.toString().indexOf("CypressError") !== -1) {
           console.error(e);
         }

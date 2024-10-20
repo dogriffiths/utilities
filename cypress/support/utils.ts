@@ -1,5 +1,7 @@
+import TableRow from "./relish-core/TableRow";
+
 function table(s: TemplateStringsArray) {
-    return s
+    let input = s
         .toString()
         .split("\n")
         .map(i => i.trim())
@@ -10,37 +12,19 @@ function table(s: TemplateStringsArray) {
                 .slice(1, -1)
                 .map(d => d.trim())
         );
+    const [keys, ...values] = input;
+
+    let map: TableRow[] = values.map(row =>
+        keys.reduce((obj, key, index) => {
+            // @ts-ignore
+            obj[key] = row[index];
+            return new TableRow(obj);
+        // }, new TableRow([]))
+        }, {} as TableRow)
+    );
+    return map;
 }
 
 const stringSized = (n: number): string => Array(n + 1).join("x");
 
-function mockBoringPortalDiaryResponses() {
-    cy.route({
-        method: "GET",
-        url: "/api/portal/*/*/pattern",
-        status: 200,
-        response: ''
-    });
-    cy.route({
-        method: "GET",
-        url: "/api/portal/*/*/person",
-        status: 200,
-        response: {}
-    });
-    cy.route({
-        method: "GET",
-        url: "/api/portal/*/holidays",
-        status: 200,
-        response: []
-    });
-    cy.route({
-        method: "GET",
-        url: "/api/portal/*/*/diary/*",
-        status: 200,
-        response: {}
-    });
-    cy.route("/api/portal/*/bookedTimes/*/*", {});
-    cy.route("/api/portal/*/activities", {});
-    cy.route("/api/portal/*/projects", {});
-}
-export { table, stringSized, mockBoringPortalDiaryResponses };
+export { table, stringSized };
