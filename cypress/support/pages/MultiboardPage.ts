@@ -64,6 +64,7 @@ export default class MultiboardPage extends CypressPage {
     }
 
     set(rows: TableRow[]): MultiboardPage {
+        this.clearBoards()
         rows.forEach((row, index) => {
             this.navigation.set(row.getString("name"))
             if (index !== rows.length - 1) {
