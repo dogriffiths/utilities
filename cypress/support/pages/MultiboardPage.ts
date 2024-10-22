@@ -59,6 +59,10 @@ export default class MultiboardPage extends CypressPage {
         return new CypressWidget('#confirmYes', this);
     }
 
+    get removeYesButton() {
+        return new CypressWidget('#removeWhiteboardYes', this);
+    }
+
     get overviewContainer() {
         return new OverviewContainer('#overviewContainer', this);
     }

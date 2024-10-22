@@ -15,4 +15,8 @@ export default class OverviewItemWidget extends VisualWidget {
     get image() {
         return new ImgWidget('.overviewImage', this);
     }
+
+    get removeButton() {
+        return new CypressWidget('.removeWhiteboardBtn', this);
+    }
 }

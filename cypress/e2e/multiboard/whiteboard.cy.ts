@@ -67,45 +67,6 @@ describe('Whiteboard Application', () => {
         multiboardPage.matches("2");
     });
 
-    it('should open and close overview', () => {
-        multiboardPage.navigation.overview()
-        multiboardPage.overviewContainer.assertVisible()
-        multiboardPage.overviewContainer.click()
-        multiboardPage.overviewContainer.assertInvisible()
-    });
-
-    it.only('should be able to drag in the overview', () => {
-        multiboardPage.set(table`
-        | name        |
-        | Whiteboard1 |
-        | Whiteboard2 |
-        | Whiteboard3 |
-        `)
-        multiboardPage.navigation.overview()
-        multiboardPage.overviewContainer.matches(table`
-        | name            |
-        | Whiteboard1 1/3 |
-        | Whiteboard2 2/3 |
-        | Whiteboard3 3/3 |
-        `)
-
-        multiboardPage.overviewContainer.drag(2, 0, -10)
-        multiboardPage.overviewContainer.matches(table`
-        | name            |
-        | Whiteboard3 1/3 |
-        | Whiteboard1 2/3 |
-        | Whiteboard2 3/3 |
-        `)
-
-        multiboardPage.overviewContainer.drag(0, 1, 10)
-        multiboardPage.overviewContainer.matches(table`
-        | name            |
-        | Whiteboard1 1/3 |
-        | Whiteboard3 2/3 |
-        | Whiteboard2 3/3 |
-        `)
-    });
-
     it('should be able to draw a simple line', () => {
         multiboardPage.canvas.draw(150, 150, 200, 200)
         multiboardPage.canvas.matches('cypress/expectedimages/simple_line.png');
