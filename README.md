@@ -67,7 +67,7 @@ The Data URI Image Viewer is a lightweight web tool that helps developers and de
 
 ---
 
-### [QR Code Generator](https://dogriffiths.github.io/utilities/data-uri-viewer) (Made with Claude.AI)
+### [QR Code Generator](https://dogriffiths.github.io/utilities/qr-code-generator) (Made with Claude.AI)
 
 The QR Code Generator is a versatile web application that allows users to create customized QR codes for various purposes. Users can generate QR codes not only for basic text and URLs, but also for WiFi network credentials, email addresses with subjects, phone numbers, and SMS messages. The tool provides a user-friendly interface with instant preview and allows customization of the QR code's appearance through size options and color selections for both the foreground and background.
 
