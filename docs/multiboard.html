@@ -1894,6 +1894,20 @@
             navigateBoards(1);
         }
 
+        // Handle Cmd/Ctrl + S
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+            event.preventDefault(); // Prevent browser's default save
+            exportDatabase();
+            return;
+        }
+
+        // Handle Cmd/Ctrl + O (Open)
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'o') {
+            event.preventDefault(); // Prevent browser's default open
+            handleImportFile();
+            return;
+        }
+
         // New code to handle numeric key presses
         const numKey = parseInt(event.key);
         if (!isNaN(numKey) && numKey >= 0 && numKey <= 4) {
@@ -2562,6 +2576,11 @@
         }
     }
 
+    function handleImportFile() {
+        document.getElementById('importFileInput').click();
+    }
+
+
 
     document.addEventListener('click', (event) => {
         if (!stickyNotesMenu.contains(event.target) && event.target !== showStickyNotesMenuBtn) {
@@ -2634,7 +2653,7 @@
     savePngBtn.addEventListener('click', saveAsPNG);
     importPngBtn.addEventListener('click', handleFileSelect);
     exportDbBtn.addEventListener('click', exportDatabase);
-    importDbBtn.addEventListener('click', () => document.getElementById('importFileInput').click());
+    importDbBtn.addEventListener('click', handleImportFile);
     showStickyNotesMenuBtn.addEventListener('click', toggleStickyNotesMenu);
     boardInfo.addEventListener('click', editBoardTitle);
     boardTitleInput.addEventListener('blur', saveBoardTitle);
