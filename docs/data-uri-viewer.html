@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data URI Image Viewer</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 8px;
+            font-family: monospace;
+        }
+        .preview-container {
+            position: relative;
+            margin-top: 20px;
+            min-height: 100px;
+        }
+        #imagePreview {
+            max-width: 100%;
+            border: 1px solid #ccc;
+            display: none;
+        }
+        .drop-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 112, 243, 0.2);
+            border: 2px dashed #0070f3;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .drop-overlay.active {
+            display: block;
+        }
+        button {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0051b3;
+        }
+        .error {
+            color: red;
+            display: none;
+            margin-top: 10px;
+        }
+        .info {
+            color: #666;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        .drop-instructions {
+            display: none;
+            text-align: center;
+            color: #666;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        .drop-overlay.active .drop-instructions {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Data URI Image Viewer</h1>
+    <p>Paste a data URI below to view the image:</p>
+    <div class="info">Handles data URIs in various formats including:
+        <ul>
+            <li>Plain data URI: <code>data:image/png;base64,iVBOR...</code></li>
+            <li>In quotes: <code>"data:image/png;base64,iVBOR..."</code></li>
+            <li>In string literals: <code>'data:image/png;base64,iVBOR...'</code></li>
+        </ul>
+        <p>You can also drag and drop a new image onto the preview to replace it!</p>
+    </div>
+    <textarea id="uriInput" placeholder="Paste your data URI here (can include quotes)"></textarea>
+    <button onclick="displayImage()">Display Image</button>
+    <div id="error" class="error">Please enter a valid image data URI.</div>
+    
+    <div class="preview-container">
+        <img id="imagePreview" alt="Preview">
+        <div class="drop-overlay">
+            <div class="drop-instructions">Drop image to replace</div>
+        </div>
+    </div>
+
+    <script>
+        function cleanDataUri(input) {
+            input = input.trim();
+            
+            if ((input.startsWith('"') && input.endsWith('"')) ||
+                (input.startsWith("'") && input.endsWith("'"))) {
+                input = input.slice(1, -1);
+            }
+            
+            input = input.replace(/\\"/g, '"').replace(/\\'/g, "'");
+            input = input.replace(/;$/, '');
+            
+            return input.trim();
+        }
+
+        function displayImage() {
+            const rawInput = document.getElementById('uriInput').value;
+            const input = cleanDataUri(rawInput);
+            const imagePreview = document.getElementById('imagePreview');
+            const error = document.getElementById('error');
+
+            if (!input.startsWith('data:image/')) {
+                error.style.display = 'block';
+                imagePreview.style.display = 'none';
+                return;
+            }
+
+            error.style.display = 'none';
+            imagePreview.style.display = 'block';
+            imagePreview.src = input;
+            
+            imagePreview.onerror = function() {
+                error.textContent = "Failed to load image. Please check if the data URI is valid.";
+                error.style.display = 'block';
+                imagePreview.style.display = 'none';
+            };
+        }
+
+        function handleImageDrop(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUri = e.target.result;
+                document.getElementById('uriInput').value = dataUri;
+                displayImage();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Drag and drop handling
+        const previewContainer = document.querySelector('.preview-container');
+        const dropOverlay = document.querySelector('.drop-overlay');
+        
+        previewContainer.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dropOverlay.classList.add('active');
+        });
+
+        previewContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        previewContainer.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            if (e.relatedTarget && !previewContainer.contains(e.relatedTarget)) {
+                dropOverlay.classList.remove('active');
+            }
+        });
+
+        previewContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropOverlay.classList.remove('active');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImageDrop(file);
+            } else {
+                error.textContent = "Please drop an image file.";
+                error.style.display = 'block';
+            }
+        });
+
+        // Paste handling
+        document.getElementById('uriInput').addEventListener('paste', (e) => {
+            setTimeout(displayImage, 100);
+        });
+    </script>
+</body>
+</html>

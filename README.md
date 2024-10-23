@@ -45,20 +45,23 @@ A feature-rich, responsive, and user-friendly digital whiteboard with support fo
 
 ---
 
-### [Markdown to Unicode Converter](https://dogriffiths.github.io/utilities/unicode.html) (Made with Claude.AI)
+### [DataURI-Image Converter](https://dogriffiths.github.io/utilities/data-uri-viewer) (Made with Claude.AI)
 
-This web app, built with Claude.ai, lets you write text using markdown and change it into Unicode characters. You can copy and paste the text as plain text, but it keeps the format, even on platforms that do not support formatting, like LinkedIn posts. This tool helps you make bold, italic, and other styled text that looks plain but keeps the style, so your content stands out where formatting is limited.
+The Data URI Image Viewer is a lightweight web tool that helps developers and designers work with data URI encoded images. It provides a seamless way to visualize and manipulate image data URIs by allowing direct pasting of encoded strings or drag-and-drop of image files, automatically handling common string formatting issues like quotes and escapes.
 
 #### Main features
 
-- **Markdown formatting**: Write text using markdown syntax for bold, italic, headers, and more.
-- **Unicode conversion**: Converts markdown text into Unicode characters to retain formatting.
-- **Copy and paste as plain text**: Allows you to copy the formatted text as plain text that keeps its style.
-- **Works on platforms without formatting support**: Use formatted text on platforms like LinkedIn that normally don’t allow rich text formatting.
-
----
-
-This version uses simpler language for clarity. Let me know if you'd like more adjustments!
+- Paste data URIs directly into a text area to preview the image
+- Handles various text formats (quoted strings, escaped characters, trailing semicolons)
+- Drag and drop new images onto the preview to replace existing ones
+- Automatic conversion of dropped images to data URI format
+- Visual feedback during drag operations
+- Live preview updates when pasting or dropping
+- Error handling for invalid URIs and non-image files
+- Clean, responsive interface that works on any screen size
+- No external dependencies or server requirements
+- Support for all major image formats (PNG, JPEG, GIF, etc.)
+- Automatic cleanup of malformed or wrapped data URI strings
 
 ---
 
