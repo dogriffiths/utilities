@@ -697,6 +697,7 @@
     <button id="savePdfBtn">Save to PDF</button>
     <button id="savePngBtn">Save to PNG</button>
     <button id="importPngBtn">Import PNG</button>
+    <button id="saveAllPngsBtn">Save All PNGs</button>
     <button id="exportDbBtn">Export Database</button>
     <button id="importDbBtn">Import Database</button>
 </div>
@@ -910,6 +911,7 @@
     const fileMenu = document.getElementById('fileMenu');
     const savePdfBtn = document.getElementById('savePdfBtn');
     const savePngBtn = document.getElementById('savePngBtn');
+    const saveAllPngsBtn = document.getElementById('saveAllPngsBtn');
     const importPngBtn = document.getElementById('importPngBtn');
     const exportDbBtn = document.getElementById('exportDbBtn');
     const importDbBtn = document.getElementById('importDbBtn');
@@ -1523,6 +1525,65 @@
         link.download = `${whiteboards[currentBoardIndex].name}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
+    }
+
+    function saveAllPNGs() {
+        closeFileMenu();
+
+        // Create a zip file containing all PNGs
+        const zip = new JSZip();
+
+        // Counter for successful saves
+        let savedCount = 0;
+
+        // Save current canvas state
+        const currentIndex = currentBoardIndex;
+        const currentData = canvas.toDataURL();
+
+        // Process each whiteboard
+        whiteboards.forEach((board, index) => {
+            // Create a sanitized filename
+            const paddedNumber = String(index + 1).padStart(2, '0');
+            const sanitizedTitle = (board.title || 'Whiteboard').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+            const filename = `${paddedNumber}-${sanitizedTitle}.png`;
+
+            if (board.data) {
+                // Convert data URL to blob
+                const imageData = board.data.split(',')[1];
+                zip.file(filename, imageData, {base64: true});
+                savedCount++;
+            } else {
+                // For empty whiteboards, create a blank PNG
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.fillStyle = 'white';
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+                // Convert blank canvas to blob
+                const blankData = tempCanvas.toDataURL('image/png').split(',')[1];
+                zip.file(filename, blankData, {base64: true});
+                savedCount++;
+            }
+        });
+
+        // Generate and download the zip file
+        zip.generateAsync({type: "blob"})
+            .then(function(content) {
+                const url = URL.createObjectURL(content);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'all_whiteboards.zip';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            })
+            .catch(function(error) {
+                console.error('Error creating zip file:', error);
+                showErrorDialog('Failed to create zip file. Please try again.');
+            });
     }
 
     function saveAsPDF() {
@@ -2651,6 +2712,7 @@
     fileMenuBtn.addEventListener('click', toggleFileMenu);
     savePdfBtn.addEventListener('click', saveAsPDF);
     savePngBtn.addEventListener('click', saveAsPNG);
+    saveAllPngsBtn.addEventListener('click', saveAllPNGs);
     importPngBtn.addEventListener('click', handleFileSelect);
     exportDbBtn.addEventListener('click', exportDatabase);
     importDbBtn.addEventListener('click', handleImportFile);
