@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enhanced QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.5;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        
+        .input-group {
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .color-inputs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .color-inputs div {
+            flex: 1;
+        }
+        
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        
+        button:hover {
+            background-color: #0052a3;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        #qrcode {
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        #download-btn {
+            background-color: #28a745;
+        }
+        
+        #download-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Generator</h1>
+        
+        <div class="input-group">
+            <label for="type">QR Code Type:</label>
+            <select id="type">
+                <option value="text">Text</option>
+                <option value="url">URL</option>
+                <option value="email">Email</option>
+                <option value="tel">Phone Number</option>
+                <option value="sms">SMS</option>
+                <option value="wifi">WiFi Network</option>
+            </select>
+            
+            <div id="dynamic-inputs">
+                <!-- Dynamic inputs will be inserted here -->
+            </div>
+            
+            <label for="size">QR Code Size:</label>
+            <select id="size">
+                <option value="128">Small (128x128)</option>
+                <option value="256" selected>Medium (256x256)</option>
+                <option value="512">Large (512x512)</option>
+            </select>
+            
+            <div class="color-inputs">
+                <div>
+                    <label for="color-dark">Foreground Color:</label>
+                    <input type="color" id="color-dark" value="#000000">
+                </div>
+                <div>
+                    <label for="color-light">Background Color:</label>
+                    <input type="color" id="color-light" value="#ffffff">
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="generateQR()">Generate QR Code</button>
+            <button id="download-btn" onclick="downloadQR()" style="display: none;">Download QR Code</button>
+        </div>
+        
+        <div id="qrcode"></div>
+    </div>
+
+    <script>
+        let qrcode = null;
+        let currentType = 'text';
+        
+        // Initialize dynamic inputs
+        updateDynamicInputs('text');
+        
+        // Update inputs when type changes
+        document.getElementById('type').addEventListener('change', function(e) {
+            currentType = e.target.value;
+            updateDynamicInputs(currentType);
+        });
+        
+        function updateDynamicInputs(type) {
+            const container = document.getElementById('dynamic-inputs');
+            container.innerHTML = '';
+            
+            switch(type) {
+                case 'text':
+                    container.innerHTML = `
+                        <label for="text">Text:</label>
+                        <input type="text" id="text" placeholder="Enter text">
+                    `;
+                    break;
+                case 'url':
+                    container.innerHTML = `
+                        <label for="url">URL:</label>
+                        <input type="url" id="url" placeholder="https://example.com">
+                    `;
+                    break;
+                case 'email':
+                    container.innerHTML = `
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" placeholder="example@email.com">
+                        <label for="subject">Subject (optional):</label>
+                        <input type="text" id="subject" placeholder="Email subject">
+                    `;
+                    break;
+                case 'tel':
+                    container.innerHTML = `
+                        <label for="tel">Phone Number:</label>
+                        <input type="tel" id="tel" placeholder="+1234567890">
+                    `;
+                    break;
+                case 'sms':
+                    container.innerHTML = `
+                        <label for="phone">Phone Number:</label>
+                        <input type="tel" id="phone" placeholder="+1234567890">
+                        <label for="message">Message (optional):</label>
+                        <input type="text" id="message" placeholder="Enter message">
+                    `;
+                    break;
+                case 'wifi':
+                    container.innerHTML = `
+                        <label for="ssid">Network Name (SSID):</label>
+                        <input type="text" id="ssid" placeholder="Network name">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" placeholder="Network password">
+                        <label for="encryption">Encryption:</label>
+                        <select id="encryption">
+                            <option value="WPA">WPA/WPA2</option>
+                            <option value="WEP">WEP</option>
+                            <option value="nopass">No Password</option>
+                        </select>
+                    `;
+                    break;
+            }
+        }
+        
+        function getQRContent() {
+            switch(currentType) {
+                case 'text':
+                    return document.getElementById('text').value;
+                case 'url':
+                    return document.getElementById('url').value;
+                case 'email':
+                    const email = document.getElementById('email').value;
+                    const subject = document.getElementById('subject').value;
+                    return `mailto:${email}${subject ? '?subject=' + encodeURIComponent(subject) : ''}`;
+                case 'tel':
+                    return `tel:${document.getElementById('tel').value}`;
+                case 'sms':
+                    const phone = document.getElementById('phone').value;
+                    const message = document.getElementById('message').value;
+                    return `sms:${phone}${message ? '?body=' + encodeURIComponent(message) : ''}`;
+                case 'wifi':
+                    const ssid = document.getElementById('ssid').value;
+                    const password = document.getElementById('password').value;
+                    const encryption = document.getElementById('encryption').value;
+                    return `WIFI:T:${encryption};S:${ssid};P:${password};;`;
+            }
+        }
+        
+        function generateQR() {
+            const content = getQRContent();
+            
+            if (!content) {
+                alert('Please fill in the required fields');
+                return;
+            }
+            
+            const size = parseInt(document.getElementById('size').value);
+            const colorDark = document.getElementById('color-dark').value;
+            const colorLight = document.getElementById('color-light').value;
+            
+            // Clear previous QR code
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = '';
+            
+            // Generate new QR code
+            qrcode = new QRCode(qrcodeDiv, {
+                text: content,
+                width: size,
+                height: size,
+                colorDark: colorDark,
+                colorLight: colorLight,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Show download button
+            document.getElementById('download-btn').style.display = 'inline-block';
+        }
+        
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) return;
+            
+            // Create a temporary link
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Generate QR code when Enter key is pressed
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQR();
+            }
+        });
+    </script>
+</body>
+</html>
