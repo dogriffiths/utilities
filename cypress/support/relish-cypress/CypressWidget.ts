@@ -127,6 +127,7 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
     }
 
     findElement(s: string): HTMLElement {
+        console.trace();
         if (!this.isElementBased()) {
             throw "Widget not based on raw element";
         }
@@ -137,7 +138,17 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
         if (this.isElementBased()) {
             throw "Element exists: " + this.selector;
         }
-        return this.getChainer().should("not.be.visible");
+        return this.getChainer().should(($el) => {
+            if ($el.length) {
+                // Element exists, now check if it is not visible
+                expect($el).not.to.be.visible;
+            } else {
+                // Element does not exist
+                expect($el).not.to.exist;
+            }
+        });
+        //
+        // return this.getChainer().should("not.be.visible");
     }
 
     get(): string | HTMLElement {
