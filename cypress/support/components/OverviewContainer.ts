@@ -1,10 +1,9 @@
 import Component from "../relish-core/Component";
-import CypressAbstractListWidget from "../relish-cypress/CypressAbstractListWidget";
 import OverviewItemWidget from "./OverviewItemWidget";
+import CollectionWidget from "../relish-cypress/CollectionWidget";
 
-export default class OverviewContainer extends CypressAbstractListWidget<OverviewItemWidget> {
+export default class OverviewContainer extends CollectionWidget<OverviewItemWidget> {
     constructor(selector: string | HTMLElement, parent: Component) {
-        // super(selector, '.overviewItem', (e) => new OverviewItemWidget(e, this), parent);
         super(
             selector,
             '.overviewItem',
@@ -13,13 +12,5 @@ export default class OverviewContainer extends CypressAbstractListWidget<Overvie
             },
             parent
         );
-    }
-
-    item(index: Number) {
-        return new OverviewItemWidget(`#overviewItem-${index}`, this.parent!!);
-    }
-
-    drag(srcIndex: Number, targetIndex: Number, offsetX: Number) {
-        this.item(srcIndex).dragTo(this.item(targetIndex), {offsetX: offsetX})
     }
 }

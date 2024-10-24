@@ -1,12 +1,7 @@
 import CypressPage from "../relish-cypress/CypressPage";
 import CypressWidget from "../relish-cypress/CypressWidget";
-import CanvasWidget from "../components/CanvasWidget";
-import OverviewContainer from "../components/OverviewContainer";
-import Navigation from "../components/Navigation";
-import Tools from "../components/Tools";
-import TableRow from "../relish-core/TableRow";
-import Component from "../relish-core/Component";
-import Columns from "../components/Columns";
+import CollectionWidget from "../relish-cypress/CollectionWidget";
+import Column from "../components/Column";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -20,6 +15,12 @@ export default class KanBanPage extends CypressPage {
     }
 
     get columns() {
-        return new Columns("#board", this)
+        const widget: CollectionWidget<Column> = new CollectionWidget<Column>(
+            '#board',
+            '.column',
+            e => new Column(e, widget),
+            this
+        );
+        return widget;
     }
 }

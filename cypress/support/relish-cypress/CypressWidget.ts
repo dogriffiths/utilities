@@ -1,10 +1,8 @@
 import Widget from "../relish-core/Widget";
-import CypressAbstractListWidget from "./CypressAbstractListWidget";
+import CollectionWidget from "./CollectionWidget";
 import Component from "../relish-core/Component";
 import TableRow from "../relish-core/TableRow";
 import "cypress-xpath";
-import {Buffer} from "buffer";
-import {multiboardPage} from "../pages";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -100,16 +98,16 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
             }
             return (parent1 as CypressWidget).getChainer().find(selector as string);
         }
-        if (parent1 instanceof CypressAbstractListWidget) {
+        if (parent1 instanceof CollectionWidget) {
             if (
                 typeof selector === "string" &&
                 (selector.indexOf("//") === 0 || selector.indexOf("./") === 0)
             ) {
-                return (parent1 as CypressAbstractListWidget<CypressWidget>)
+                return (parent1 as CollectionWidget<CypressWidget>)
                     .getChainer()
                     .xpath(selector as string);
             }
-            return (parent1 as CypressAbstractListWidget<CypressWidget>)
+            return (parent1 as CollectionWidget<CypressWidget>)
                 .getChainer()
                 .find(selector as string);
         }
