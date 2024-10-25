@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f5f7;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .board {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            min-height: 500px;
+            position: relative; /* Added for end-of-board drop indicator */
+        }
+
+        .board::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 4px;
+            background: #0079bf;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .board.drop-end::after {
+            opacity: 1;
+        }
+
+        .column {
+            background: #ebecf0;
+            border-radius: 3px;
+            min-width: 300px;
+            max-width: 300px;
+            padding: 10px;
+            cursor: move;
+            position: relative;
+        }
+
+        /* Drop indicators */
+        .column::before,
+        .column::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: #0079bf;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .column::before {
+            left: -2px;
+        }
+
+        .column::after {
+            right: -2px;
+        }
+
+        .column.drop-left::before {
+            opacity: 1;
+        }
+
+        .column.drop-right::after {
+            opacity: 1;
+        }
+
+
+        .column.dragging {
+            opacity: 0.5;
+            background: #c8c9cc;
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: move; /* Added cursor for headers */
+        }
+
+        .column-title {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .cards {
+            min-height: 100px;
+            padding: 5px 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: grab;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        }
+
+        .card:hover {
+            background: #f8f9fa;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            background: #0079bf;
+            color: white;
+        }
+
+        button:hover {
+            background: #026aa7;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+
+        .add-card {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .card.dragging {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Kanban Board</h1>
+    <div>
+        <button onclick="addColumn()">Add Column</button>
+        <button onclick="exportBoard()">Export</button>
+        <button onclick="importBoard()">Import</button>
+    </div>
+</div>
+<div class="board" id="board"></div>
+
+<script>
+    let board = {
+        columns: [
+            {id: 'todo', title: 'To Do', cards: []},
+            {id: 'inprogress', title: 'In Progress', cards: []},
+            {id: 'done', title: 'Done', cards: []}
+        ]
+    };
+
+    try {
+        const savedBoard = localStorage.getItem('kanbanBoard');
+        if (savedBoard) {
+            const parsedBoard = JSON.parse(savedBoard);
+            if (parsedBoard && parsedBoard.columns) {
+                board = parsedBoard;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading saved board:', error);
+    }
+
+    function saveBoard() {
+        try {
+            localStorage.setItem('kanbanBoard', JSON.stringify(board));
+        } catch (error) {
+            console.error('Error saving board:', error);
+        }
+    }
+
+    function renderBoard() {
+        const boardElement = document.getElementById('board');
+        if (!boardElement) return;
+
+        boardElement.innerHTML = '';
+
+        board.columns.forEach(column => {
+            const columnElement = document.createElement('div');
+            columnElement.className = 'column';
+            columnElement.setAttribute('data-column-id', column.id);
+            columnElement.draggable = true; // Make column draggable
+
+            const cards = Array.isArray(column.cards) ? column.cards : [];
+
+            columnElement.innerHTML = `
+                    <div class="column-header">
+                        <div class="column-title">${escapeHtml(column.title)}</div>
+                        <button class="delete-btn" onclick="deleteColumn('${escapeHtml(column.id)}')">×</button>
+                    </div>
+                    <div class="cards" data-column-id="${escapeHtml(column.id)}">
+                        ${cards.map(card => `
+                            <div class="card" draggable="true" data-card-id="${escapeHtml(card.id)}">
+                                ${escapeHtml(card.content)}
+                                <div class="card-actions">
+                                    <button onclick="editCard('${escapeHtml(card.id)}')">Edit</button>
+                                    <button class="delete-btn" onclick="deleteCard('${escapeHtml(card.id)}')">Delete</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="add-card" onclick="addCard('${escapeHtml(column.id)}')">+ Add Card</button>
+                `;
+
+            boardElement.appendChild(columnElement);
+        });
+
+        addDragAndDropListeners();
+    }
+
+    function escapeHtml(unsafe) {
+        return unsafe
+            .toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function addDragAndDropListeners() {
+        const cards = document.querySelectorAll('.card');
+        const columns = document.querySelectorAll('.column');
+        const cardContainers = document.querySelectorAll('.cards');
+        const boardElement = document.getElementById('board');
+
+        function clearDropIndicators() {
+            columns.forEach(col => {
+                col.classList.remove('drop-left', 'drop-right');
+            });
+            boardElement.classList.remove('drop-end');
+        }
+
+        function getClosestColumn(x, draggingColumn) {
+            const columns = Array.from(document.querySelectorAll('.column:not(.dragging)'));
+            if (columns.length === 0) return null;
+
+            let closestColumn = null;
+            let closestDistance = Infinity;
+
+            columns.forEach(column => {
+                const rect = column.getBoundingClientRect();
+                const columnCenterX = rect.left + rect.width / 2;
+                const distance = Math.abs(x - columnCenterX);
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestColumn = column;
+                }
+            });
+
+            return {column: closestColumn, distance: closestDistance};
+        }
+
+        columns.forEach(column => {
+            column.addEventListener('dragstart', (e) => {
+                console.log('XXXXXXXX dragstart', e.target)
+                column.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', column.dataset.columnId);
+                setTimeout(() => column.classList.add('dragging'), 0);
+            });
+
+            column.addEventListener('dragend', () => {
+                column.classList.remove('dragging');
+                clearDropIndicators();
+                saveBoard();
+            });
+        });
+
+        boardElement.addEventListener('dragover', e => {
+            e.preventDefault();
+                console.log('XXXXXXXX dragover handler', e.clientX)
+            const draggingColumn = document.querySelector('.column.dragging');
+            if (!draggingColumn) return;
+
+            clearDropIndicators();
+
+            const boardRect = boardElement.getBoundingClientRect();
+            const closest = getClosestColumn(e.clientX, draggingColumn);
+
+            // Check if we should drop at the end
+            const distanceToEnd = Math.abs(e.clientX - (boardRect.right - 20)); // 20px buffer from the right edge
+
+            if (!closest.column || (distanceToEnd < closest.distance && e.clientX > boardRect.right - 100)) {
+                // Show end-of-board indicator
+                boardElement.classList.add('drop-end');
+                // Move column to end
+                boardElement.appendChild(draggingColumn);
+            } else {
+                const rect = closest.column.getBoundingClientRect();
+                const insertAfter = e.clientX - rect.left > rect.width / 2;
+                console.log('XXXXXXX insertAfter', insertAfter)
+
+                if (closest.column !== draggingColumn) {
+                    closest.column.classList.add(insertAfter ? 'drop-right' : 'drop-left');
+                }
+
+                const targetElement = insertAfter ? closest.column.nextElementSibling : closest.column;
+                    console.log('XXXXXXX classes inserting draggingColumn, targetElement', draggingColumn, targetElement)
+                if (targetElement !== draggingColumn) {
+                    console.log('XXXXXXX inserting draggingColumn, targetElement', draggingColumn?.dataset, targetElement?.dataset)
+                    boardElement.insertBefore(draggingColumn, targetElement);
+                }
+            }
+
+            // Update board.columns array to match new order
+            const newOrder = Array.from(boardElement.querySelectorAll('.column')).map(col => col.dataset.columnId);
+            board.columns = newOrder.map(id => board.columns.find(col => col.id === id));
+        });
+
+        boardElement.addEventListener('dragleave', (e) => {
+            // Only clear indicators if we're actually leaving the board
+            const boardRect = boardElement.getBoundingClientRect();
+            if (e.clientX < boardRect.left || e.clientX > boardRect.right ||
+                e.clientY < boardRect.top || e.clientY > boardRect.bottom) {
+                clearDropIndicators();
+            }
+        });
+
+        boardElement.addEventListener('drop', () => {
+            clearDropIndicators();
+        });
+
+        // Card drag events
+        cards.forEach(card => {
+            card.addEventListener('dragstart', (e) => {
+                e.stopPropagation(); // Prevent column drag when dragging cards
+                card.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', card.dataset.cardId);
+            });
+
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+                saveBoard();
+            });
+        });
+
+        // Card container drag events
+        cardContainers.forEach(container => {
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                const draggingCard = document.querySelector('.card.dragging');
+                if (!draggingCard) return;
+
+                const afterElement = getDragAfterElement(container, e.clientY, '.card');
+                if (afterElement) {
+                    container.insertBefore(draggingCard, afterElement);
+                } else {
+                    container.appendChild(draggingCard);
+                }
+            });
+
+            container.addEventListener('drop', e => {
+                e.preventDefault();
+                const cardId = e.dataTransfer.getData('text/plain');
+                const card = document.querySelector(`[data-card-id="${cardId}"]`);
+                if (!card) return;
+
+                const sourceColumnId = findCardColumn(cardId);
+                const targetColumnId = container.dataset.columnId;
+
+                if (sourceColumnId !== targetColumnId) {
+                    moveCard(cardId, sourceColumnId, targetColumnId);
+                }
+            });
+        });
+    }
+
+    function getDragAfterElement(container, position, selector) {
+        const draggableElements = [...container.querySelectorAll(`${selector}:not(.dragging)`)];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = position - (selector === '.column' ? box.left : box.top);
+
+            if (offset < 0 && offset > closest.offset) {
+                return {offset: offset, element: child};
+            } else {
+                return closest;
+            }
+        }, {offset: Number.NEGATIVE_INFINITY}).element;
+    }
+
+    function findCardColumn(cardId) {
+        return board.columns.find(column =>
+            column.cards.some(card => card.id === cardId)
+        )?.id;
+    }
+
+    function moveCard(cardId, sourceColumnId, targetColumnId) {
+        const sourceColumn = board.columns.find(col => col.id === sourceColumnId);
+        const targetColumn = board.columns.find(col => col.id === targetColumnId);
+
+        if (!sourceColumn || !targetColumn) return;
+
+        const cardIndex = sourceColumn.cards.findIndex(card => card.id === cardId);
+        if (cardIndex === -1) return;
+
+        const [card] = sourceColumn.cards.splice(cardIndex, 1);
+        targetColumn.cards.push(card);
+        saveBoard();
+    }
+
+    function addColumn() {
+        const title = prompt('Enter column title:');
+        if (!title) return;
+
+        const columnId = 'column-' + Date.now();
+        board.columns.push({
+            id: columnId,
+            title: title,
+            cards: []
+        });
+        saveBoard();
+        renderBoard();
+    }
+
+    function deleteColumn(columnId) {
+        if (!confirm('Are you sure you want to delete this column?')) return;
+
+        board.columns = board.columns.filter(column => column.id !== columnId);
+        saveBoard();
+        renderBoard();
+    }
+
+    function addCard(columnId) {
+        const content = prompt('Enter card content:');
+        if (!content) return;
+
+        const column = board.columns.find(col => col.id === columnId);
+        if (!column) return;
+
+        column.cards.push({
+            id: 'card-' + Date.now(),
+            content: content
+        });
+        saveBoard();
+        renderBoard();
+    }
+
+    function editCard(cardId) {
+        for (const column of board.columns) {
+            const card = column.cards.find(card => card.id === cardId);
+            if (card) {
+                const newContent = prompt('Edit card:', card.content);
+                if (newContent) {
+                    card.content = newContent;
+                    saveBoard();
+                    renderBoard();
+                }
+                break;
+            }
+        }
+    }
+
+    function deleteCard(cardId) {
+        if (!confirm('Are you sure you want to delete this card?')) return;
+
+        board.columns.forEach(column => {
+            column.cards = column.cards.filter(card => card.id !== cardId);
+        });
+        saveBoard();
+        renderBoard();
+    }
+
+    function exportBoard() {
+        try {
+            const dataStr = JSON.stringify(board, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'kanban-board.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting board:', error);
+            alert('Failed to export board');
+        }
+    }
+
+    function importBoard() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = event => {
+                try {
+                    const importedBoard = JSON.parse(event.target.result);
+                    if (importedBoard && importedBoard.columns) {
+                        board = importedBoard;
+                        saveBoard();
+                        renderBoard();
+                    } else {
+                        throw new Error('Invalid board structure');
+                    }
+                } catch (error) {
+                    console.error('Error importing board:', error);
+                    alert('Invalid board data');
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    // Initial render
+    document.addEventListener('DOMContentLoaded', () => {
+        renderBoard();
+    });
+</script>
+</body>
+</html>

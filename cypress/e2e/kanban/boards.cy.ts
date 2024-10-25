@@ -16,19 +16,33 @@ describe('Whiteboard Application', () => {
         | In Progress | 
         | Done        | 
         `)
-        // kanBanPage.columns.item(0).dragTo(kanBanPage.columns.item(2))
+        kanBanPage.columns.item(0).dragTo(kanBanPage.columns.item(2), {offsetX: 50})
+        kanBanPage.columns.matches(table`
+        | title       |
+        | In Progress |
+        | Done        |
+        | To Do       |
+        `)
+        kanBanPage.columns.item(2).dragTo(kanBanPage.columns.item(0), {offsetX: -50})
+        kanBanPage.columns.matches(table`
+        | title       |
+        | To Do       |
+        | In Progress |
+        | Done        |
+        `)
+        kanBanPage.columns.item(0).dragTo(kanBanPage.columns.item(2), {offsetX: -50})
+        kanBanPage.columns.matches(table`
+        | title       |
+        | In Progress |
+        | To Do       |
+        | Done        |
+        `)
+        kanBanPage.columns.item(2).dragTo(kanBanPage.columns.item(0), {offsetX: 50})
         // kanBanPage.columns.matches(table`
         // | title       |
         // | In Progress |
         // | Done        |
         // | To Do       |
-        // `)
-        // kanBanPage.columns.item(2).dragTo(kanBanPage.columns.item(0), -10)
-        // kanBanPage.columns.matches(table`
-        // | title       |
-        // | In Progress |
-        // | To Do       |
-        // | Done        |
         // `)
     });
 });
