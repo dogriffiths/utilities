@@ -13,4 +13,8 @@ export default class TaskItem extends CypressWidget {
     get text() {
         return new CypressWidget('span', this);
     }
+
+    get description() {
+        return new CypressWidget('.task-description', this);
+    }
 }

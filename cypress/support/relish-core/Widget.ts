@@ -1,4 +1,5 @@
 import Component from "./Component";
+import TableRow from "./TableRow";
 
 export default abstract class Widget<T> extends Component {
   private peer: T;
@@ -27,4 +28,33 @@ export default abstract class Widget<T> extends Component {
   public abstract assertEnabled(): void;
 
   public abstract scrollTo(): void;
+
+  matches(s: TableRow | string | TableRow[]): void {
+    console.log('XXXXXXX s', s)
+    if (typeof s === "string") {
+      if (s != null) {
+        if ("[INVISIBLE]" === s) {
+          this.assertInvisible();
+          return;
+        }
+        if ("[VISIBLE]" === s) {
+          this.assertVisible();
+          return;
+        }
+        if ("[ENABLED]" === s) {
+          this.assertEnabled();
+          return;
+        }
+        if ("[DISABLED]" === s) {
+          this.assertDisabled();
+          return;
+        }
+        // @ts-ignore
+        if (s.startsWith("[[") && s.endsWith("]]")) {
+          s = s.substring(1, s.length - 1);
+        }
+      }
+    }
+    super.matches(s);
+  }
 }

@@ -43,6 +43,26 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
         if (s instanceof TableRow) {
             super.matches(s as TableRow);
         } else if (typeof s === "string") {
+            if ("[INVISIBLE]" === s) {
+                this.assertInvisible();
+                return;
+            }
+            if ("[VISIBLE]" === s) {
+                this.assertVisible();
+                return;
+            }
+            if ("[ENABLED]" === s) {
+                this.assertEnabled();
+                return;
+            }
+            if ("[DISABLED]" === s) {
+                this.assertDisabled();
+                return;
+            }
+            // @ts-ignore
+            if (s.startsWith("[[") && s.endsWith("]]")) {
+                s = s.substring(1, s.length - 1);
+            }
             if (typeof this.selector !== "string") {
                 if (!this.selector) {
                     throw "Cannot find element: " +
@@ -53,6 +73,7 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
                 expect(this.matcher(this.selector).trim()).equals(s.trim());
             } else {
                 this.getChainer().should($elems => {
+                    // @ts-ignore
                     return expect(this.matcher($elems[0]).trim()).equals(s.trim());
                 });
             }
@@ -96,8 +117,12 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
                     .getChainer()
                     .xpath(selector as string);
             }
-            return (parent1 as CypressWidget).getChainer().find(selector as string);
+            let realSelector = selector || this.baseSelector;
+            console.log('XXXXXXXXX parent1', parent1, selector, realSelector, this.selector, this.baseSelector);
+            console.log('XXXXXXXXX realSelector', realSelector);
+            return (parent1 as CypressWidget).getChainer().find(realSelector as string);
         }
+
         if (parent1 instanceof CollectionWidget) {
             if (
                 typeof selector === "string" &&
