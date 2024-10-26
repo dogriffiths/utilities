@@ -353,7 +353,6 @@
 
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
-                console.log('XXXXXXX onupgradeneeded', db.objectStoreNames)
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
                     const store = db.createObjectStore(STORE_NAME, {keyPath: 'id', autoIncrement: true});
                     store.createIndex('position', 'position', {unique: false});
@@ -376,7 +375,6 @@
                     }
                 }
                 if (!db.objectStoreNames.contains(COMPLETED_STORE)) {
-                    console.log('XXXXXXX CREATE!')
                     const completedStore = db.createObjectStore(COMPLETED_STORE, {keyPath: 'id', autoIncrement: true});
                     completedStore.createIndex('completedAt', 'completedAt', {unique: false});
                 }
@@ -950,7 +948,6 @@
                 skipEmptyLines: true,
                 transformHeader: header => header.trim().toUpperCase(),
                 complete: function(results) {
-                    console.log('XXXXXXX complete!', results)
                     if (results.errors.length > 0) {
                         reject(new Error('CSV parsing error: ' + results.errors[0].message));
                         return;
