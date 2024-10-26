@@ -349,8 +349,9 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            width: 940px; /* Increased to accommodate 7 days */
-            margin-left: -170px;
+            width: 100%;
+            max-width: 940px;
+            margin: 0 auto;
         }
 
         .calendar-header {
@@ -358,19 +359,21 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            width: 100%;
+            max-width: 940px;
         }
 
-        .calendar-header button {
-            padding: 8px 16px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        @media (max-width: 768px) {
+            .calendar-container {
+                margin: 0;
+                padding: 10px;
+            }
         }
 
-        .calendar-header h2 {
-            margin: 0;
+        /* Calendar grid styles */
+        .calendar-grid {
+            display: flex;
+            flex-direction: column;
         }
 
         .calendar-weekdays {
@@ -382,13 +385,10 @@
             margin-bottom: 10px;
         }
 
-        .calendar-weekdays div {
-            aspect-ratio: 1;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid transparent; /* Transparent border to match day cells */
+        @media (max-width: 768px) {
+            .calendar-weekdays {
+                display: none; /* Hide weekday headers in list view */
+            }
         }
 
         .calendar-days {
@@ -397,20 +397,50 @@
             gap: 4px;
         }
 
+        @media (max-width: 768px) {
+            .calendar-days {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+
         .calendar-day {
-            aspect-ratio: 1;
+            min-height: 100px;
             padding: 8px;
             border: 1px solid #eee;
             border-radius: 4px;
-            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-day {
+                min-height: auto;
+                flex-direction: row;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .calendar-day .day-header {
+                min-width: 100px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .calendar-day .weekday-label {
+                display: block;
+                font-size: 0.8em;
+                color: #666;
+                margin-bottom: 2px;
+            }
+
+            .calendar-day.different-month {
+                display: none; /* Hide days from other months in list view */
+            }
         }
 
         .calendar-day:hover {
             background: #f5f5f5;
-        }
-
-        .calendar-day.different-month {
-            color: #ccc;
         }
 
         .calendar-day.today {
@@ -422,30 +452,32 @@
             background: #c8e6c9;
         }
 
+        .calendar-day-tasks {
+            margin-top: 4px;
+            font-size: 0.8em;
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-day-tasks {
+                margin-top: 0;
+                max-width: none;
+            }
+
+            .calendar-day-tasks div {
+                max-width: none;
+                white-space: normal;
+                margin-bottom: 4px;
+            }
+        }
+
         .task-dot {
             width: 6px;
             height: 6px;
             background: #4CAF50;
             border-radius: 50%;
             margin: 2px auto;
-        }
-
-        .calendar-day-tasks {
-            margin-top: 4px;
-            font-size: 0.8em;
-            overflow: hidden;
-        }
-
-        .calendar-day-tasks div {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #666;
-        }
-
-        .calendar-day-tasks div {
-            max-width: 113px;
-            overflow: hidden;
         }
     </style>
 </head>
@@ -1490,7 +1522,7 @@
 
         // Update header
         document.getElementById('currentMonthDisplay').textContent =
-            new Date(year, month).toLocaleDateString('default', { month: 'long', year: 'numeric' });
+            new Date(year, month).toLocaleDateString('default', {month: 'long', year: 'numeric'});
 
         // Calculate calendar days
         const firstDay = new Date(year, month, 1);
@@ -1566,16 +1598,28 @@
             dayDiv.classList.add('different-month');
         }
 
+        // Create day header container
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'day-header';
+
+        // Add weekday label (visible only in mobile view)
+        const weekdayLabel = document.createElement('div');
+        weekdayLabel.className = 'weekday-label';
+        weekdayLabel.textContent = date.toLocaleDateString('default', {weekday: 'short'});
+        dayHeader.appendChild(weekdayLabel);
+
+        // Add day number
+        const dayNumberDiv = document.createElement('div');
+        dayNumberDiv.textContent = dayNumber;
+        dayHeader.appendChild(dayNumberDiv);
+
+        dayDiv.appendChild(dayHeader);
+
         // Check if it's today
         const today = new Date();
         if (date.toDateString() === today.toDateString()) {
             dayDiv.classList.add('today');
         }
-
-        // Add day number
-        const dayNumberDiv = document.createElement('div');
-        dayNumberDiv.textContent = dayNumber;
-        dayDiv.appendChild(dayNumberDiv);
 
         // Find tasks for this day
         const dayTasks = tasks.filter(task => {
@@ -1587,17 +1631,21 @@
         if (dayTasks.length > 0) {
             dayDiv.classList.add('has-tasks');
 
-            // Add task dots/previews
+            // Add task previews
             const tasksDiv = document.createElement('div');
             tasksDiv.className = 'calendar-day-tasks';
 
-            dayTasks.slice(0, 2).forEach(task => {
+            // Show all tasks in mobile view, limit to 3 in desktop
+            const tasksToShow = window.innerWidth <= 768 ? dayTasks : dayTasks.slice(0, 2);
+
+            tasksToShow.forEach(task => {
                 const taskDiv = document.createElement('div');
                 taskDiv.textContent = task.text;
                 tasksDiv.appendChild(taskDiv);
             });
 
-            if (dayTasks.length > 2) {
+            // Show "more" indicator only in desktop view
+            if (window.innerWidth > 768 && dayTasks.length > 2) {
                 const moreDiv = document.createElement('div');
                 moreDiv.textContent = `+${dayTasks.length - 2} more`;
                 tasksDiv.appendChild(moreDiv);
