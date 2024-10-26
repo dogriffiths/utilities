@@ -300,27 +300,72 @@
             align-items: center;
             z-index: 999;
         }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            position: relative;
+        }
+
+        .tab.active {
+            color: #4CAF50;
+        }
+
+        .tab:hover {
+            color: white;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #4CAF50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
-<div id="pageDropOverlay" class="page-drop-overlay">
-    <div class="page-drop-message">
-        Drop your OPML, CSV, or TXT file here
+<div class="tabs">
+    <button class="tab active" data-tab="tasks">Tasks</button>
+    <button class="tab" data-tab="schedule">Schedule</button>
+</div>
+<div id="tasks-tab" class="tab-content active">
+    <div class="todo-container">
+        <h2>TODO List</h2>
+        <div class="input-container">
+            <input type="text" id="newTask" placeholder="Enter a new task">
+            <button onclick="addTask()">Add Task</button>
+        </div>
+        <ul id="taskList" class="task-list">
+        </ul>
+        <div id="status"></div>
     </div>
 </div>
-<div class="todo-container">
-    <h2>TODO List</h2>
-    <div class="input-container">
-        <input type="text" id="newTask" placeholder="Enter a new task">
-        <button onclick="addTask()">Add Task</button>
-    </div>
-    <ul id="taskList" class="task-list">
-    </ul>
-    <div id="status"></div>
-</div>
-<div class="journal-container">
-    <h2>Journal</h2>
-    <div id="journalList" class="journal-list">
+<div id="schedule-tab" class="tab-content">
+    <div class="journal-container">
+        <h2>Journal</h2>
+        <div id="journalList" class="journal-list">
+        </div>
     </div>
 </div>
 
@@ -358,7 +403,11 @@
         </div>
     </div>
 </div>
-
+<div id="pageDropOverlay" class="page-drop-overlay">
+    <div class="page-drop-message">
+        Drop your OPML, CSV, or TXT file here
+    </div>
+</div>
 
 
 <script>
@@ -996,7 +1045,7 @@
                 header: true,
                 skipEmptyLines: true,
                 transformHeader: header => header.trim().toUpperCase(),
-                complete: function(results) {
+                complete: function (results) {
                     if (results.errors.length > 0) {
                         reject(new Error('CSV parsing error: ' + results.errors[0].message));
                         return;
@@ -1033,7 +1082,7 @@
 
                     resolve(tasks);
                 },
-                error: function(error) {
+                error: function (error) {
                     reject(new Error('CSV parsing error: ' + error.message));
                 }
             });
@@ -1284,7 +1333,27 @@
         }
     }
 
+    function setupTabs() {
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                tabs.forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = `${tab.dataset.tab}-tab`;
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    }
+
+
     document.addEventListener('DOMContentLoaded', () => {
+        setupTabs();
         setupDropZone();
 
         document.getElementById('newTask').addEventListener('keypress', (e) => {
