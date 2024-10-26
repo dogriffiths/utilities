@@ -58,6 +58,17 @@
             cursor: move;
         }
 
+        .task-metadata {
+            display: flex;
+            gap: 12px;
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .task-metadata span {
+            white-space: nowrap;
+        }
+
         .task-text {
             flex-grow: 1;
             cursor: pointer;
@@ -69,11 +80,19 @@
             margin-top: 4px;
         }
 
+        .task-due-date {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .task-due-date.overdue {
+            color: #ff4444;
+        }
+
         .task-comments {
             font-size: 0.8em;
             color: #666;
-            margin-top: 4px;
-            padding-left: 16px;
+            padding-left: 0;
             border-left: 2px solid #eee;
         }
 
@@ -187,8 +206,20 @@
 <div id="editDialog" class="dialog-overlay">
     <div class="dialog">
         <h3>Edit Task</h3>
-        <input type="text" id="editTaskText" placeholder="Task title">
-        <textarea id="editTaskDescription" placeholder="Task description"></textarea>
+        <div class="form-group">
+            <label for="editTaskText">Task Title</label>
+            <input type="text" id="editTaskText" placeholder="Task title">
+        </div>
+
+        <div class="form-group">
+            <label for="editTaskDueDate">Due Date</label>
+            <input type="datetime-local" id="editTaskDueDate">
+        </div>
+
+        <div class="form-group">
+            <label for="editTaskDescription">Description</label>
+            <textarea id="editTaskDescription" placeholder="Task description"></textarea>
+        </div>
 
         <div class="comments-section">
             <h4>Comments</h4>
@@ -239,8 +270,8 @@
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
                     const store = db.createObjectStore(STORE_NAME, {keyPath: 'id', autoIncrement: true});
                     store.createIndex('position', 'position', {unique: false});
-                    // Add description field
                     store.createIndex('description', 'description', {unique: false});
+                    store.createIndex('dueDate', 'dueDate', {unique: false});
                     console.log('Object store created');
                 } else if (event.oldVersion < 2) {
                     // Add description field to existing store
@@ -250,6 +281,11 @@
                     }
                     if (!store.indexNames.contains('comments')) {
                         store.createIndex('comments', 'comments', {unique: false});
+                    }
+                } else if (event.oldVersion < 3) {
+                    const store = event.target.transaction.objectStore(STORE_NAME);
+                    if (!store.indexNames.contains('dueDate')) {
+                        store.createIndex('dueDate', 'dueDate', {unique: false});
                     }
                 }
             };
@@ -382,13 +418,45 @@
         descSpan.textContent = task.description;
         textContainer.appendChild(descSpan);
 
-        // Add comments preview if there are any
-        const commentsPreview = document.createElement('div');
-        commentsPreview.className = 'task-comments';
-        if (task.comments && task.comments.length > 0) {
-            commentsPreview.textContent = `${task.comments.length} comment${task.comments.length !== 1 ? 's' : ''}`;
+        // Create a metadata container for due date and comments
+        const metadataContainer = document.createElement('div');
+        metadataContainer.className = 'task-metadata';
+        metadataContainer.style.cssText = 'display: flex; gap: 12px; font-size: 0.8em; color: #666; margin-top: 4px;';
+
+        // Add due date if exists
+        const dueDateSpan = document.createElement('span');
+        dueDateSpan.className = 'task-dueDate';
+        dueDateSpan.style.cssText = 'white-space: nowrap;';
+        if (task.dueDate) {
+            const date = new Date(task.dueDate);
+            const isOverdue = date < new Date();
+            dueDateSpan.style.color = isOverdue ? '#ff4444' : '#666';
+            dueDateSpan.innerHTML = `📅 ${date.toLocaleString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}`;
+        } else {
+            dueDateSpan.style.cssText += ' height: 0';
         }
-        textContainer.appendChild(commentsPreview);
+        metadataContainer.appendChild(dueDateSpan);
+
+        // Add comments count
+        const commentsSpan = document.createElement('span');
+        commentsSpan.className = 'task-comments-augmented';
+
+        // Add comments preview if there are any
+        if (task.comments && task.comments.length > 0) {
+            commentsSpan.innerHTML = `💬 <span class="task-comments">${task.comments.length}</span>`;
+        } else {
+            commentsSpan.innerHTML = `<span class="task-comments"/>`;
+            commentsSpan.style.cssText += ' height: 0';
+        }
+        metadataContainer.appendChild(commentsSpan);
+
+        // Add metadata container to text container
+        textContainer.appendChild(metadataContainer);
 
         li.appendChild(checkbox);
         li.appendChild(textContainer);
@@ -406,10 +474,18 @@
         const dialog = document.getElementById('editDialog');
         const taskText = document.getElementById('editTaskText');
         const taskDesc = document.getElementById('editTaskDescription');
+        const taskDueDate = document.getElementById('editTaskDueDate');
         const commentsList = document.getElementById('commentsList');
 
         taskText.value = task.text;
         taskDesc.value = task.description || '';
+        if (task.dueDate) {
+            const date = new Date(task.dueDate);
+            const formattedDate = date.toISOString().slice(0, 16);
+            taskDueDate.value = formattedDate;
+        } else {
+            taskDueDate.value = '';
+        }
 
         // Load comments
         commentsList.innerHTML = '';
@@ -486,6 +562,7 @@
 
         const taskText = document.getElementById('editTaskText').value.trim();
         const taskDesc = document.getElementById('editTaskDescription').value.trim();
+        const taskDueDate = document.getElementById('editTaskDueDate').value;
 
         if (taskText === '') return;
 
@@ -498,6 +575,8 @@
                 const task = request.result;
                 task.text = taskText;
                 task.description = taskDesc;
+                task.dueDate = taskDueDate ? new Date(taskDueDate).toISOString() : null;
+
                 // Note: We don't need to explicitly preserve comments here since
                 // we're only updating the text and description fields of the existing task object
                 // The comments array is preserved as it's not being overwritten

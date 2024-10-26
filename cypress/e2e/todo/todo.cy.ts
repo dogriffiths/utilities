@@ -63,8 +63,8 @@ describe('Todo Application', () => {
         `)
         toDoPage.editDialog.saveButton.click()
         toDoPage.tasks.matches(table`
-        | text     | comments  |
-        | Buy fish | 1 comment |
+        | text     | comments |
+        | Buy fish | 1        |
         `)
     });
 });

@@ -21,4 +21,8 @@ export default class TaskItem extends CypressWidget {
     get comments() {
         return new CypressWidget('.task-comments', this);
     }
+
+    get dueDate() {
+        return new CypressWidget('.task-dueDate', this);
+    }
 }
