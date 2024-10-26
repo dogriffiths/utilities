@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Simple TODO App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -788,8 +789,99 @@
         }
     }
 
+    // Add these functions just before the setupDropZone() function
+
+    function parseRelativeDate(dateStr) {
+        if (!dateStr) return null;
+
+        // Handle ISO format dates directly
+        if (dateStr.includes('T') || dateStr.includes('-')) {
+            return new Date(dateStr);
+        }
+
+        // Parse relative dates
+        const match = dateStr.toLowerCase().match(/in (\d+) (day|days|week|weeks|month|months|year|years)/);
+        if (!match) return null;
+
+        const amount = parseInt(match[1]);
+        const unit = match[2];
+
+        const now = new Date();
+        switch (unit) {
+            case 'day':
+            case 'days':
+                return new Date(now.setDate(now.getDate() + amount));
+            case 'week':
+            case 'weeks':
+                return new Date(now.setDate(now.getDate() + (amount * 7)));
+            case 'month':
+            case 'months':
+                return new Date(now.setMonth(now.getMonth() + amount));
+            case 'year':
+            case 'years':
+                return new Date(now.setFullYear(now.getFullYear() + amount));
+            default:
+                return null;
+        }
+    }
+
+    function parseCSVToTasks(csvText) {
+        return new Promise((resolve, reject) => {
+            Papa.parse(csvText, {
+                header: true,
+                skipEmptyLines: true,
+                transformHeader: header => header.trim().toUpperCase(),
+                complete: function(results) {
+                    console.log('XXXXXXX complete!', results)
+                    if (results.errors.length > 0) {
+                        reject(new Error('CSV parsing error: ' + results.errors[0].message));
+                        return;
+                    }
+
+                    // Validate required CONTENT column
+                    if (!results.meta.fields.includes('CONTENT')) {
+                        reject(new Error('CSV must contain a CONTENT column'));
+                        return;
+                    }
+
+                    const tasks = results.data.map((row, index) => {
+                        // Skip rows without content
+                        if (!row.CONTENT) return null;
+
+                        const task = {
+                            text: row.CONTENT.trim(),
+                            description: row.DESCRIPTION?.trim() || '',
+                            comments: [],
+                            position: index,
+                            created: new Date().toISOString()
+                        };
+
+                        // Handle due date if present
+                        if (row.DATE) {
+                            const dueDate = parseRelativeDate(row.DATE);
+                            if (dueDate) {
+                                task.dueDate = dueDate.toISOString();
+                            }
+                        }
+
+                        return task;
+                    }).filter(task => task !== null); // Remove any skipped rows
+
+                    resolve(tasks);
+                },
+                error: function(error) {
+                    reject(new Error('CSV parsing error: ' + error.message));
+                }
+            });
+        });
+    }
+
+    // Update the setupDropZone function to handle both OPML and CSV files
     function setupDropZone() {
         const dropZone = document.getElementById('dropZone');
+
+        // Update the dropZone text to mention CSV support
+        dropZone.querySelector('p').textContent = 'Drag and drop an OPML or CSV file here to import tasks';
 
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -805,18 +897,31 @@
             dropZone.classList.remove('drag-over');
 
             const file = e.dataTransfer.files[0];
-            if (!file || !file.name.toLowerCase().endsWith('.opml')) {
-                showStatus('Please drop an OPML file', true);
+            if (!file) {
+                showStatus('Please drop a valid file', true);
+                return;
+            }
+
+            const fileExt = file.name.toLowerCase().split('.').pop();
+            if (fileExt !== 'opml' && fileExt !== 'csv') {
+                showStatus('Please drop an OPML or CSV file', true);
                 return;
             }
 
             try {
                 const text = await file.text();
-                const tasks = parseOPMLToTasks(text);
+                let tasks;
+
+                if (fileExt === 'opml') {
+                    tasks = parseOPMLToTasks(text);
+                } else {
+                    tasks = await parseCSVToTasks(text);
+                }
+
                 await importTasks(tasks);
             } catch (error) {
-                console.error('Error processing OPML file:', error);
-                showStatus('Error processing OPML file', true);
+                console.error(`Error processing ${fileExt.toUpperCase()} file:`, error);
+                showStatus(`Error processing ${fileExt.toUpperCase()} file: ${error.message}`, true);
             }
         });
     }
