@@ -342,11 +342,116 @@
         .tab-content.active {
             display: block;
         }
+
+        .calendar-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 940px; /* Increased to accommodate 7 days */
+            margin-left: -170px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header button {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .calendar-header h2 {
+            margin: 0;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .calendar-weekdays div {
+            aspect-ratio: 1;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid transparent; /* Transparent border to match day cells */
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            padding: 8px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .calendar-day:hover {
+            background: #f5f5f5;
+        }
+
+        .calendar-day.different-month {
+            color: #ccc;
+        }
+
+        .calendar-day.today {
+            background: #e8f5e9;
+            font-weight: bold;
+        }
+
+        .calendar-day.has-tasks {
+            background: #c8e6c9;
+        }
+
+        .task-dot {
+            width: 6px;
+            height: 6px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin: 2px auto;
+        }
+
+        .calendar-day-tasks {
+            margin-top: 4px;
+            font-size: 0.8em;
+            overflow: hidden;
+        }
+
+        .calendar-day-tasks div {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #666;
+        }
+
+        .calendar-day-tasks div {
+            max-width: 113px;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
 <div class="tabs">
     <button class="tab active" data-tab="tasks">Tasks</button>
+    <button class="tab" data-tab="calendar">Calendar</button>
     <button class="tab" data-tab="schedule">Schedule</button>
 </div>
 <div id="tasks-tab" class="tab-content active">
@@ -359,6 +464,27 @@
         <ul id="taskList" class="task-list">
         </ul>
         <div id="status"></div>
+    </div>
+</div>
+<div id="calendar-tab" class="tab-content">
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <button onclick="previousMonth()">&lt;</button>
+            <h2 id="currentMonthDisplay"></h2>
+            <button onclick="nextMonth()">&gt;</button>
+        </div>
+        <div class="calendar-grid">
+            <div class="calendar-weekdays">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+            </div>
+            <div id="calendarDays" class="calendar-days"></div>
+        </div>
     </div>
 </div>
 <div id="schedule-tab" class="tab-content">
@@ -416,6 +542,7 @@
     const STORE_NAME = 'todos';
     const COMPLETED_STORE = 'completed';
     let currentEditingId = null;
+    let currentCalendarDate = new Date();
 
     // Initialize database connection
     initDB().catch(error => {
@@ -1337,18 +1464,203 @@
         const tabs = document.querySelectorAll('.tab');
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                // Remove active class from all tabs and content
                 tabs.forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(content => {
                     content.classList.remove('active');
                 });
 
-                // Add active class to clicked tab and corresponding content
                 tab.classList.add('active');
                 const tabId = `${tab.dataset.tab}-tab`;
                 document.getElementById(tabId).classList.add('active');
+
+                // Update calendar when switching to calendar tab
+                if (tab.dataset.tab === 'calendar') {
+                    updateCalendar();
+                }
             });
         });
+    }
+
+    function updateCalendar() {
+        if (!db) return;
+
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth();
+
+        // Update header
+        document.getElementById('currentMonthDisplay').textContent =
+            new Date(year, month).toLocaleDateString('default', { month: 'long', year: 'numeric' });
+
+        // Calculate calendar days
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startingDay = firstDay.getDay();
+        const totalDays = lastDay.getDate();
+
+        // Get tasks for the visible date range
+        const startDate = new Date(year, month, 1 - startingDay);
+        const endDate = new Date(year, month + 1, 42 - startingDay);
+
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            const tasks = request.result;
+            renderCalendarDays(startingDay, totalDays, tasks);
+        };
+    }
+
+    function renderCalendarDays(startingDay, totalDays, tasks) {
+        const calendarDays = document.getElementById('calendarDays');
+        calendarDays.innerHTML = '';
+
+        const today = new Date();
+        const currentMonth = currentCalendarDate.getMonth();
+        const currentYear = currentCalendarDate.getFullYear();
+
+        // Previous month days
+        const prevMonth = new Date(currentYear, currentMonth, 0);
+        const prevMonthDays = prevMonth.getDate();
+
+        for (let i = startingDay - 1; i >= 0; i--) {
+            const dayDiv = createCalendarDay(
+                prevMonthDays - i,
+                new Date(currentYear, currentMonth - 1, prevMonthDays - i),
+                tasks,
+                true
+            );
+            calendarDays.appendChild(dayDiv);
+        }
+
+        // Current month days
+        for (let i = 1; i <= totalDays; i++) {
+            const dayDiv = createCalendarDay(
+                i,
+                new Date(currentYear, currentMonth, i),
+                tasks,
+                false
+            );
+            calendarDays.appendChild(dayDiv);
+        }
+
+        // Next month days
+        const remainingDays = 42 - (startingDay + totalDays);
+        for (let i = 1; i <= remainingDays; i++) {
+            const dayDiv = createCalendarDay(
+                i,
+                new Date(currentYear, currentMonth + 1, i),
+                tasks,
+                true
+            );
+            calendarDays.appendChild(dayDiv);
+        }
+    }
+
+    function createCalendarDay(dayNumber, date, tasks, isDifferentMonth) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+
+        if (isDifferentMonth) {
+            dayDiv.classList.add('different-month');
+        }
+
+        // Check if it's today
+        const today = new Date();
+        if (date.toDateString() === today.toDateString()) {
+            dayDiv.classList.add('today');
+        }
+
+        // Add day number
+        const dayNumberDiv = document.createElement('div');
+        dayNumberDiv.textContent = dayNumber;
+        dayDiv.appendChild(dayNumberDiv);
+
+        // Find tasks for this day
+        const dayTasks = tasks.filter(task => {
+            if (!task.dueDate) return false;
+            const taskDate = new Date(task.dueDate);
+            return taskDate.toDateString() === date.toDateString();
+        });
+
+        if (dayTasks.length > 0) {
+            dayDiv.classList.add('has-tasks');
+
+            // Add task dots/previews
+            const tasksDiv = document.createElement('div');
+            tasksDiv.className = 'calendar-day-tasks';
+
+            dayTasks.slice(0, 2).forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.textContent = task.text;
+                tasksDiv.appendChild(taskDiv);
+            });
+
+            if (dayTasks.length > 2) {
+                const moreDiv = document.createElement('div');
+                moreDiv.textContent = `+${dayTasks.length - 2} more`;
+                tasksDiv.appendChild(moreDiv);
+            }
+
+            dayDiv.appendChild(tasksDiv);
+        }
+
+        // Add click handler to show tasks for the day
+        dayDiv.addEventListener('click', () => showDayTasks(date, dayTasks));
+
+        return dayDiv;
+    }
+
+    function showDayTasks(date, tasks) {
+        const dateStr = date.toLocaleDateString('default', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        let content = `<h3>${dateStr}</h3>`;
+
+        if (tasks.length === 0) {
+            content += '<p>No tasks due on this day.</p>';
+        } else {
+            content += '<ul style="list-style: none; padding: 0;">';
+            tasks.forEach(task => {
+                content += `
+                    <li style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+                        <div style="font-weight: bold;">${task.text}</div>
+                        ${task.description ? `<div style="color: #666; margin-top: 4px;">${task.description}</div>` : ''}
+                    </li>
+                `;
+            });
+            content += '</ul>';
+        }
+
+        // Show in a dialog
+        const dialog = document.createElement('div');
+        dialog.className = 'dialog-overlay';
+        dialog.style.display = 'flex';
+
+        dialog.innerHTML = `
+            <div class="dialog">
+                ${content}
+                <div class="dialog-buttons">
+                    <button onclick="this.closest('.dialog-overlay').remove()">Close</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+    }
+
+    function previousMonth() {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+        updateCalendar();
+    }
+
+    function nextMonth() {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+        updateCalendar();
     }
 
 
