@@ -50,4 +50,21 @@ describe('Todo Application', () => {
         | Buy baguette | From that local bakery |
         `)
     });
+
+    it('should be able to add comments to a task', () => {
+        toDoPage.newTask.set("Buy fish")
+        toDoPage.saveButton.click()
+        toDoPage.tasks.item(0).click()
+        toDoPage.editDialog.newComment.set("This looks good!")
+        toDoPage.editDialog.saveCommentButton.click()
+        toDoPage.editDialog.comments.matches(table`
+        | text             |
+        | This looks good! |
+        `)
+        toDoPage.editDialog.saveButton.click()
+        toDoPage.tasks.matches(table`
+        | text     | comments  |
+        | Buy fish | 1 comment |
+        `)
+    });
 });

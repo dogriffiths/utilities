@@ -17,4 +17,8 @@ export default class TaskItem extends CypressWidget {
     get description() {
         return new CypressWidget('.task-description', this);
     }
+
+    get comments() {
+        return new CypressWidget('.task-comments', this);
+    }
 }

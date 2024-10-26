@@ -118,8 +118,6 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
                     .xpath(selector as string);
             }
             let realSelector = selector || this.baseSelector;
-            console.log('XXXXXXXXX parent1', parent1, selector, realSelector, this.selector, this.baseSelector);
-            console.log('XXXXXXXXX realSelector', realSelector);
             return (parent1 as CypressWidget).getChainer().find(realSelector as string);
         }
 

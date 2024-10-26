@@ -293,7 +293,6 @@
 
         columns.forEach(column => {
             column.addEventListener('dragstart', (e) => {
-                console.log('XXXXXXXX dragstart', e.target)
                 column.classList.add('dragging');
                 e.dataTransfer.setData('text/plain', column.dataset.columnId);
                 setTimeout(() => column.classList.add('dragging'), 0);
@@ -308,7 +307,6 @@
 
         boardElement.addEventListener('dragover', e => {
             e.preventDefault();
-                console.log('XXXXXXXX dragover handler', e.clientX)
             const draggingColumn = document.querySelector('.column.dragging');
             if (!draggingColumn) return;
 
@@ -328,16 +326,13 @@
             } else {
                 const rect = closest.column.getBoundingClientRect();
                 const insertAfter = e.clientX - rect.left > rect.width / 2;
-                console.log('XXXXXXX insertAfter', insertAfter)
 
                 if (closest.column !== draggingColumn) {
                     closest.column.classList.add(insertAfter ? 'drop-right' : 'drop-left');
                 }
 
                 const targetElement = insertAfter ? closest.column.nextElementSibling : closest.column;
-                    console.log('XXXXXXX classes inserting draggingColumn, targetElement', draggingColumn, targetElement)
                 if (targetElement !== draggingColumn) {
-                    console.log('XXXXXXX inserting draggingColumn, targetElement', draggingColumn?.dataset, targetElement?.dataset)
                     boardElement.insertBefore(draggingColumn, targetElement);
                 }
             }

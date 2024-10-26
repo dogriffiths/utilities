@@ -69,6 +69,14 @@
             margin-top: 4px;
         }
 
+        .task-comments {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 4px;
+            padding-left: 16px;
+            border-left: 2px solid #eee;
+        }
+
         .task-item:hover {
             background: #f9f9f9;
         }
@@ -134,6 +142,33 @@
         .dialog-buttons button.cancel {
             background: #666;
         }
+
+        .comment-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .comment-input input {
+            flex-grow: 1;
+        }
+
+        .comments-list {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .comment-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+        }
+
+        .comment-date {
+            font-size: 0.8em;
+            color: #888;
+        }
     </style>
 </head>
 <body>
@@ -154,6 +189,16 @@
         <h3>Edit Task</h3>
         <input type="text" id="editTaskText" placeholder="Task title">
         <textarea id="editTaskDescription" placeholder="Task description"></textarea>
+
+        <div class="comments-section">
+            <h4>Comments</h4>
+            <div class="comments-list" id="commentsList"></div>
+            <div class="comment-input">
+                <input type="text" id="newComment" placeholder="Add a comment">
+                <button onclick="addComment()">Add</button>
+            </div>
+        </div>
+
         <div class="dialog-buttons">
             <button class="cancel" onclick="closeEditDialog()">Cancel</button>
             <button onclick="saveEditedTask()">Save</button>
@@ -202,6 +247,9 @@
                     const store = event.target.transaction.objectStore(STORE_NAME);
                     if (!store.indexNames.contains('description')) {
                         store.createIndex('description', 'description', {unique: false});
+                    }
+                    if (!store.indexNames.contains('comments')) {
+                        store.createIndex('comments', 'comments', {unique: false});
                     }
                 }
             };
@@ -277,6 +325,7 @@
                 const task = {
                     text: taskText,
                     description: '',
+                    comments: [], // Initialize empty comments array
                     position: position,
                     created: new Date().toISOString()
                 };
@@ -326,13 +375,20 @@
 
         const titleSpan = document.createElement('span');
         titleSpan.textContent = task.text;
-
         textContainer.appendChild(titleSpan);
 
         const descSpan = document.createElement('div');
         descSpan.className = 'task-description';
         descSpan.textContent = task.description;
         textContainer.appendChild(descSpan);
+
+        // Add comments preview if there are any
+        const commentsPreview = document.createElement('div');
+        commentsPreview.className = 'task-comments';
+        if (task.comments && task.comments.length > 0) {
+            commentsPreview.textContent = `${task.comments.length} comment${task.comments.length !== 1 ? 's' : ''}`;
+        }
+        textContainer.appendChild(commentsPreview);
 
         li.appendChild(checkbox);
         li.appendChild(textContainer);
@@ -350,17 +406,79 @@
         const dialog = document.getElementById('editDialog');
         const taskText = document.getElementById('editTaskText');
         const taskDesc = document.getElementById('editTaskDescription');
+        const commentsList = document.getElementById('commentsList');
 
         taskText.value = task.text;
         taskDesc.value = task.description || '';
 
+        // Load comments
+        commentsList.innerHTML = '';
+        if (task.comments && task.comments.length > 0) {
+            task.comments.forEach(comment => {
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'comment-item';
+                commentDiv.innerHTML = `
+                    <div class="comment-text">${comment.text}</div>
+                    <div class="comment-date">${new Date(comment.date).toLocaleString()}</div>
+                `;
+                commentsList.appendChild(commentDiv);
+            });
+        }
+
         dialog.style.display = 'flex';
+        document.getElementById('newComment').value = '';
     }
 
     function closeEditDialog() {
         const dialog = document.getElementById('editDialog');
         dialog.style.display = 'none';
         currentEditingId = null;
+    }
+
+    async function addComment() {
+        if (!db || !currentEditingId) return;
+
+        const commentInput = document.getElementById('newComment');
+        const commentText = commentInput.value.trim();
+
+        if (commentText === '') return;
+
+        try {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(currentEditingId);
+
+            request.onsuccess = () => {
+                const task = request.result;
+                if (!task.comments) task.comments = [];
+
+                const newComment = {
+                    text: commentText,
+                    date: new Date().toISOString()
+                };
+
+                task.comments.push(newComment);
+
+                store.put(task).onsuccess = () => {
+                    // Add comment to UI
+                    const commentsList = document.getElementById('commentsList');
+                    const commentDiv = document.createElement('div');
+                    commentDiv.className = 'comment-item';
+                    commentDiv.innerHTML = `
+                        <div class="comment-text">${newComment.text}</div>
+                        <div class="comment-date">${new Date(newComment.date).toLocaleString()}</div>
+                    `;
+                    commentsList.appendChild(commentDiv);
+
+                    // Clear input
+                    commentInput.value = '';
+                    showStatus('Comment added successfully');
+                };
+            };
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            showStatus('Error adding comment', true);
+        }
     }
 
     async function saveEditedTask() {
@@ -380,12 +498,20 @@
                 const task = request.result;
                 task.text = taskText;
                 task.description = taskDesc;
+                // Note: We don't need to explicitly preserve comments here since
+                // we're only updating the text and description fields of the existing task object
+                // The comments array is preserved as it's not being overwritten
 
                 store.put(task).onsuccess = () => {
                     loadTasks();
                     closeEditDialog();
                     showStatus('Task updated successfully');
                 };
+            };
+
+            request.onerror = (event) => {
+                console.error('Error updating task:', event.target.error);
+                showStatus('Error updating task', true);
             };
         } catch (error) {
             console.error('Error saving edited task:', error);
