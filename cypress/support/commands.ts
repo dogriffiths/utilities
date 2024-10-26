@@ -43,19 +43,61 @@ Cypress.Commands.add('compareImages', (image1Path: string, image2Path: string, t
         });
 });
 
+// commands.js or support/commands.js
+
 // @ts-ignore
-Cypress.Commands.add('deleteDatabase', (dbName: string) => {
+Cypress.Commands.add('deleteDatabase', (dbName) => {
     cy.window().then((win) => {
-        const deleteRequest = win.indexedDB.deleteDatabase('WhiteboardDB');
+        // Check if indexedDB exists in window
+        if (win.indexedDB) {
+            return new Cypress.Promise((resolve, reject) => {
+                // @ts-ignore
+                const req = win.indexedDB.deleteDatabase(dbName);
 
-        deleteRequest.onerror = (event) => {
-            console.error("Error deleting database:", event);
-        };
+                req.onerror = () => {
+                    reject(new Error(`Failed to delete IndexedDB: ${dbName}`));
+                };
 
-        deleteRequest.onsuccess = (event) => {
-            console.log("Database deleted successfully");
-        };
+                req.onsuccess = () => {
+                    resolve();
+                };
+
+                req.onblocked = () => {
+                    // Handle case where database is still in use
+                    cy.log('Database deletion blocked - closing connections');
+                    // Force close any open connections
+                    win.indexedDB.databases().then((databases) => {
+                        databases.forEach((db) => {
+                            if (db.name === dbName) {
+                                // @ts-ignore
+                                const closeRequest = win.indexedDB.open(db.name);
+                                closeRequest.onsuccess = (event) => {
+                                    // @ts-ignore
+                                    const db = event.target.result;
+                                    db.close();
+                                };
+                            }
+                        });
+                    });
+                };
+            });
+        }
     });
 });
+
+// @ts-ignore
+// Cypress.Commands.add('deleteDatabase', (dbName: string) => {
+//     cy.window().then((win) => {
+//         const deleteRequest = win.indexedDB.deleteDatabase('dbName');
+//
+//         deleteRequest.onerror = (event) => {
+//             console.error("Error deleting database:", event);
+//         };
+//
+//         deleteRequest.onsuccess = (event) => {
+//             console.log("Database deleted successfully");
+//         };
+//     });
+// });
 
 export {};
