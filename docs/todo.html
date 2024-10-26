@@ -223,7 +223,7 @@
 <body>
 <div id="pageDropOverlay" class="page-drop-overlay">
     <div class="page-drop-message">
-        Drop your OPML or CSV file here
+        Drop your OPML, CSV, or TXT file here
     </div>
 </div>
 <div class="todo-container">
@@ -726,6 +726,43 @@
         }
     }
 
+    function parseTextToTasks(textContent) {
+        // Split the text content into lines and filter out empty lines
+        const lines = textContent.split(/\r?\n/)
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+
+        // Convert lines to task objects
+        return lines.map((line, index) => {
+            // Check for optional due date in parentheses at the end
+            const dueDateMatch = line.match(/(.*?)\s*\(([^)]+)\)\s*$/);
+            let taskText = line;
+            let dueDate = null;
+
+            if (dueDateMatch) {
+                taskText = dueDateMatch[1].trim();
+                const parsedDate = parseRelativeDate(dueDateMatch[2].trim());
+                if (parsedDate) {
+                    dueDate = parsedDate.toISOString();
+                }
+            }
+
+            // Check for description after "--" separator
+            const parts = taskText.split('--').map(part => part.trim());
+            const title = parts[0];
+            const description = parts[1] || '';
+
+            return {
+                text: title,
+                description: description,
+                dueDate: dueDate,
+                comments: [],
+                position: index,
+                created: new Date().toISOString()
+            };
+        });
+    }
+
     function parseOPMLToTasks(opmlText) {
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(opmlText, "text/xml");
@@ -896,8 +933,8 @@
             }
 
             const fileExt = file.name.toLowerCase().split('.').pop();
-            if (fileExt !== 'opml' && fileExt !== 'csv') {
-                showStatus('Please drop an OPML or CSV file', true);
+            if (!['opml', 'csv', 'txt'].includes(fileExt)) {
+                showStatus('Please drop an OPML, CSV, or TXT file', true);
                 return;
             }
 
@@ -905,10 +942,16 @@
                 const text = await file.text();
                 let tasks;
 
-                if (fileExt === 'opml') {
-                    tasks = parseOPMLToTasks(text);
-                } else {
-                    tasks = await parseCSVToTasks(text);
+                switch (fileExt) {
+                    case 'opml':
+                        tasks = parseOPMLToTasks(text);
+                        break;
+                    case 'csv':
+                        tasks = await parseCSVToTasks(text);
+                        break;
+                    case 'txt':
+                        tasks = parseTextToTasks(text);
+                        break;
                 }
 
                 await importTasks(tasks);
