@@ -12,11 +12,12 @@
             position: relative; /* Add this for overlay positioning */
         }
 
-        .todo-container {
+        .todo-container, .journal-container {
             background: #f5f5f5;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
 
         .input-container {
@@ -45,7 +46,7 @@
             background: #45a049;
         }
 
-        .task-list {
+        .task-list, .journal-list {
             list-style: none;
             padding: 0;
         }
@@ -218,6 +219,47 @@
             font-size: 1.2em;
             color: #4CAF50;
         }
+
+        .journal-day {
+            margin-bottom: 20px;
+        }
+
+        .journal-day-header {
+            font-weight: bold;
+            color: #666;
+            padding: 10px 0;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 10px;
+        }
+
+        .journal-item {
+            display: flex;
+            padding: 8px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            align-items: flex-start;
+        }
+
+        .journal-time {
+            color: #666;
+            font-size: 0.9em;
+            min-width: 80px;
+        }
+
+        .journal-content {
+            flex-grow: 1;
+        }
+
+        .journal-title {
+            font-weight: 500;
+        }
+
+        .journal-description {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -235,6 +277,11 @@
     <ul id="taskList" class="task-list">
     </ul>
     <div id="status"></div>
+</div>
+<div class="journal-container">
+    <h2>Journal</h2>
+    <div id="journalList" class="journal-list">
+    </div>
 </div>
 
 <!-- Edit Dialog -->
@@ -278,6 +325,7 @@
     let db = null;
     const DB_NAME = 'TodoDB';
     const STORE_NAME = 'todos';
+    const COMPLETED_STORE = 'completed';
     let currentEditingId = null;
 
     // Initialize database connection
@@ -288,7 +336,7 @@
 
     async function initDB() {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, 2); // Increased version number for schema update
+            const request = indexedDB.open(DB_NAME, 3); // Increased version number for schema update
 
             request.onerror = (event) => {
                 console.error('Database error:', event.target.error);
@@ -299,11 +347,13 @@
                 db = event.target.result;
                 console.log('Database opened successfully');
                 loadTasks();
+                loadJournal();
                 resolve(db);
             };
 
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
+                console.log('XXXXXXX onupgradeneeded', db.objectStoreNames)
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
                     const store = db.createObjectStore(STORE_NAME, {keyPath: 'id', autoIncrement: true});
                     store.createIndex('position', 'position', {unique: false});
@@ -324,6 +374,11 @@
                     if (!store.indexNames.contains('dueDate')) {
                         store.createIndex('dueDate', 'dueDate', {unique: false});
                     }
+                }
+                if (!db.objectStoreNames.contains(COMPLETED_STORE)) {
+                    console.log('XXXXXXX CREATE!')
+                    const completedStore = db.createObjectStore(COMPLETED_STORE, {keyPath: 'id', autoIncrement: true});
+                    completedStore.createIndex('completedAt', 'completedAt', {unique: false});
                 }
             };
         });
@@ -639,25 +694,42 @@
         if (!db) return;
 
         try {
-            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const transaction = db.transaction([STORE_NAME, COMPLETED_STORE], 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
-            const request = store.delete(id);
+            const completedStore = transaction.objectStore(COMPLETED_STORE);
 
-            request.onsuccess = () => {
-                const element = document.querySelector(`[data-id="${id}"]`);
-                if (element) {
-                    element.remove();
+            // Get the task before deleting
+            const getRequest = store.get(id);
+
+            getRequest.onsuccess = () => {
+                const task = getRequest.result;
+                if (task) {
+                    // Add completion timestamp
+                    const completedTask = {
+                        ...task,
+                        completedAt: new Date().toISOString()
+                    };
+
+                    // Add to completed store
+                    completedStore.add(completedTask);
+
+                    // Delete from todos store
+                    store.delete(id);
+
+                    // Update UI
+                    const element = document.querySelector(`[data-id="${id}"]`);
+                    if (element) {
+                        element.remove();
+                    }
+
+                    // Reload journal
+                    loadJournal();
+                    showStatus('Task completed successfully');
                 }
-                showStatus('Task removed successfully');
-            };
-
-            request.onerror = (event) => {
-                console.error('Error deleting task:', event.target.error);
-                showStatus('Error removing task', true);
             };
         } catch (error) {
-            console.error('Error in deleteTask:', error);
-            showStatus('Error removing task', true);
+            console.error('Error completing task:', error);
+            showStatus('Error completing task', true);
         }
     }
 
@@ -985,6 +1057,116 @@
             const file = e.dataTransfer.files[0];
             await processFile(file);
         });
+    }
+
+    async function loadJournal() {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction(COMPLETED_STORE, 'readonly');
+            const store = transaction.objectStore(COMPLETED_STORE);
+            const index = store.index('completedAt');
+
+            // Get all completed tasks sorted by completion date
+            const request = index.getAll();
+
+            request.onsuccess = () => {
+                const tasks = request.result.sort((a, b) =>
+                    new Date(b.completedAt) - new Date(a.completedAt)
+                );
+
+                // Group tasks by day
+                const groupedTasks = groupTasksByDay(tasks);
+
+                // Update UI
+                const journalList = document.getElementById('journalList');
+                journalList.innerHTML = '';
+
+                for (const [day, dayTasks] of Object.entries(groupedTasks)) {
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'journal-day';
+
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'journal-day-header';
+                    dayHeader.textContent = formatDay(day);
+                    dayDiv.appendChild(dayHeader);
+
+                    dayTasks.forEach(task => {
+                        const taskDiv = createJournalItem(task);
+                        dayDiv.appendChild(taskDiv);
+                    });
+
+                    journalList.appendChild(dayDiv);
+                }
+            };
+        } catch (error) {
+            console.error('Error loading journal:', error);
+            showStatus('Error loading journal', true);
+        }
+    }
+
+    function groupTasksByDay(tasks) {
+        const groups = {};
+        tasks.forEach(task => {
+            const day = task.completedAt.split('T')[0];
+            if (!groups[day]) {
+                groups[day] = [];
+            }
+            groups[day].push(task);
+        });
+        return groups;
+    }
+
+    function formatDay(dateStr) {
+        const date = new Date(dateStr);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (dateStr === today.toISOString().split('T')[0]) {
+            return 'Today';
+        } else if (dateStr === yesterday.toISOString().split('T')[0]) {
+            return 'Yesterday';
+        } else {
+            return date.toLocaleDateString(undefined, {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    }
+
+    function createJournalItem(task) {
+        const div = document.createElement('div');
+        div.className = 'journal-item';
+
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'journal-time';
+        timeDiv.textContent = new Date(task.completedAt).toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'journal-content';
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'journal-title';
+        titleDiv.textContent = task.text;
+
+        contentDiv.appendChild(titleDiv);
+
+        if (task.description) {
+            const descDiv = document.createElement('div');
+            descDiv.className = 'journal-description';
+            descDiv.textContent = task.description;
+            contentDiv.appendChild(descDiv);
+        }
+
+        div.appendChild(timeDiv);
+        div.appendChild(contentDiv);
+
+        return div;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
