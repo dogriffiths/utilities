@@ -9,6 +9,7 @@
             max-width: 600px;
             margin: 20px auto;
             padding: 20px;
+            position: relative; /* Add this for overlay positioning */
         }
 
         .todo-container {
@@ -190,33 +191,43 @@
             color: #888;
         }
 
-        .drop-zone {
-            border: 2px dashed #ccc;
+        .page-drop-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(76, 175, 80, 0.2);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .page-drop-overlay.visible {
+            display: flex;
+        }
+
+        .page-drop-message {
+            background: white;
+            padding: 20px 40px;
             border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            background: #fafafa;
-            transition: all 0.3s ease;
-        }
-
-        .drop-zone.drag-over {
-            background: #e0e0e0;
-            border-color: #4CAF50;
-        }
-
-        .drop-zone p {
-            margin: 0;
-            color: #666;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 2px dashed #4CAF50;
+            font-size: 1.2em;
+            color: #4CAF50;
         }
     </style>
 </head>
 <body>
+<div id="pageDropOverlay" class="page-drop-overlay">
+    <div class="page-drop-message">
+        Drop your OPML or CSV file here
+    </div>
+</div>
 <div class="todo-container">
     <h2>TODO List</h2>
-    <div class="drop-zone" id="dropZone">
-        <p>Drag and drop an OPML file here to import tasks</p>
-    </div>
     <div class="input-container">
         <input type="text" id="newTask" placeholder="Enter a new task">
         <button onclick="addTask()">Add Task</button>
@@ -789,8 +800,6 @@
         }
     }
 
-    // Add these functions just before the setupDropZone() function
-
     function parseRelativeDate(dateStr) {
         if (!dateStr) return null;
 
@@ -876,27 +885,11 @@
         });
     }
 
-    // Update the setupDropZone function to handle both OPML and CSV files
     function setupDropZone() {
-        const dropZone = document.getElementById('dropZone');
+        const pageOverlay = document.getElementById('pageDropOverlay');
 
-        // Update the dropZone text to mention CSV support
-        dropZone.querySelector('p').textContent = 'Drag and drop an OPML or CSV file here to import tasks';
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
-
-        dropZone.addEventListener('drop', async (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-
-            const file = e.dataTransfer.files[0];
+        // Function to handle file processing
+        async function processFile(file) {
             if (!file) {
                 showStatus('Please drop a valid file', true);
                 return;
@@ -923,6 +916,31 @@
                 console.error(`Error processing ${fileExt.toUpperCase()} file:`, error);
                 showStatus(`Error processing ${fileExt.toUpperCase()} file: ${error.message}`, true);
             }
+        }
+
+        // Page-wide drag and drop handlers
+        document.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            pageOverlay.classList.add('visible');
+        });
+
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            // Only hide overlay if leaving the document
+            if (!e.relatedTarget || e.relatedTarget.nodeName === 'HTML') {
+                pageOverlay.classList.remove('visible');
+            }
+        });
+
+        document.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            pageOverlay.classList.remove('visible');
+            const file = e.dataTransfer.files[0];
+            await processFile(file);
         });
     }
 
