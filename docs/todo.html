@@ -188,11 +188,34 @@
             font-size: 0.8em;
             color: #888;
         }
+
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            background: #e0e0e0;
+            border-color: #4CAF50;
+        }
+
+        .drop-zone p {
+            margin: 0;
+            color: #666;
+        }
     </style>
 </head>
 <body>
 <div class="todo-container">
     <h2>TODO List</h2>
+    <div class="drop-zone" id="dropZone">
+        <p>Drag and drop an OPML file here to import tasks</p>
+    </div>
     <div class="input-container">
         <input type="text" id="newTask" placeholder="Enter a new task">
         <button onclick="addTask()">Add Task</button>
@@ -236,6 +259,8 @@
         </div>
     </div>
 </div>
+
+
 
 <script>
     let db = null;
@@ -689,7 +714,116 @@
         }
     }
 
+    function parseOPMLToTasks(opmlText) {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(opmlText, "text/xml");
+        const tasks = [];
+
+        // Function to recursively process outline elements
+        function processOutlines(elements, parentPath = []) {
+            Array.from(elements).forEach(outline => {
+                const text = outline.getAttribute("text") || "";
+                const children = outline.getElementsByTagName("outline");
+
+                // Only process if this is a leaf node (no children) and has text
+                if (children.length === 0 && text.trim()) {
+                    // Create the full path to this task for the description
+                    const fullPath = [...parentPath, text.trim()];
+
+                    // Create task object
+                    const task = {
+                        text: text.trim(),
+                        description: '',
+                        comments: [],
+                        position: tasks.length,
+                        created: new Date().toISOString()
+                    };
+                    tasks.push(task);
+                }
+
+                // Continue traversing even if we didn't add this node
+                if (children.length > 0) {
+                    processOutlines(children, [...parentPath, text.trim()]);
+                }
+            });
+        }
+
+        const outlines = xmlDoc.getElementsByTagName("outline");
+        processOutlines(outlines);
+        return tasks;
+    }
+
+    async function importTasks(tasks) {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+
+            // Get current highest position
+            const countRequest = store.count();
+
+            countRequest.onsuccess = async () => {
+                const startPosition = countRequest.result;
+
+                // Add each task
+                for (let i = 0; i < tasks.length; i++) {
+                    const task = tasks[i];
+                    task.position = startPosition + i;
+
+                    await new Promise((resolve, reject) => {
+                        const request = store.add(task);
+                        request.onsuccess = resolve;
+                        request.onerror = reject;
+                    });
+                }
+
+                // Reload tasks and show status
+                loadTasks();
+                showStatus(`Imported ${tasks.length} leaf tasks successfully`);
+            };
+        } catch (error) {
+            console.error('Error importing tasks:', error);
+            showStatus('Error importing tasks', true);
+        }
+    }
+
+    function setupDropZone() {
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.name.toLowerCase().endsWith('.opml')) {
+                showStatus('Please drop an OPML file', true);
+                return;
+            }
+
+            try {
+                const text = await file.text();
+                const tasks = parseOPMLToTasks(text);
+                await importTasks(tasks);
+            } catch (error) {
+                console.error('Error processing OPML file:', error);
+                showStatus('Error processing OPML file', true);
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+        setupDropZone();
+
         document.getElementById('newTask').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 addTask();
