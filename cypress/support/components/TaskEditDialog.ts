@@ -22,7 +22,11 @@ export default class TaskEditDialog extends CypressWidget {
     }
 
     get saveButton() {
-        return new CypressWidget('.dialog-buttons button:not(.cancel)', this);
+        return new CypressWidget('.dialog-buttons .save', this);
+    }
+
+    get completeButton() {
+        return new CypressWidget('.dialog-buttons .complete', this);
     }
 
     get newComment() {

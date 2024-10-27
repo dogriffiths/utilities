@@ -662,8 +662,11 @@
         </div>
 
         <div class="dialog-buttons">
-            <button class="cancel" onclick="closeEditDialog()">Cancel</button>
-            <button onclick="saveEditedTask()">Save</button>
+            <button class="complete" onclick="completeTaskFromDialog()" style="background-color: #4CAF50;">Complete Task</button>
+            <div>
+                <button class="cancel" onclick="closeEditDialog()">Cancel</button>
+                <button class="save" onclick="saveEditedTask()">Save</button>
+            </div>
         </div>
     </div>
 </div>
@@ -2053,6 +2056,24 @@
             groups[day].push(entry);
         });
         return groups;
+    }
+
+    async function completeTaskFromDialog() {
+        if (!db || !currentEditingId) return;
+
+        try {
+            // Call the existing deleteTask function which handles completion
+            await deleteTask(currentEditingId);
+
+            // Close the dialog after completing the task
+            closeEditDialog();
+
+            // Show success message
+            showStatus('Task marked as complete');
+        } catch (error) {
+            console.error('Error completing task:', error);
+            showStatus('Error completing task', true);
+        }
     }
 
 
