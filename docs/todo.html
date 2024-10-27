@@ -1172,10 +1172,19 @@
                 }
             }
 
-            // Check for description after "--" separator
-            const parts = taskText.split('--').map(part => part.trim());
-            const title = parts[0];
-            const description = parts[1] || '';
+            // First check for title/description split using ": "
+            const titleDescSplit = taskText.split(': ', 2);
+            let title, description;
+
+            if (titleDescSplit.length === 2) {
+                title = titleDescSplit[0].trim();
+                description = titleDescSplit[1].trim();
+            } else {
+                // If no ": " found, check for "--" separator as fallback
+                const parts = taskText.split('--').map(part => part.trim());
+                title = parts[0];
+                description = parts[1] || '';
+            }
 
             tasks.push({
                 text: title,
@@ -1212,12 +1221,24 @@
                         processOutlines(children, parentPath, newSection);
                     }
                 } else if (children.length === 0 && text.trim()) {
+                    // Split text into title and description if it contains ": "
+                    const titleDescSplit = text.split(': ', 2);
+                    let title, description;
+
+                    if (titleDescSplit.length === 2) {
+                        title = titleDescSplit[0].trim();
+                        description = titleDescSplit[1].trim();
+                    } else {
+                        title = text.trim();
+                        description = '';
+                    }
+
                     // Create task object with current section
                     const task = {
-                        text: text.trim(),
-                        description: '',
+                        text: title,
+                        description: description,
                         comments: [],
-                        section: section, // Use current section
+                        section: section,
                         created: new Date().toISOString()
                     };
                     tasks.push(task);
