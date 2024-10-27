@@ -1217,28 +1217,47 @@
                         return;
                     }
 
-                    const tasks = results.data.map((row, index) => {
+                    let currentTask = null;
+                    const tasks = [];
+
+                    // Process each row sequentially
+                    results.data.forEach((row) => {
                         // Skip rows without content
-                        if (!row.CONTENT) return null;
+                        if (!row.CONTENT?.trim()) return;
 
-                        const task = {
-                            text: row.CONTENT.trim(),
-                            description: row.DESCRIPTION?.trim() || '',
-                            comments: [],
-                            position: index,
-                            created: new Date().toISOString()
-                        };
+                        const type = row.TYPE?.trim().toLowerCase() || 'task';
 
-                        // Handle due date if present
-                        if (row.DATE) {
-                            const dueDate = parseRelativeDate(row.DATE);
-                            if (dueDate) {
-                                task.dueDate = dueDate.toISOString();
+                        if (type === 'task') {
+                            // Create new task
+                            currentTask = {
+                                text: row.CONTENT.trim(),
+                                description: row.DESCRIPTION?.trim() || '',
+                                comments: [],
+                                position: tasks.length,
+                                created: new Date().toISOString()
+                            };
+
+                            // Handle due date if present
+                            if (row.DATE) {
+                                const dueDate = parseRelativeDate(row.DATE);
+                                if (dueDate) {
+                                    currentTask.dueDate = dueDate.toISOString();
+                                }
                             }
-                        }
 
-                        return task;
-                    }).filter(task => task !== null); // Remove any skipped rows
+                            tasks.push(currentTask);
+                        } else if (type === 'note' && currentTask) {
+                            // Add note as a comment to the current task
+                            const commentDate = row.DATE ?
+                                parseRelativeDate(row.DATE)?.toISOString() :
+                                new Date().toISOString();
+
+                            currentTask.comments.push({
+                                text: row.CONTENT.trim(),
+                                date: commentDate
+                            });
+                        }
+                    });
 
                     resolve(tasks);
                 },
