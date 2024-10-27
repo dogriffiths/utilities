@@ -566,6 +566,44 @@
             background: #e8f5e9;
         }
 
+        .filter-container {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .context-select {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 150px;
+            cursor: pointer;
+        }
+
+        .clear-filter {
+            padding: 6px 12px;
+            background: #666;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .clear-filter:hover {
+            background: #555;
+        }
+
+        .context-badge {
+            display: inline-block;
+            background: #e0e0e0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #666;
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
@@ -582,6 +620,12 @@
         <div class="input-container">
             <input type="text" id="newTask" placeholder="Enter a new task">
             <button onclick="addTask()">Add Task</button>
+        </div>
+        <div class="filter-container">
+            <select id="contextFilter" class="context-select">
+                <option value="">All Contexts</option>
+            </select>
+            <button id="clearFilter" class="clear-filter" style="display: none;">Clear Filter</button>
         </div>
         <ul id="taskList" class="task-list">
         </ul>
@@ -783,9 +827,12 @@
             request.onsuccess = () => {
                 const tasks = request.result;
                 const taskList = document.getElementById('taskList');
+                const selectedContext = document.getElementById('contextFilter').value;
+
                 taskList.innerHTML = '';
 
                 tasks
+                    .filter(task => !selectedContext || task.context === selectedContext)
                     .sort((a, b) => a.position - b.position)
                     .forEach(task => {
                         const li = createTaskElement(task);
@@ -2427,6 +2474,26 @@
             chevron.style.transform = isHidden ? 'rotate(90deg)' : '';
         });
 
+        const contextFilter = document.getElementById('contextFilter');
+        const clearFilter = document.getElementById('clearFilter');
+
+        contextFilter.addEventListener('change', () => {
+            loadTasks();
+            clearFilter.style.display = contextFilter.value ? 'block' : 'none';
+        });
+
+        clearFilter.addEventListener('click', () => {
+            contextFilter.value = '';
+            loadTasks();
+            clearFilter.style.display = 'none';
+        });
+
+        const oldLoadTasks = loadTasks;
+        loadTasks = async function() {
+            await oldLoadTasks();
+            await updateContextFilter();
+        };
+
         // Load completed tasks initially
 
         document.querySelectorAll('.kanban-column').forEach(column => {
@@ -2477,6 +2544,53 @@
             });
         });
 
+        async function updateContextFilter() {
+            if (!db) return;
+
+            try {
+                const transaction = db.transaction(STORE_NAME, 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const tasks = await new Promise((resolve, reject) => {
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = reject;
+                });
+
+                // Get unique contexts
+                const contexts = new Set();
+                tasks.forEach(task => {
+                    if (task.context) contexts.add(task.context);
+                });
+
+                // Update select options
+                const contextFilter = document.getElementById('contextFilter');
+                const currentValue = contextFilter.value; // Store current selection
+
+                // Clear existing options except the first one (All Contexts)
+                while (contextFilter.options.length > 1) {
+                    contextFilter.remove(1);
+                }
+
+                // Add context options
+                Array.from(contexts).sort().forEach(context => {
+                    const option = new Option(context, context);
+                    contextFilter.add(option);
+                });
+
+                // Restore previous selection if it still exists
+                if (currentValue && Array.from(contexts).includes(currentValue)) {
+                    contextFilter.value = currentValue;
+                }
+
+                // Show/hide clear filter button
+                document.getElementById('clearFilter').style.display =
+                    contextFilter.value ? 'block' : 'none';
+
+            } catch (error) {
+                console.error('Error updating context filter:', error);
+                showStatus('Error updating context filter', true);
+            }
+        }
 
         document.getElementById('newTask').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
