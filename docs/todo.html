@@ -675,6 +675,7 @@
     const DB_NAME = 'TodoDB';
     const STORE_NAME = 'todos';
     const COMPLETED_STORE = 'completed';
+    const KANBAN_JOURNAL_STORE = 'kanbanJournal';
     let currentEditingId = null;
     let currentCalendarDate = new Date();
     let draggedTask = null;
@@ -687,7 +688,7 @@
 
     function initDB() {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, 4); // Increment version for schema update
+            const request = indexedDB.open(DB_NAME, 5); // Increment version for schema update
 
             request.onerror = (event) => {
                 console.error('Database error:', event.target.error);
@@ -722,6 +723,11 @@
                 if (!db.objectStoreNames.contains(COMPLETED_STORE)) {
                     const completedStore = db.createObjectStore(COMPLETED_STORE, { keyPath: 'id', autoIncrement: true });
                     completedStore.createIndex('completedAt', 'completedAt', { unique: false });
+                }
+
+                if (!db.objectStoreNames.contains(KANBAN_JOURNAL_STORE)) {
+                    const journalStore = db.createObjectStore(KANBAN_JOURNAL_STORE, { keyPath: 'id', autoIncrement: true });
+                    journalStore.createIndex('timestamp', 'timestamp', { unique: false });
                 }
             };
         });
@@ -1452,42 +1458,63 @@
         if (!db) return;
 
         try {
-            const transaction = db.transaction(COMPLETED_STORE, 'readonly');
-            const store = transaction.objectStore(COMPLETED_STORE);
-            const index = store.index('completedAt');
+            // Get completed tasks
+            const completedTransaction = db.transaction(COMPLETED_STORE, 'readonly');
+            const completedStore = completedTransaction.objectStore(COMPLETED_STORE);
+            const completedTasks = await new Promise((resolve, reject) => {
+                const request = completedStore.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = reject;
+            });
 
-            // Get all completed tasks sorted by completion date
-            const request = index.getAll();
+            // Get Kanban movements
+            const kanbanTransaction = db.transaction('kanbanJournal', 'readonly');
+            const kanbanStore = kanbanTransaction.objectStore('kanbanJournal');
+            const kanbanMoves = await new Promise((resolve, reject) => {
+                const request = kanbanStore.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = reject;
+            });
 
-            request.onsuccess = () => {
-                const tasks = request.result.sort((a, b) =>
-                    new Date(b.completedAt) - new Date(a.completedAt)
-                );
+            // Combine and sort all entries
+            const allEntries = [
+                ...completedTasks.map(task => ({
+                    type: 'completion',
+                    timestamp: task.completedAt,
+                    task
+                })),
+                ...kanbanMoves.map(move => ({
+                    type: 'kanban_move',
+                    timestamp: move.timestamp,
+                    ...move
+                }))
+            ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-                // Group tasks by day
-                const groupedTasks = groupTasksByDay(tasks);
+            // Group by day
+            const groupedEntries = groupEntriesByDay(allEntries);
 
-                // Update UI
-                const journalList = document.getElementById('journalList');
-                journalList.innerHTML = '';
+            // Update UI
+            const journalList = document.getElementById('journalList');
+            journalList.innerHTML = '';
 
-                for (const [day, dayTasks] of Object.entries(groupedTasks)) {
-                    const dayDiv = document.createElement('div');
-                    dayDiv.className = 'journal-day';
+            for (const [day, entries] of Object.entries(groupedEntries)) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'journal-day';
 
-                    const dayHeader = document.createElement('div');
-                    dayHeader.className = 'journal-day-header';
-                    dayHeader.textContent = formatDay(day);
-                    dayDiv.appendChild(dayHeader);
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'journal-day-header';
+                dayHeader.textContent = formatDay(day);
+                dayDiv.appendChild(dayHeader);
 
-                    dayTasks.forEach(task => {
-                        const taskDiv = createJournalItem(task);
-                        dayDiv.appendChild(taskDiv);
-                    });
+                entries.forEach(entry => {
+                    const entryDiv = entry.type === 'completion'
+                        ? createJournalItem(entry.task)
+                        : createKanbanJournalItem(entry);
+                    dayDiv.appendChild(entryDiv);
+                });
 
-                    journalList.appendChild(dayDiv);
-                }
-            };
+                journalList.appendChild(dayDiv);
+            }
         } catch (error) {
             console.error('Error loading journal:', error);
             showStatus('Error loading journal', true);
@@ -1916,6 +1943,76 @@
         });
     }
 
+    async function addKanbanJournalEntry(taskText, fromSection, toSection) {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction('kanbanJournal', 'readwrite');
+            const store = transaction.objectStore('kanbanJournal');
+
+            const entry = {
+                type: 'kanban_move',
+                taskText,
+                fromSection,
+                toSection,
+                timestamp: new Date().toISOString()
+            };
+
+            await new Promise((resolve, reject) => {
+                const request = store.add(entry);
+                request.onsuccess = resolve;
+                request.onerror = reject;
+            });
+        } catch (error) {
+            console.error('Error adding kanban journal entry:', error);
+            showStatus('Error updating journal', true);
+        }
+    }
+
+    function createKanbanJournalItem(entry) {
+        const div = document.createElement('div');
+        div.className = 'journal-item';
+
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'journal-time';
+        timeDiv.textContent = new Date(entry.timestamp).toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'journal-content';
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'journal-title';
+        titleDiv.innerHTML = `🔄 Moved task: "${entry.taskText}"`;
+
+        const descDiv = document.createElement('div');
+        descDiv.className = 'journal-description';
+        descDiv.textContent = `From ${entry.fromSection} to ${entry.toSection}`;
+
+        contentDiv.appendChild(titleDiv);
+        contentDiv.appendChild(descDiv);
+
+        div.appendChild(timeDiv);
+        div.appendChild(contentDiv);
+
+        return div;
+    }
+
+    function groupEntriesByDay(entries) {
+        const groups = {};
+        entries.forEach(entry => {
+            const day = entry.timestamp.split('T')[0];
+            if (!groups[day]) {
+                groups[day] = [];
+            }
+            groups[day].push(entry);
+        });
+        return groups;
+    }
+
+
 
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -1940,9 +2037,7 @@
                 e.preventDefault();
                 column.classList.remove('drag-over');
 
-                // Verify this is a task drop
                 if (!e.dataTransfer.types.includes('application/x-task')) return;
-
                 if (!draggedTask) return;
 
                 const newSection = column.dataset.section;
@@ -1953,15 +2048,18 @@
                     const store = transaction.objectStore(STORE_NAME);
                     const request = store.get(taskId);
 
-                    request.onsuccess = () => {
+                    request.onsuccess = async () => {
                         const task = request.result;
+                        const oldSection = task.section || 'todo';
                         task.section = newSection;
 
-                        store.put(task).onsuccess = () => {
-                            loadKanban();
-                            loadTasks();
-                            showStatus('Task moved successfully');
-                        };
+                        await store.put(task);
+                        await addKanbanJournalEntry(task.text, oldSection, newSection);
+
+                        loadKanban();
+                        loadTasks();
+                        loadJournal();
+                        showStatus('Task moved successfully');
                     };
                 } catch (error) {
                     console.error('Error moving task:', error);
