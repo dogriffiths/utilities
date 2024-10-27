@@ -827,19 +827,24 @@
             request.onsuccess = () => {
                 const tasks = request.result;
                 const taskList = document.getElementById('taskList');
-                const selectedContext = document.getElementById('contextFilter').value;
+                const contextFilter = document.getElementById('contextFilter');
+                const selectedContext = contextFilter.value;
 
-                taskList.innerHTML = '';
+                // Filter tasks based on selected context
+                const filteredTasks = selectedContext ?
+                    tasks.filter(task => task.context === selectedContext) :
+                    tasks;
 
-                tasks
-                    .filter(task => !selectedContext || task.context === selectedContext)
-                    .sort((a, b) => a.position - b.position)
-                    .forEach(task => {
-                        const li = createTaskElement(task);
-                        taskList.appendChild(li);
-                    });
-
-                console.log('Tasks loaded:', tasks.length);
+                // If there are no tasks in the current filter, reset to "All Contexts"
+                if (selectedContext && filteredTasks.length === 0) {
+                    contextFilter.value = '';
+                    document.getElementById('clearFilter').style.display = 'none';
+                    // Show all tasks instead
+                    displayTasks(tasks);
+                } else {
+                    // Show filtered tasks
+                    displayTasks(filteredTasks);
+                }
             };
 
             request.onerror = (event) => {
@@ -850,6 +855,19 @@
             console.error('Error in loadTasks:', error);
             showStatus('Error loading tasks', true);
         }
+    }
+
+    function displayTasks(tasks) {
+        const taskList = document.getElementById('taskList');
+        taskList.innerHTML = '';
+
+        tasks.sort((a, b) => a.position - b.position)
+            .forEach(task => {
+                const li = createTaskElement(task);
+                taskList.appendChild(li);
+            });
+
+        console.log('Tasks loaded:', tasks.length);
     }
 
     async function addTask() {
@@ -1161,22 +1179,55 @@
                     completedStore.add(completedTask);
 
                     // Delete from todos store
-                    store.delete(id);
+                    store.delete(id).onsuccess = () => {
+                        // Check if we need to update the context filter
+                        checkAndUpdateContextFilter();
 
-                    // Update all views
-                    loadTasks();     // Update task list
-                    loadKanban();    // Update kanban board
-                    updateCalendar(); // Update calendar if tasks have due dates
-                    loadJournal();   // Update journal with completed task
+                        // Update all views
+                        loadTasks();     // Update task list
+                        loadKanban();    // Update kanban board
+                        updateCalendar(); // Update calendar if tasks have due dates
+                        loadJournal();   // Update journal with completed task
+                        loadCompletedTasks();
 
-                    showStatus('Task completed successfully');
+                        showStatus('Task completed successfully');
+                    };
                 }
             };
         } catch (error) {
             console.error('Error completing task:', error);
             showStatus('Error completing task', true);
         }
-        loadCompletedTasks();
+    }
+
+    async function checkAndUpdateContextFilter() {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const tasks = await new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = reject;
+            });
+
+            const contextFilter = document.getElementById('contextFilter');
+            const selectedContext = contextFilter.value;
+
+            if (selectedContext) {
+                // Check if there are any remaining tasks with the selected context
+                const tasksInContext = tasks.filter(task => task.context === selectedContext);
+
+                if (tasksInContext.length === 0) {
+                    // Reset to "All Contexts" if no tasks remain in the current context
+                    contextFilter.value = '';
+                    document.getElementById('clearFilter').style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Error checking context filter:', error);
+        }
     }
 
     async function updatePositions() {
