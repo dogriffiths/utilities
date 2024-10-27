@@ -954,7 +954,7 @@
         if (task.context) {
             const contextBadge = document.createElement('span');
             contextBadge.className = 'task-context';
-            contextBadge.textContent = `@${task.context}`;
+            contextBadge.textContent = `@${task.context.startsWith('@') ? task.context.substring(1) : task.context}`;
             contextBadge.style.cssText = `
             display: inline-block;
             background: #e0e0e0;
