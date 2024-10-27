@@ -1478,19 +1478,35 @@
             }
         }
 
-        // Page-wide drag and drop handlers with file type check
+        // Function to handle plain text content
+        async function processPlainText(text) {
+            try {
+                const tasks = parseTextToTasks(text);
+                await importTasks(tasks);
+            } catch (error) {
+                console.error('Error processing dropped text:', error);
+                showStatus('Error processing dropped text: ' + error.message, true);
+            }
+        }
+
+        // Page-wide drag and drop handlers
         document.addEventListener('dragenter', (e) => {
             e.preventDefault();
-            // Only show overlay if files are being dragged
-            if (e.dataTransfer.types.includes('Files')) {
+            // Show overlay for both files and text
+            if (e.dataTransfer.types.includes('Files') || e.dataTransfer.types.includes('text/plain')) {
                 pageOverlay.classList.add('visible');
+                // Update message based on drag type
+                const message = pageOverlay.querySelector('.page-drop-message');
+                message.textContent = e.dataTransfer.types.includes('Files')
+                    ? 'Drop your OPML, CSV, or TXT file here'
+                    : 'Drop text here to create tasks';
             }
         });
 
         document.addEventListener('dragover', (e) => {
             e.preventDefault();
-            // Only show overlay if files are being dragged
-            if (!e.dataTransfer.types.includes('Files')) {
+            // Keep overlay visible for valid content types
+            if (!e.dataTransfer.types.includes('Files') && !e.dataTransfer.types.includes('text/plain')) {
                 pageOverlay.classList.remove('visible');
             }
         });
@@ -1507,10 +1523,21 @@
             e.preventDefault();
             pageOverlay.classList.remove('visible');
 
-            // Only process if files were dropped
-            if (e.dataTransfer.types.includes('Files')) {
-                const file = e.dataTransfer.files[0];
-                await processFile(file);
+            try {
+                if (e.dataTransfer.types.includes('Files')) {
+                    // Handle file drop
+                    const file = e.dataTransfer.files[0];
+                    await processFile(file);
+                } else if (e.dataTransfer.types.includes('text/plain')) {
+                    // Handle text drop
+                    const text = await e.dataTransfer.getData('text/plain');
+                    if (text.trim()) {
+                        await processPlainText(text);
+                    }
+                }
+            } catch (error) {
+                console.error('Error processing dropped content:', error);
+                showStatus('Error processing dropped content', true);
             }
         });
     }
