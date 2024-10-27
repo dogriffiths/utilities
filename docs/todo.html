@@ -1015,11 +1015,13 @@
                 task.text = taskText;
                 task.description = taskDesc;
                 task.dueDate = taskDueDate ? new Date(taskDueDate).toISOString() : null;
-                // Section is preserved as we're updating the existing task object
 
                 store.put(task).onsuccess = () => {
-                    loadTasks();
-                    loadKanban();
+                    // Update all views
+                    loadTasks();     // Update task list
+                    loadKanban();    // Update kanban board
+                    updateCalendar(); // Update calendar if tasks have due dates
+
                     closeEditDialog();
                     showStatus('Task updated successfully');
                 };
@@ -1056,14 +1058,12 @@
                     // Delete from todos store
                     store.delete(id);
 
-                    // Update UI
-                    const element = document.querySelector(`[data-id="${id}"]`);
-                    if (element) {
-                        element.remove();
-                    }
+                    // Update all views
+                    loadTasks();     // Update task list
+                    loadKanban();    // Update kanban board
+                    updateCalendar(); // Update calendar if tasks have due dates
+                    loadJournal();   // Update journal with completed task
 
-                    // Reload journal
-                    loadJournal();
                     showStatus('Task completed successfully');
                 }
             };
@@ -1139,13 +1139,20 @@
     }
 
     function parseTextToTasks(textContent) {
-        // Split the text content into lines and filter out empty lines
         const lines = textContent.split(/\r?\n/)
             .map(line => line.trim())
             .filter(line => line.length > 0);
 
-        // Convert lines to task objects
-        return lines.map((line, index) => {
+        let currentSection = 'todo';
+        const tasks = [];
+
+        lines.forEach((line, index) => {
+            // Check if line is a section marker
+            if (line.toLowerCase().startsWith('section:')) {
+                currentSection = line.substring(8).trim().toLowerCase();
+                return;
+            }
+
             // Check for optional due date in parentheses at the end
             const dueDateMatch = line.match(/(.*?)\s*\(([^)]+)\)\s*$/);
             let taskText = line;
@@ -1164,15 +1171,17 @@
             const title = parts[0];
             const description = parts[1] || '';
 
-            return {
+            tasks.push({
                 text: title,
                 description: description,
                 dueDate: dueDate,
                 comments: [],
-                position: index,
+                section: currentSection,
                 created: new Date().toISOString()
-            };
+            });
         });
+
+        return tasks;
     }
 
     function parseOPMLToTasks(opmlText) {
@@ -1181,30 +1190,34 @@
         const tasks = [];
 
         // Function to recursively process outline elements
-        function processOutlines(elements, parentPath = []) {
+        function processOutlines(elements, parentPath = [], section = 'todo') {
             Array.from(elements).forEach(outline => {
                 const text = outline.getAttribute("text") || "";
                 const children = outline.getElementsByTagName("outline");
 
-                // Only process if this is a leaf node (no children) and has text
-                if (children.length === 0 && text.trim()) {
-                    // Create the full path to this task for the description
-                    const fullPath = [...parentPath, text.trim()];
+                // Check if this is a section marker
+                const isSection = outline.getAttribute("isSection") === "true" ||
+                    text.toLowerCase().includes('section:');
 
-                    // Create task object
+                if (isSection) {
+                    // Update section for child elements
+                    const newSection = text.toLowerCase().replace('section:', '').trim();
+                    if (children.length > 0) {
+                        processOutlines(children, parentPath, newSection);
+                    }
+                } else if (children.length === 0 && text.trim()) {
+                    // Create task object with current section
                     const task = {
                         text: text.trim(),
                         description: '',
                         comments: [],
-                        position: tasks.length,
+                        section: section, // Use current section
                         created: new Date().toISOString()
                     };
                     tasks.push(task);
-                }
-
-                // Continue traversing even if we didn't add this node
-                if (children.length > 0) {
-                    processOutlines(children, [...parentPath, text.trim()]);
+                } else if (children.length > 0) {
+                    // Continue traversing with current section
+                    processOutlines(children, [...parentPath, text.trim()], section);
                 }
             });
         }
@@ -1239,9 +1252,12 @@
                     });
                 }
 
-                // Reload tasks and show status
-                loadTasks();
-                showStatus(`Imported ${tasks.length} leaf tasks successfully`);
+                // Update all views
+                loadTasks();        // Update task list
+                loadKanban();       // Update kanban board
+                updateCalendar();   // Update calendar if tasks have due dates
+
+                showStatus(`Imported ${tasks.length} tasks successfully`);
             };
         } catch (error) {
             console.error('Error importing tasks:', error);
@@ -1321,11 +1337,9 @@
                                 text: row.CONTENT.trim(),
                                 description: row.DESCRIPTION?.trim() || '',
                                 comments: [],
-                                position: tasks.length,
                                 section: currentSection, // Apply current section
                                 created: new Date().toISOString()
                             };
-                            console.log('XXXXXX current task', currentTask)
 
                             // Handle due date if present
                             if (row.DATE) {
@@ -1600,11 +1614,10 @@
                 request.onerror = reject;
             });
 
-            // Update UI
-            const element = document.querySelector(`[data-id="${id}"]`);
-            if (element) {
-                element.remove();
-            }
+            // Update all views
+            loadTasks();     // Update task list
+            loadKanban();    // Update kanban board
+            updateCalendar(); // Update calendar if tasks have due dates
 
             showStatus('Task deleted successfully');
         } catch (error) {
