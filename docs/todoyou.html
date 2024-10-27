@@ -656,6 +656,11 @@
         </div>
 
         <div class="form-group">
+            <label for="editTaskContext">Context</label>
+            <input type="text" id="editTaskContext" placeholder="Enter context (e.g., home, work)">
+        </div>
+
+        <div class="form-group">
             <label for="editTaskDueDate">Due Date</label>
             <input type="datetime-local" id="editTaskDueDate">
         </div>
@@ -733,11 +738,12 @@
                     store.createIndex('position', 'position', { unique: false });
                     store.createIndex('description', 'description', { unique: false });
                     store.createIndex('dueDate', 'dueDate', { unique: false });
-                    store.createIndex('section', 'section', { unique: false }); // Add section index
-                } else if (event.oldVersion < 4) {
+                    store.createIndex('section', 'section', { unique: false });
+                    store.createIndex('context', 'context', { unique: false }); // Add context index
+                } else if (event.oldVersion < 5) {
                     const store = event.target.transaction.objectStore(STORE_NAME);
-                    if (!store.indexNames.contains('section')) {
-                        store.createIndex('section', 'section', { unique: false });
+                    if (!store.indexNames.contains('context')) {
+                        store.createIndex('context', 'context', { unique: false });
                     }
                 }
 
@@ -811,6 +817,10 @@
 
         if (taskText === '') return;
 
+        const contextMatch = taskText.match(/@(\w+)/);
+        const context = contextMatch ? contextMatch[1] : null;
+        const cleanText = taskText.replace(/@\w+/, '').trim();
+
         try {
             const transaction = db.transaction(STORE_NAME, 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
@@ -819,11 +829,12 @@
             countRequest.onsuccess = () => {
                 const position = countRequest.result;
                 const task = {
-                    text: taskText,
+                    text: cleanText,
                     description: '',
+                    context: context,
                     comments: [],
                     position: position,
-                    section: 'todo', // Default section
+                    section: 'todo',
                     created: new Date().toISOString()
                 };
 
@@ -874,6 +885,22 @@
         descSpan.className = 'task-description';
         descSpan.textContent = task.description;
         textContainer.appendChild(descSpan);
+
+        if (task.context) {
+            const contextBadge = document.createElement('span');
+            contextBadge.className = 'task-context';
+            contextBadge.textContent = `@${task.context}`;
+            contextBadge.style.cssText = `
+            display: inline-block;
+            background: #e0e0e0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #666;
+            margin-right: 8px;
+        `;
+            textContainer.appendChild(contextBadge);
+        }
 
         // Create a metadata container for due date and comments
         const metadataContainer = document.createElement('div');
@@ -940,11 +967,13 @@
         const dialog = document.getElementById('editDialog');
         const taskText = document.getElementById('editTaskText');
         const taskDesc = document.getElementById('editTaskDescription');
+        const taskContext = document.getElementById('editTaskContext');
         const taskDueDate = document.getElementById('editTaskDueDate');
         const commentsList = document.getElementById('commentsList');
 
         taskText.value = task.text;
         taskDesc.value = task.description || '';
+        taskContext.value = task.context || '';
         if (task.dueDate) {
             const date = new Date(task.dueDate);
             const formattedDate = date.toISOString().slice(0, 16);
@@ -1029,6 +1058,7 @@
         const taskText = document.getElementById('editTaskText').value.trim();
         const taskDesc = document.getElementById('editTaskDescription').value.trim();
         const taskDueDate = document.getElementById('editTaskDueDate').value;
+        const taskContext = document.getElementById('editTaskContext').value.trim();
 
         if (taskText === '') return;
 
@@ -1041,6 +1071,7 @@
                 const task = request.result;
                 task.text = taskText;
                 task.description = taskDesc;
+                task.context = taskContext || null;
                 task.dueDate = taskDueDate ? new Date(taskDueDate).toISOString() : null;
 
                 store.put(task).onsuccess = () => {
