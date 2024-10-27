@@ -71,7 +71,7 @@
             border-left-color: #ff9800;
         }
 
-        .task-item[data-section="in-progress"] {
+        .task-item[data-section="in progress"] {
             border-left-color: #2196f3;
         }
 
@@ -590,7 +590,7 @@
             <div class="kanban-column-header">Todo</div>
             <div class="kanban-column-content"></div>
         </div>
-        <div class="kanban-column" data-section="in-progress">
+        <div class="kanban-column" data-section="in progress">
             <div class="kanban-column-header">In Progress</div>
             <div class="kanban-column-content"></div>
         </div>
@@ -1289,7 +1289,7 @@
                 header: true,
                 skipEmptyLines: true,
                 transformHeader: header => header.trim().toUpperCase(),
-                complete: function (results) {
+                complete: function(results) {
                     if (results.errors.length > 0) {
                         reject(new Error('CSV parsing error: ' + results.errors[0].message));
                         return;
@@ -1302,6 +1302,7 @@
                     }
 
                     let currentTask = null;
+                    let currentSection = 'todo'; // Default section
                     const tasks = [];
 
                     // Process each row sequentially
@@ -1311,15 +1312,20 @@
 
                         const type = row.TYPE?.trim().toLowerCase() || 'task';
 
-                        if (type === 'task') {
-                            // Create new task
+                        if (type === 'section') {
+                            // Update current section
+                            currentSection = row.CONTENT.trim().toLowerCase();
+                        } else if (type === 'task') {
+                            // Create new task with current section
                             currentTask = {
                                 text: row.CONTENT.trim(),
                                 description: row.DESCRIPTION?.trim() || '',
                                 comments: [],
                                 position: tasks.length,
+                                section: currentSection, // Apply current section
                                 created: new Date().toISOString()
                             };
+                            console.log('XXXXXX current task', currentTask)
 
                             // Handle due date if present
                             if (row.DATE) {
@@ -1345,7 +1351,7 @@
 
                     resolve(tasks);
                 },
-                error: function (error) {
+                error: function(error) {
                     reject(new Error('CSV parsing error: ' + error.message));
                 }
             });
@@ -1837,7 +1843,7 @@
             const tasks = request.result;
             const columns = {
                 todo: document.querySelector('[data-section="todo"] .kanban-column-content'),
-                'in-progress': document.querySelector('[data-section="in-progress"] .kanban-column-content'),
+                'in progress': document.querySelector('[data-section="in progress"] .kanban-column-content'),
                 done: document.querySelector('[data-section="done"] .kanban-column-content')
             };
 
