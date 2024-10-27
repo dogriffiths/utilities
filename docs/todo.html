@@ -7,10 +7,14 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
             margin: 20px auto;
             padding: 20px;
             position: relative; /* Add this for overlay positioning */
+        }
+
+        #tasks-tab, #journal-tab, .tabs {
+            max-width: 600px;
+            margin: 20px auto;
         }
 
         .todo-container, .journal-container {
@@ -565,7 +569,7 @@
     <button class="tab active" data-tab="tasks">Tasks</button>
     <button class="tab" data-tab="kanban">Kanban</button>
     <button class="tab" data-tab="calendar">Calendar</button>
-    <button class="tab" data-tab="schedule">Schedule</button>
+    <button class="tab" data-tab="journal">Journal</button>
 </div>
 
 <div id="tasks-tab" class="tab-content active">
@@ -617,7 +621,7 @@
         </div>
     </div>
 </div>
-<div id="schedule-tab" class="tab-content">
+<div id="journal-tab" class="tab-content">
     <div class="journal-container">
         <h2>Journal</h2>
         <div id="journalList" class="journal-list">
