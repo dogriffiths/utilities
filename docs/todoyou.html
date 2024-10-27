@@ -2076,6 +2076,110 @@
         }
     }
 
+    async function exportDatabase() {
+        if (!db) {
+            showStatus('Database not initialized', true);
+            return;
+        }
+
+        try {
+            // Create object to hold all store data
+            const exportData = {};
+
+            // List of stores to export
+            const stores = [STORE_NAME, COMPLETED_STORE, KANBAN_JOURNAL_STORE];
+
+            // Export each store
+            for (const storeName of stores) {
+                const transaction = db.transaction(storeName, 'readonly');
+                const store = transaction.objectStore(storeName);
+                exportData[storeName] = await new Promise((resolve, reject) => {
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = reject;
+                });
+            }
+
+            // Create a Blob with the JSON data
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                type: 'application/json'
+            });
+
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            a.href = url;
+            a.download = `todoyou-backup-${timestamp}.json`;
+
+            // Trigger download
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showStatus('Database exported successfully');
+        } catch (error) {
+            console.error('Error exporting database:', error);
+            showStatus('Error exporting database', true);
+        }
+    }
+
+    async function importDatabase(file) {
+        if (!db) {
+            showStatus('Database not initialized', true);
+            return;
+        }
+
+        try {
+            const content = await file.text();
+            const importData = JSON.parse(content);
+
+            // Validate imported data structure
+            const requiredStores = [STORE_NAME, COMPLETED_STORE, KANBAN_JOURNAL_STORE];
+            for (const storeName of requiredStores) {
+                if (!importData[storeName] || !Array.isArray(importData[storeName])) {
+                    throw new Error(`Invalid import file: missing or invalid ${storeName} store`);
+                }
+            }
+
+            // Start transaction for all stores
+            const transaction = db.transaction(requiredStores, 'readwrite');
+
+            // Clear and import each store
+            for (const storeName of requiredStores) {
+                const store = transaction.objectStore(storeName);
+
+                // Clear existing data
+                await new Promise((resolve, reject) => {
+                    const clearRequest = store.clear();
+                    clearRequest.onsuccess = resolve;
+                    clearRequest.onerror = reject;
+                });
+
+                // Import new data
+                for (const item of importData[storeName]) {
+                    await new Promise((resolve, reject) => {
+                        const addRequest = store.add(item);
+                        addRequest.onsuccess = resolve;
+                        addRequest.onerror = reject;
+                    });
+                }
+            }
+
+            // Refresh all views
+            loadTasks();
+            loadKanban();
+            loadJournal();
+            updateCalendar();
+
+            showStatus('Database imported successfully');
+        } catch (error) {
+            console.error('Error importing database:', error);
+            showStatus('Error importing database: ' + error.message, true);
+        }
+    }
+
 
 
 
@@ -2148,6 +2252,25 @@
                 if (document.getElementById('editDialog').style.display === 'flex') {
                     saveEditedTask();
                 }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                exportDatabase();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') {
+                e.preventDefault();
+
+                // Create and trigger file input
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        importDatabase(file);
+                    }
+                };
+                input.click();
             }
         });
     });
