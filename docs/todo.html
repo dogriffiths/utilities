@@ -60,6 +60,19 @@
             margin-bottom: 5px;
             border-radius: 4px;
             cursor: move;
+            border-left: 4px solid transparent;
+        }
+
+        .task-item[data-section="todo"] {
+            border-left-color: #ff9800;
+        }
+
+        .task-item[data-section="in-progress"] {
+            border-left-color: #2196f3;
+        }
+
+        .task-item[data-section="done"] {
+            border-left-color: #4caf50;
         }
 
         .task-metadata {
@@ -479,14 +492,82 @@
             border-radius: 50%;
             margin: 2px auto;
         }
+
+        .kanban-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            overflow-x: auto;
+            min-height: 600px;
+        }
+
+        .kanban-column {
+            flex: 1;
+            min-width: 300px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kanban-column-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .kanban-column-content {
+            flex: 1;
+            min-height: 100px;
+        }
+
+        .kanban-task {
+            background: white;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: move;
+        }
+
+        .kanban-task:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .kanban-task-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .kanban-task-description {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .kanban-placeholder {
+            border: 2px dashed #ccc;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            height: 80px;
+        }
+
+        .kanban-column.drag-over {
+            background: #e8f5e9;
+        }
+
     </style>
 </head>
 <body>
 <div class="tabs">
     <button class="tab active" data-tab="tasks">Tasks</button>
+    <button class="tab" data-tab="kanban">Kanban</button>
     <button class="tab" data-tab="calendar">Calendar</button>
     <button class="tab" data-tab="schedule">Schedule</button>
 </div>
+
 <div id="tasks-tab" class="tab-content active">
     <div class="todo-container">
         <h2>TODO List</h2>
@@ -497,6 +578,22 @@
         <ul id="taskList" class="task-list">
         </ul>
         <div id="status"></div>
+    </div>
+</div>
+<div id="kanban-tab" class="tab-content">
+    <div class="kanban-container">
+        <div class="kanban-column" data-section="todo">
+            <div class="kanban-column-header">Todo</div>
+            <div class="kanban-column-content"></div>
+        </div>
+        <div class="kanban-column" data-section="in-progress">
+            <div class="kanban-column-header">In Progress</div>
+            <div class="kanban-column-content"></div>
+        </div>
+        <div class="kanban-column" data-section="done">
+            <div class="kanban-column-header">Done</div>
+            <div class="kanban-column-content"></div>
+        </div>
     </div>
 </div>
 <div id="calendar-tab" class="tab-content">
@@ -576,6 +673,7 @@
     const COMPLETED_STORE = 'completed';
     let currentEditingId = null;
     let currentCalendarDate = new Date();
+    let draggedTask = null;
 
     // Initialize database connection
     initDB().catch(error => {
@@ -583,9 +681,9 @@
         showStatus('Database initialization failed', true);
     });
 
-    async function initDB() {
+    function initDB() {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, 3); // Increased version number for schema update
+            const request = indexedDB.open(DB_NAME, 4); // Increment version for schema update
 
             request.onerror = (event) => {
                 console.error('Database error:', event.target.error);
@@ -597,35 +695,29 @@
                 console.log('Database opened successfully');
                 loadTasks();
                 loadJournal();
+                loadKanban();
                 resolve(db);
             };
 
             request.onupgradeneeded = (event) => {
                 const db = event.target.result;
+
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    const store = db.createObjectStore(STORE_NAME, {keyPath: 'id', autoIncrement: true});
-                    store.createIndex('position', 'position', {unique: false});
-                    store.createIndex('description', 'description', {unique: false});
-                    store.createIndex('dueDate', 'dueDate', {unique: false});
-                    console.log('Object store created');
-                } else if (event.oldVersion < 2) {
-                    // Add description field to existing store
+                    const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                    store.createIndex('position', 'position', { unique: false });
+                    store.createIndex('description', 'description', { unique: false });
+                    store.createIndex('dueDate', 'dueDate', { unique: false });
+                    store.createIndex('section', 'section', { unique: false }); // Add section index
+                } else if (event.oldVersion < 4) {
                     const store = event.target.transaction.objectStore(STORE_NAME);
-                    if (!store.indexNames.contains('description')) {
-                        store.createIndex('description', 'description', {unique: false});
-                    }
-                    if (!store.indexNames.contains('comments')) {
-                        store.createIndex('comments', 'comments', {unique: false});
-                    }
-                } else if (event.oldVersion < 3) {
-                    const store = event.target.transaction.objectStore(STORE_NAME);
-                    if (!store.indexNames.contains('dueDate')) {
-                        store.createIndex('dueDate', 'dueDate', {unique: false});
+                    if (!store.indexNames.contains('section')) {
+                        store.createIndex('section', 'section', { unique: false });
                     }
                 }
+
                 if (!db.objectStoreNames.contains(COMPLETED_STORE)) {
-                    const completedStore = db.createObjectStore(COMPLETED_STORE, {keyPath: 'id', autoIncrement: true});
-                    completedStore.createIndex('completedAt', 'completedAt', {unique: false});
+                    const completedStore = db.createObjectStore(COMPLETED_STORE, { keyPath: 'id', autoIncrement: true });
+                    completedStore.createIndex('completedAt', 'completedAt', { unique: false });
                 }
             };
         });
@@ -691,35 +783,29 @@
         try {
             const transaction = db.transaction(STORE_NAME, 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
-
             const countRequest = store.count();
 
             countRequest.onsuccess = () => {
                 const position = countRequest.result;
-
                 const task = {
                     text: taskText,
                     description: '',
-                    comments: [], // Initialize empty comments array
+                    comments: [],
                     position: position,
+                    section: 'todo', // Default section
                     created: new Date().toISOString()
                 };
 
                 const addRequest = store.add(task);
 
                 addRequest.onsuccess = (event) => {
-                    const taskId = event.target.result;
-                    task.id = taskId;
+                    task.id = event.target.result;
                     const taskList = document.getElementById('taskList');
                     const li = createTaskElement(task);
                     taskList.appendChild(li);
                     input.value = '';
+                    loadKanban(); // Reload Kanban board
                     showStatus('Task added successfully');
-                };
-
-                addRequest.onerror = (event) => {
-                    console.error('Error adding task:', event.target.error);
-                    showStatus('Error adding task', true);
                 };
             };
         } catch (error) {
@@ -734,6 +820,7 @@
         li.draggable = true;
         li.dataset.id = task.id;
         li.dataset.position = task.position;
+        li.dataset.section = task.section || 'todo';
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -924,21 +1011,14 @@
                 task.text = taskText;
                 task.description = taskDesc;
                 task.dueDate = taskDueDate ? new Date(taskDueDate).toISOString() : null;
-
-                // Note: We don't need to explicitly preserve comments here since
-                // we're only updating the text and description fields of the existing task object
-                // The comments array is preserved as it's not being overwritten
+                // Section is preserved as we're updating the existing task object
 
                 store.put(task).onsuccess = () => {
                     loadTasks();
+                    loadKanban();
                     closeEditDialog();
                     showStatus('Task updated successfully');
                 };
-            };
-
-            request.onerror = (event) => {
-                console.error('Error updating task:', event.target.error);
-                showStatus('Error updating task', true);
             };
         } catch (error) {
             console.error('Error saving edited task:', error);
@@ -1307,14 +1387,21 @@
             }
         }
 
-        // Page-wide drag and drop handlers
+        // Page-wide drag and drop handlers with file type check
         document.addEventListener('dragenter', (e) => {
             e.preventDefault();
-            pageOverlay.classList.add('visible');
+            // Only show overlay if files are being dragged
+            if (e.dataTransfer.types.includes('Files')) {
+                pageOverlay.classList.add('visible');
+            }
         });
 
         document.addEventListener('dragover', (e) => {
             e.preventDefault();
+            // Only show overlay if files are being dragged
+            if (!e.dataTransfer.types.includes('Files')) {
+                pageOverlay.classList.remove('visible');
+            }
         });
 
         document.addEventListener('dragleave', (e) => {
@@ -1328,8 +1415,12 @@
         document.addEventListener('drop', async (e) => {
             e.preventDefault();
             pageOverlay.classList.remove('visible');
-            const file = e.dataTransfer.files[0];
-            await processFile(file);
+
+            // Only process if files were dropped
+            if (e.dataTransfer.types.includes('Files')) {
+                const file = e.dataTransfer.files[0];
+                await processFile(file);
+            }
         });
     }
 
@@ -1731,10 +1822,131 @@
         updateCalendar();
     }
 
+    function loadKanban() {
+        if (!db) return;
+
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            const tasks = request.result;
+            const columns = {
+                todo: document.querySelector('[data-section="todo"] .kanban-column-content'),
+                'in-progress': document.querySelector('[data-section="in-progress"] .kanban-column-content'),
+                done: document.querySelector('[data-section="done"] .kanban-column-content')
+            };
+
+            // Clear existing content
+            Object.values(columns).forEach(column => column.innerHTML = '');
+
+            // Sort tasks by position within each section
+            tasks.sort((a, b) => a.position - b.position)
+                .forEach(task => {
+                    const column = columns[task.section || 'todo'];
+                    if (column) {
+                        column.appendChild(createKanbanTask(task));
+                    }
+                });
+        };
+    }
+
+    function createKanbanTask(task) {
+        const div = document.createElement('div');
+        div.className = 'kanban-task';
+        div.draggable = true;
+        div.dataset.id = task.id;
+
+        const title = document.createElement('div');
+        title.className = 'kanban-task-title';
+        title.textContent = task.text;
+
+        const description = document.createElement('div');
+        description.className = 'kanban-task-description';
+        description.textContent = task.description || '';
+
+        div.appendChild(title);
+        if (task.description) {
+            div.appendChild(description);
+        }
+
+        // Add drag and drop event listeners
+        div.addEventListener('dragstart', handleKanbanDragStart);
+        div.addEventListener('dragend', handleKanbanDragEnd);
+        div.addEventListener('click', () => openEditDialog(task));
+
+        return div;
+    }
+
+    function handleKanbanDragStart(e) {
+        draggedTask = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        // Set custom data to identify this as a task drag
+        e.dataTransfer.setData('application/x-task', this.dataset.id);
+    }
+
+    function handleKanbanDragEnd(e) {
+        this.classList.remove('dragging');
+        document.querySelectorAll('.kanban-column').forEach(column => {
+            column.classList.remove('drag-over');
+        });
+    }
+
+
 
     document.addEventListener('DOMContentLoaded', () => {
         setupTabs();
         setupDropZone();
+        loadKanban();
+
+        document.querySelectorAll('.kanban-column').forEach(column => {
+            column.addEventListener('dragover', (e) => {
+                // Only allow drop if it's a task being dragged
+                if (e.dataTransfer.types.includes('application/x-task')) {
+                    e.preventDefault();
+                    column.classList.add('drag-over');
+                }
+            });
+
+            column.addEventListener('dragleave', (e) => {
+                column.classList.remove('drag-over');
+            });
+
+            column.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                column.classList.remove('drag-over');
+
+                // Verify this is a task drop
+                if (!e.dataTransfer.types.includes('application/x-task')) return;
+
+                if (!draggedTask) return;
+
+                const newSection = column.dataset.section;
+                const taskId = parseInt(draggedTask.dataset.id);
+
+                try {
+                    const transaction = db.transaction(STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.get(taskId);
+
+                    request.onsuccess = () => {
+                        const task = request.result;
+                        task.section = newSection;
+
+                        store.put(task).onsuccess = () => {
+                            loadKanban();
+                            loadTasks();
+                            showStatus('Task moved successfully');
+                        };
+                    };
+                } catch (error) {
+                    console.error('Error moving task:', error);
+                    showStatus('Error moving task', true);
+                }
+            });
+        });
+
 
         document.getElementById('newTask').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
