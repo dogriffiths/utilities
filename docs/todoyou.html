@@ -1383,7 +1383,7 @@
                     text.toLowerCase().includes('section:');
 
                 // Check if this could be a context node (parent with text <= 25 chars)
-                const possibleContext = text.trim().length <= 25 ? formatContextName(text) : null;
+                const possibleContext = text.trim().length <= 35 ? formatContextName(text) : null;
 
                 if (isSection) {
                     // Update section for child elements
