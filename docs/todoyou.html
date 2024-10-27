@@ -1257,8 +1257,25 @@
         const xmlDoc = parser.parseFromString(opmlText, "text/xml");
         const tasks = [];
 
+        // Helper function to convert text to camelCase context name
+        function formatContextName(text) {
+            return text
+                .trim()
+                // Split on spaces and any special characters
+                .split(/[\s\-_,\.]+/)
+                // Convert to camelCase
+                .map((word, index) => {
+                    // Convert to lowercase first
+                    word = word.toLowerCase();
+                    // Capitalize first letter except for first word
+                    return index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1);
+                })
+                // Join without spaces
+                .join('');
+        }
+
         // Function to recursively process outline elements
-        function processOutlines(elements, parentPath = [], section = 'todo') {
+        function processOutlines(elements, parentPath = [], section = 'todo', context = null) {
             Array.from(elements).forEach(outline => {
                 const text = outline.getAttribute("text") || "";
                 const children = outline.getElementsByTagName("outline");
@@ -1267,14 +1284,17 @@
                 const isSection = outline.getAttribute("isSection") === "true" ||
                     text.toLowerCase().includes('section:');
 
+                // Check if this could be a context node (parent with text <= 25 chars)
+                const possibleContext = text.trim().length <= 25 ? formatContextName(text) : null;
+
                 if (isSection) {
                     // Update section for child elements
                     const newSection = text.toLowerCase().replace('section:', '').trim();
                     if (children.length > 0) {
-                        processOutlines(children, parentPath, newSection);
+                        processOutlines(children, parentPath, newSection, context);
                     }
                 } else if (children.length === 0 && text.trim()) {
-                    // Split text into title and description if it contains ": "
+                    // Split text into title and description if it contains ': '
                     const titleDescSplit = text.split(': ', 2);
                     let title, description;
 
@@ -1286,18 +1306,20 @@
                         description = '';
                     }
 
-                    // Create task object with current section
+                    // Create task object with current section and context
                     const task = {
                         text: title,
                         description: description,
                         comments: [],
                         section: section,
+                        context: context, // Use the inherited context
                         created: new Date().toISOString()
                     };
                     tasks.push(task);
                 } else if (children.length > 0) {
-                    // Continue traversing with current section
-                    processOutlines(children, [...parentPath, text.trim()], section);
+                    // Continue traversing with updated context if this node could be a context
+                    const newContext = possibleContext || context;
+                    processOutlines(children, [...parentPath, text.trim()], section, newContext);
                 }
             });
         }
