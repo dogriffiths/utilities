@@ -585,6 +585,19 @@
         </div>
         <ul id="taskList" class="task-list">
         </ul>
+        <div class="completed-tasks-section" style="margin-top: 20px;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 10px;">
+                <button id="toggleCompletedBtn" class="toggle-completed" style="background: none; border: none; color: #666; cursor: pointer; display: flex; align-items: center; padding: 5px;">
+                    <svg class="chevron-right" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                    <span>Completed Tasks</span>
+                    <span id="completedCount" style="margin-left: 8px; font-size: 0.9em; color: #888;"></span>
+                </button>
+            </div>
+            <ul id="completedTaskList" class="task-list" style="display: none;">
+            </ul>
+        </div>
         <div id="status"></div>
     </div>
 </div>
@@ -708,6 +721,7 @@
                 loadTasks();
                 loadJournal();
                 loadKanban();
+                loadCompletedTasks();
                 resolve(db);
             };
 
@@ -1084,6 +1098,7 @@
             console.error('Error completing task:', error);
             showStatus('Error completing task', true);
         }
+        loadCompletedTasks();
     }
 
     async function updatePositions() {
@@ -1633,7 +1648,6 @@
 
     async function confirmDelete(task) {
         const confirmed = await showDeleteConfirmation(task.text);
-        console.log('XXXXXX confirmed', confirmed)
         if (confirmed) {
             await permanentlyDeleteTask(task.id);
         }
@@ -2180,6 +2194,140 @@
         }
     }
 
+    async function loadCompletedTasks() {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction(COMPLETED_STORE, 'readonly');
+            const store = transaction.objectStore(COMPLETED_STORE);
+            const completedTasks = await new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = reject;
+            });
+
+            // Sort by completion date, most recent first
+            completedTasks.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+
+            const completedList = document.getElementById('completedTaskList');
+            completedList.innerHTML = '';
+
+            // Update count
+            const countSpan = document.getElementById('completedCount');
+            countSpan.textContent = `(${completedTasks.length})`;
+
+            completedTasks.forEach(task => {
+                const li = createCompletedTaskElement(task);
+                completedList.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Error loading completed tasks:', error);
+            showStatus('Error loading completed tasks', true);
+        }
+    }
+
+    function createCompletedTaskElement(task) {
+        const li = document.createElement('li');
+        li.className = 'task-item';
+        li.style.opacity = '0.8';
+
+        // Create completion time element
+        const completionTime = document.createElement('div');
+        completionTime.className = 'completion-time';
+        completionTime.style.fontSize = '0.8em';
+        completionTime.style.color = '#666';
+        completionTime.textContent = new Date(task.completedAt).toLocaleString();
+
+        // Create task text container
+        const textContainer = document.createElement('div');
+        textContainer.className = 'task-text';
+        textContainer.style.flex = '1';
+
+        const titleSpan = document.createElement('span');
+        titleSpan.textContent = task.text;
+        titleSpan.style.textDecoration = 'line-through';
+        textContainer.appendChild(titleSpan);
+
+        if (task.description) {
+            const descSpan = document.createElement('div');
+            descSpan.className = 'task-description';
+            descSpan.textContent = task.description;
+            descSpan.style.textDecoration = 'line-through';
+            textContainer.appendChild(descSpan);
+        }
+
+        // Create undo button
+        const undoButton = document.createElement('button');
+        undoButton.className = 'undo-button';
+        undoButton.style.cssText = 'background: none; border: none; color: #4CAF50; cursor: pointer; padding: 5px; display: none;';
+        undoButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7v6h6"></path>
+            <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"></path>
+        </svg>
+    `;
+        undoButton.onclick = () => undoCompletedTask(task.id);
+
+        // Show undo button on hover
+        li.onmouseenter = () => undoButton.style.display = 'block';
+        li.onmouseleave = () => undoButton.style.display = 'none';
+
+        // Assemble the elements
+        li.appendChild(completionTime);
+        li.appendChild(textContainer);
+        li.appendChild(undoButton);
+
+        return li;
+    }
+
+    async function undoCompletedTask(id) {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction([COMPLETED_STORE, STORE_NAME], 'readwrite');
+            const completedStore = transaction.objectStore(COMPLETED_STORE);
+            const activeStore = transaction.objectStore(STORE_NAME);
+
+            // Get the completed task
+            const completedTask = await new Promise((resolve, reject) => {
+                const request = completedStore.get(id);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = reject;
+            });
+
+            if (completedTask) {
+                // Remove completedAt and prepare for active tasks
+                const { completedAt, id: oldId, ...taskToRestore } = completedTask;
+
+                // Add to active tasks
+                await new Promise((resolve, reject) => {
+                    const request = activeStore.add(taskToRestore);
+                    request.onsuccess = resolve;
+                    request.onerror = reject;
+                });
+
+                // Remove from completed tasks
+                await new Promise((resolve, reject) => {
+                    const request = completedStore.delete(id);
+                    request.onsuccess = resolve;
+                    request.onerror = reject;
+                });
+
+                // Refresh both lists
+                loadTasks();
+                loadCompletedTasks();
+                loadKanban();
+                updateCalendar();
+
+                showStatus('Task restored successfully');
+            }
+        } catch (error) {
+            console.error('Error restoring task:', error);
+            showStatus('Error restoring task', true);
+        }
+    }
+
 
 
 
@@ -2187,6 +2335,19 @@
         setupTabs();
         setupDropZone();
         loadKanban();
+        loadCompletedTasks();
+
+        const toggleBtn = document.getElementById('toggleCompletedBtn');
+        const completedList = document.getElementById('completedTaskList');
+        const chevron = toggleBtn.querySelector('.chevron-right');
+
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = completedList.style.display === 'none';
+            completedList.style.display = isHidden ? 'block' : 'none';
+            chevron.style.transform = isHidden ? 'rotate(90deg)' : '';
+        });
+
+        // Load completed tasks initially
 
         document.querySelectorAll('.kanban-column').forEach(column => {
             column.addEventListener('dragover', (e) => {
