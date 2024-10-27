@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simple TODO App</title>
+    <title>TODOs</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
     <style>
@@ -1254,10 +1254,25 @@
         return tasks;
     }
 
+    function createTaskKey(task) {
+        return `${task.text.trim().toLowerCase()}|${(task.description || '').trim().toLowerCase()}`;
+    }
+
     async function importTasks(tasks) {
         if (!db) return;
 
         try {
+            // De-duplicate tasks before importing
+            const uniqueTasksMap = new Map();
+            tasks.forEach(task => {
+                const key = createTaskKey(task);
+                // Keep the first occurrence of each task
+                if (!uniqueTasksMap.has(key)) {
+                    uniqueTasksMap.set(key, task);
+                }
+            });
+            const uniqueTasks = Array.from(uniqueTasksMap.values());
+
             const transaction = db.transaction(STORE_NAME, 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
 
@@ -1267,9 +1282,9 @@
             countRequest.onsuccess = async () => {
                 const startPosition = countRequest.result;
 
-                // Add each task
-                for (let i = 0; i < tasks.length; i++) {
-                    const task = tasks[i];
+                // Add each unique task
+                for (let i = 0; i < uniqueTasks.length; i++) {
+                    const task = uniqueTasks[i];
                     task.position = startPosition + i;
 
                     await new Promise((resolve, reject) => {
@@ -1284,7 +1299,10 @@
                 loadKanban();       // Update kanban board
                 updateCalendar();   // Update calendar if tasks have due dates
 
-                showStatus(`Imported ${tasks.length} tasks successfully`);
+                const skippedCount = tasks.length - uniqueTasks.length;
+                const message = `Imported ${uniqueTasks.length} tasks` +
+                    (skippedCount > 0 ? ` (${skippedCount} duplicates skipped)` : '');
+                showStatus(message);
             };
         } catch (error) {
             console.error('Error importing tasks:', error);
