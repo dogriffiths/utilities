@@ -9,7 +9,7 @@ import TaskEditDialog from "../components/TaskEditDialog";
 
 export default class ToDoPage extends CypressPage {
     constructor() {
-        super("/todo.html");
+        super("/todoyou.html");
     }
 
     get newTask() {
