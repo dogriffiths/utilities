@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Interactive US Map</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+      position: relative;
+    }
+    #map-container {
+      flex: 1;
+      position: relative;
+    }
+    #map {
+      width: 100%;
+      height: 100vh;
+      cursor: pointer;
+    }
+    path {
+      fill: #ddd;
+      stroke: #fff;
+      stroke-width: 1;
+      transition: fill 0.3s;
+    }
+    path:hover {
+      fill: #bbb;
+    }
+    #sidebar {
+      width: 300px;
+      background: white;
+      padding: 20px;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    #sidebar.active {
+      transform: translateX(0);
+    }
+    .state-info {
+      margin-bottom: 20px;
+    }
+    .state-name {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .info-item {
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    .info-label {
+      font-weight: 500;
+      color: #666;
+      font-size: 14px;
+    }
+    .info-value {
+      font-size: 18px;
+      color: #333;
+      margin-top: 4px;
+    }
+    #drawing-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      pointer-events: none;
+      transform-origin: 0 0;
+    }
+    .toolbar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 3;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .tool-button {
+      padding: 5px 10px;
+      cursor: pointer;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    .tool-button.active {
+      background: #ddd;
+      border-color: #999;
+    }
+    .color-button {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      cursor: pointer;
+      padding: 0;
+    }
+    .color-button.active {
+      border-color: #666;
+    }
+    .divider {
+      width: 1px;
+      background: #ccc;
+      margin: 0 5px;
+    }
+
+   #dark-mode-btn {
+       font-size: 16px;
+       padding: 5px 10px;
+       background: transparent;
+       border: 1px solid #ccc;
+       border-radius: 3px;
+       cursor: pointer;
+       transition: background-color 0.3s, border-color 0.3s;
+   }
+
+   #dark-mode-btn:hover {
+       background-color: #f0f0f0;
+       border-color: #999;
+   }
+
+   /* Dark mode transitions */
+   #map-container {
+       transition: background-color 0.3s ease;
+   }
+
+   path {
+       transition: fill 0.3s ease, stroke 0.3s ease;
+   }
+
+   body {
+       transition: filter 0.3s ease;
+   }
+
+   .dark-mode {
+       filter: invert(1) hue-rotate(180deg);
+   }
+
+   /* Prevent canvas from being inverted in dark mode */
+   .dark-mode #drawing-canvas {
+       filter: invert(1) hue-rotate(180deg);
+   }
+
+   /* Optional: Prevent specific elements from being inverted */
+   .dark-mode img,
+   .dark-mode video {
+       filter: invert(1) hue-rotate(180deg);
+   }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="map-container">
+      <svg id="map" viewBox="0 0 1000 600"></svg>
+    </div>
+    <div id="sidebar">
+      <div class="state-info">
+        <div class="state-name"></div>
+        <div class="info-item">
+          <div class="info-label">Population (2020)</div>
+          <div class="info-value population"></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Population Density</div>
+          <div class="info-value density"></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Capital</div>
+          <div class="info-value capital"></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Largest City</div>
+          <div class="info-value largest-city"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+      <button class="tool-button" id="navigate-btn">Navigate</button>
+      <div class="divider"></div>
+      <button class="color-button active" id="color-black" style="background-color: #000000"></button>
+      <button class="color-button" id="color-blue" style="background-color: #0000FF"></button>
+      <button class="color-button" id="color-red" style="background-color: #FF0000"></button>
+      <button class="color-button" id="color-green" style="background-color: #008000"></button>
+      <div class="divider"></div>
+      <button class="tool-button" id="erase-btn">Erase</button>
+      <button class="tool-button" id="clear-btn">Clear All</button>
+      <div class="divider"></div>
+      <button class="tool-button" id="dark-mode-btn" title="Switch to Dark Mode">&#127769;</button>
+  </div>
+
+  <!-- External Dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  
+  <!-- Application Scripts -->
+  <script type="module">
+    import { USMapHandler } from './us-map-handler.js';
+    import { stateProperties } from './state-data.js';
+
+    // Initialize map
+    async function initMap() {
+      const mapHandler = new USMapHandler('#map', 'sidebar');
+      await mapHandler.initialize();
+      return mapHandler;
+    }
+
+    // Initialize drawing canvas
+    function initializeDrawing(mapContainer, mapSvg) {
+      const canvas = document.createElement('canvas');
+      canvas.id = 'drawing-canvas';
+      
+      const viewBox = mapSvg.getAttribute('viewBox').split(' ');
+      canvas.width = viewBox[2];
+      canvas.height = viewBox[3];
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      
+      mapContainer.appendChild(canvas);
+      return canvas;
+    }
+
+    // Main initialization
+    document.addEventListener('DOMContentLoaded', async () => {
+      const mapHandler = await initMap();
+      const mapContainer = document.getElementById('map-container');
+      const mapSvg = mapHandler.getSVGElement();
+      const canvas = initializeDrawing(mapContainer, mapSvg);
+      const ctx = canvas.getContext('2d');
+
+      // Drawing state
+      let isDrawing = false;
+      let currentTool = 'draw';
+      let currentColor = '#000000';
+      let lastX, lastY;
+
+      // Set up observers for SVG transformations
+      const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'transform') {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+        });
+      });
+
+      observer.observe(mapHandler.getGroupElement(), {
+        attributes: true,
+        attributeFilter: ['transform']
+      });
+
+      // Tool button handlers
+      document.getElementById('navigate-btn').addEventListener('click', () => {
+        currentTool = null;
+        updateToolButtons('navigate-btn');
+        canvas.style.pointerEvents = 'none';
+      });
+
+      const colors = ['black', 'blue', 'red', 'green'];
+      const colorValues = {
+        'black': '#000000',
+        'blue': '#0000FF',
+        'red': '#FF0000',
+        'green': '#008000'
+      };
+
+      colors.forEach(color => {
+        document.getElementById(`color-${color}`).addEventListener('click', () => {
+          currentTool = 'draw';
+          currentColor = colorValues[color];
+          updateToolButtons(`color-${color}`);
+          canvas.style.pointerEvents = 'auto';
+        });
+      });
+
+      document.getElementById('erase-btn').addEventListener('click', () => {
+        currentTool = 'erase';
+        updateToolButtons('erase-btn');
+        canvas.style.pointerEvents = 'auto';
+      });
+
+      document.getElementById('clear-btn').addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      });
+
+      function updateToolButtons(activeId) {
+        document.querySelectorAll('.tool-button, .color-button').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        if (activeId) {
+          document.getElementById(activeId).classList.add('active');
+        }
+      }
+
+      // Drawing handlers
+      function getCanvasPoint(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+          x: (e.clientX - rect.left) * scaleX,
+          y: (e.clientY - rect.top) * scaleY
+        };
+      }
+
+      function startDrawing(e) {
+        if (!currentTool) return;
+        
+        isDrawing = true;
+        const point = getCanvasPoint(e);
+        lastX = point.x;
+        lastY = point.y;
+
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+
+        if (currentTool === 'draw') {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = currentColor;
+          ctx.lineWidth = 4;
+        } else if (currentTool === 'erase') {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.strokeStyle = 'rgba(0,0,0,1)';
+          ctx.lineWidth = 20;
+        }
+      }
+
+      function draw(e) {
+        if (!isDrawing || !currentTool) return;
+        
+        const point = getCanvasPoint(e);
+        
+        ctx.lineTo(point.x, point.y);
+        ctx.stroke();
+        
+        lastX = point.x;
+        lastY = point.y;
+      }
+
+      function stopDrawing() {
+        isDrawing = false;
+        ctx.beginPath();
+      }
+
+      // Canvas event listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseout', stopDrawing);
+
+      // Window resize handler
+      window.addEventListener('resize', () => {
+        const newCanvas = document.createElement('canvas');
+        newCanvas.width = canvas.width;
+        newCanvas.height = canvas.height;
+        newCanvas.getContext('2d').drawImage(canvas, 0, 0);
+        const rect = mapContainer.getBoundingClientRect();
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
+        ctx.drawImage(newCanvas, 0, 0);
+      });
+
+      // Map interaction handlers
+      mapSvg.addEventListener('wheel', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      });
+
+      mapSvg.addEventListener('mousedown', (e) => {
+        if (e.button === 0) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      });
+
+        document.getElementById('dark-mode-btn').addEventListener('click', () => {
+            mapHandler.toggleDarkMode();
+        });
+    });
+  </script>
+</body>
+</html>
