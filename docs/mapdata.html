@@ -161,6 +161,40 @@
        filter: invert(1) hue-rotate(180deg);
    }
 
+    .state {
+        cursor: pointer;
+    }
+    .state:hover {
+        fill: #bbb;
+    }
+    .state.active {
+        fill: none;
+    }
+    .county {
+        transition: fill 0.3s;
+    }
+    .county:hover {
+        stroke-width: 1.5px;
+        stroke: #000;
+    }
+    .county.active {
+        stroke: #000;
+        stroke-width: 2px;
+        stroke-opacity: 1;
+        filter: brightness(1.1);
+    }
+    .tooltip {
+        position: absolute;
+        padding: 8px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        pointer-events: none;
+        font-size: 14px;
+        display: none;
+        z-index: 1000;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>

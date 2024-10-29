@@ -213,16 +213,24 @@ export class USMapHandler {
     countyClicked(event, d) {
         event.stopPropagation();
 
+        // Remove highlight from all counties first
+        this.countyGroup.selectAll('path')
+            .classed('active', false);
+
         if (this.activeCounty.node() === event.currentTarget) {
             // If clicking the same county, reset to country view
             this.activeCounty = d3.select(null);
             this.active = d3.select(null);
+
+            // Remove the 'active' class from all states
             this.stateGroup.selectAll('path')
                 .classed('active', false);
+
             this.reset();
             return;
         }
 
+        // Clear previous active county and set new one
         this.activeCounty.classed('active', false);
         this.activeCounty = d3.select(event.currentTarget).classed('active', true);
 
@@ -240,6 +248,60 @@ export class USMapHandler {
             .attr('transform', `translate(${translate})scale(${scale})`);
 
         this.updateSidebarWithCounty(d);
+    }
+
+    clicked(event, d) {
+        event.stopPropagation();
+
+        // Remove highlight from all counties when clicking a state
+        this.countyGroup.selectAll('path')
+            .classed('active', false);
+
+        if (this.active.node() === event.currentTarget) {
+            return this.reset();
+        }
+
+        this.active.classed('active', false);
+        this.active = d3.select(event.currentTarget).classed('active', true);
+        this.activeCounty = d3.select(null);
+
+        const bounds = this.path.bounds(d);
+        const dx = bounds[1][0] - bounds[0][0];
+        const dy = bounds[1][1] - bounds[0][1];
+        const x = (bounds[0][0] + bounds[1][0]) / 2;
+        const y = (bounds[0][1] + bounds[1][1]) / 2;
+        const scale = Math.min(8, 0.9 / Math.max(dx / 1000, dy / 600));
+        const translate = [500 - scale * x, 300 - scale * y];
+
+        const stateId = d.id;
+        this.countyGroup.selectAll('path')
+            .style('display', function(d) {
+                return d.id.startsWith(stateId) ? 'block' : 'none';
+            });
+
+        this.g.transition()
+            .duration(750)
+            .style('stroke-width', 1.5 / scale + 'px')
+            .attr('transform', `translate(${translate})scale(${scale})`);
+
+        this.countyGroup.transition()
+            .duration(750)
+            .style('opacity', 1);
+
+        // Get all info labels within the sidebar
+        const sidebar = document.getElementById(this.sidebarId);
+        const infoLabels = sidebar.querySelectorAll('.info-label');
+
+        // Reset labels for state view
+        infoLabels.forEach((label, index) => {
+            if (index === 2) {
+                label.textContent = 'Capital';
+            } else if (index === 3) {
+                label.textContent = 'Largest City';
+            }
+        });
+
+        this.updateSidebar(d);
     }
 
     updateSidebarWithCounty(d) {
