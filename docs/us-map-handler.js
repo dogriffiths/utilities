@@ -6,29 +6,28 @@ export class USMapHandler {
         this.svg = d3.select(svgId);
         this.g = this.svg.append('g');
         this.active = d3.select(null);
+        this.activeCounty = d3.select(null);
         this.sidebarId = sidebarId;
         this.counties = null;
         this.states = null;
         this.isDarkMode = false;
         this.countyData = new Map();
-        
+
         this.projection = d3.geoAlbersUsa()
             .scale(1300)
             .translate([500, 300]);
-            
+
         this.path = d3.geoPath()
             .projection(this.projection);
-            
-        // Create initial color scale
+
         this.colorScale = d3.scaleSequential()
             .interpolator(d3.interpolateBlues);
-            
-        // Bind methods
+
         this.clicked = this.clicked.bind(this);
         this.reset = this.reset.bind(this);
         this.updateSidebar = this.updateSidebar.bind(this);
+        this.countyClicked = this.countyClicked.bind(this);
     }
-
 
     createLegend(maxDensity) {
         // Remove existing legend if any
@@ -64,7 +63,7 @@ export class USMapHandler {
             .style('fill', d => this.colorScale(d));
     }
 
-async initialize() {
+    async initialize() {
         try {
             const [us, counties] = await Promise.all([
                 d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json'),
@@ -129,23 +128,26 @@ async initialize() {
                 .style('stroke-width', '0.5px')
                 .style('display', 'none')
                 .on('mouseover', (event, d) => {
-                    const countyInfo = this.countyData.get(d.id);
-                    if (countyInfo) {
-                        const tooltip = document.querySelector('.tooltip');
-                        tooltip.style.display = 'block';
-                        tooltip.style.left = (event.pageX + 10) + 'px';
-                        tooltip.style.top = (event.pageY - 10) + 'px';
-                        tooltip.innerHTML = `
-                            <strong>${countyInfo.name}</strong><br/>
-                            Density: ${countyInfo.density.toFixed(1)}/sq mi<br/>
-                            Population: ${countyInfo.population.toLocaleString()}<br/>
-                            Area: ${countyInfo.area.toFixed(1)} sq mi
-                        `;
+                    if (this.activeCounty.node() !== event.currentTarget) {
+                        const countyInfo = this.countyData.get(d.id);
+                        if (countyInfo) {
+                            const tooltip = document.querySelector('.tooltip');
+                            tooltip.style.display = 'block';
+                            tooltip.style.left = (event.pageX + 10) + 'px';
+                            tooltip.style.top = (event.pageY - 10) + 'px';
+                            tooltip.innerHTML = `
+                                <strong>${countyInfo.name}</strong><br/>
+                                Density: ${countyInfo.density.toFixed(1)}/sq mi<br/>
+                                Population: ${countyInfo.population.toLocaleString()}<br/>
+                                Area: ${countyInfo.area.toFixed(1)} sq mi
+                            `;
+                        }
                     }
                 })
                 .on('mouseout', () => {
                     document.querySelector('.tooltip').style.display = 'none';
-                });
+                })
+                .on('click', this.countyClicked);
             
             // Draw states
             this.stateGroup.selectAll('path')
@@ -208,15 +210,97 @@ async initialize() {
         }
     }
 
+    countyClicked(event, d) {
+        event.stopPropagation();
+
+        if (this.activeCounty.node() === event.currentTarget) {
+            // If clicking the same county, reset to country view
+            this.activeCounty = d3.select(null);
+            this.active = d3.select(null);
+            this.stateGroup.selectAll('path')
+                .classed('active', false);
+            this.reset();
+            return;
+        }
+
+        this.activeCounty.classed('active', false);
+        this.activeCounty = d3.select(event.currentTarget).classed('active', true);
+
+        const bounds = this.path.bounds(d);
+        const dx = bounds[1][0] - bounds[0][0];
+        const dy = bounds[1][1] - bounds[0][1];
+        const x = (bounds[0][0] + bounds[1][0]) / 2;
+        const y = (bounds[0][1] + bounds[1][1]) / 2;
+        const scale = Math.min(12, 0.9 / Math.max(dx / 1000, dy / 600));
+        const translate = [500 - scale * x, 300 - scale * y];
+
+        this.g.transition()
+            .duration(750)
+            .style('stroke-width', 1.5 / scale + 'px')
+            .attr('transform', `translate(${translate})scale(${scale})`);
+
+        this.updateSidebarWithCounty(d);
+    }
+
+    updateSidebarWithCounty(d) {
+        const sidebar = document.getElementById(this.sidebarId);
+        const countyInfo = this.countyData.get(d.id);
+        const stateInfo = stateProperties[d.id.substring(0, 2)];
+
+        if (countyInfo && stateInfo) {
+            // Get all info label elements
+            const infoLabels = sidebar.querySelectorAll('.info-label');
+            const infoValues = sidebar.querySelectorAll('.info-value');
+
+            // Update state name
+            const stateName = sidebar.querySelector('.state-name');
+            if (stateName) {
+                stateName.textContent = `${countyInfo.name} County, ${stateInfo.name}`;
+            }
+
+            // Update population and density
+            const population = sidebar.querySelector('.population');
+            const density = sidebar.querySelector('.density');
+            const location = sidebar.querySelector('.location');
+            const region = sidebar.querySelector('.region');
+
+            if (population) {
+                population.textContent = countyInfo.population.toLocaleString();
+            }
+            if (density) {
+                density.textContent = `${countyInfo.density.toFixed(1)}/sq mi`;
+            }
+
+            // Update the labels and values for location and region
+            infoLabels.forEach((label, index) => {
+                if (index === 2) {
+                    label.textContent = 'Area';
+                } else if (index === 3) {
+                    label.textContent = 'State';
+                }
+            });
+
+            if (location) {
+                location.textContent = `${countyInfo.area.toFixed(1)} sq mi`;
+            }
+            if (region) {
+                region.textContent = stateInfo.name;
+            }
+
+            sidebar.classList.add('active');
+        }
+    }
+
     clicked(event, d) {
         event.stopPropagation();
-        
+
         if (this.active.node() === event.currentTarget) {
             return this.reset();
         }
-        
+
         this.active.classed('active', false);
         this.active = d3.select(event.currentTarget).classed('active', true);
+        this.activeCounty = d3.select(null);
 
         const bounds = this.path.bounds(d);
         const dx = bounds[1][0] - bounds[0][0];
@@ -226,7 +310,6 @@ async initialize() {
         const scale = Math.min(8, 0.9 / Math.max(dx / 1000, dy / 600));
         const translate = [500 - scale * x, 300 - scale * y];
 
-        // Show counties for selected state
         const stateId = d.id;
         this.countyGroup.selectAll('path')
             .style('display', function(d) {
@@ -242,12 +325,27 @@ async initialize() {
             .duration(750)
             .style('opacity', 1);
 
+        // Get all info labels within the sidebar
+        const sidebar = document.getElementById(this.sidebarId);
+        const infoLabels = sidebar.querySelectorAll('.info-label');
+
+        // Reset labels for state view
+        infoLabels.forEach((label, index) => {
+            if (index === 2) {
+                label.textContent = 'Capital';
+            } else if (index === 3) {
+                label.textContent = 'Largest City';
+            }
+        });
+
         this.updateSidebar(d);
     }
 
     reset() {
         this.active.classed('active', false);
         this.active = d3.select(null);
+        this.activeCounty.classed('active', false);
+        this.activeCounty = d3.select(null);
 
         this.g.transition()
             .duration(750)
