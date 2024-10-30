@@ -1681,6 +1681,115 @@
         return `${task.text.trim().toLowerCase()}|${(task.description || '').trim().toLowerCase()}`;
     }
 
+    function parseOrgToTasks(orgContent) {
+        const lines = orgContent.split(/\r?\n/);
+        const tasks = [];
+        let currentTask = null;
+        let currentDescription = [];
+        let currentHeadingLevel = 0;
+        let contextFromParent = null;
+
+        // Helper function to process description lines
+        function finalizeDescription() {
+            if (currentTask && currentDescription.length > 0) {
+                currentTask.description = currentDescription.join('\n').trim();
+                currentDescription = [];
+            }
+        }
+
+        // Process org-mode schedule and deadline timestamps
+        function parseOrgTimestamp(line) {
+            const timestampRegex = /<(\d{4}-\d{2}-\d{2})(?:\s+\w+\s+\d{1,2}:\d{2})?>/;
+            const match = line.match(timestampRegex);
+            return match ? new Date(match[1]).toISOString() : null;
+        }
+
+        // Helper to determine if a line is a TODO item
+        function isTodoLine(line) {
+            return /^\*+\s+(TODO|DONE|IN-PROGRESS|WAITING|CANCELLED)\s+/.test(line);
+        }
+
+        lines.forEach((line) => {
+            const trimmedLine = line.trim();
+
+            // Check for heading/todo
+            if (line.startsWith('*')) {
+                // Finalize previous task's description if any
+                finalizeDescription();
+
+                const headingMatch = line.match(/^(\*+)\s+(?:(TODO|DONE|IN-PROGRESS|WAITING|CANCELLED)\s+)?(.+)$/);
+                if (headingMatch) {
+                    const [, stars, status, content] = headingMatch;
+                    const level = stars.length;
+
+                    // Update heading level and context tracking
+                    if (level <= currentHeadingLevel) {
+                        contextFromParent = null;
+                    }
+                    currentHeadingLevel = level;
+
+                    // If this is a short heading (potential context), store it for child tasks
+                    if (content.length <= 35 && !status) {
+                        contextFromParent = content.trim()
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]/g, '');
+                    }
+
+                    // Only create task if it has a status
+                    if (status) {
+                        const tagsMatch = content.match(/:\w+:$/);
+                        const contentWithoutTags = tagsMatch ?
+                            content.slice(0, tagsMatch.index).trim() :
+                            content.trim();
+
+                        currentTask = {
+                            text: contentWithoutTags,
+                            description: '',
+                            comments: [],
+                            context: contextFromParent,
+                            section: status.toLowerCase() === 'done' ? 'done' :
+                                status.toLowerCase() === 'in-progress' ? 'in progress' :
+                                    'todo',
+                            created: new Date().toISOString()
+                        };
+                        tasks.push(currentTask);
+                    }
+                }
+            }
+            // Handle scheduled/deadline dates
+            else if (currentTask && (trimmedLine.startsWith('SCHEDULED:') || trimmedLine.startsWith('DEADLINE:'))) {
+                const dueDate = parseOrgTimestamp(trimmedLine);
+                if (dueDate) {
+                    currentTask.dueDate = dueDate;
+                }
+            }
+            // Handle properties
+            else if (currentTask && trimmedLine.startsWith(':PROPERTIES:')) {
+                // Skip property drawer
+                return;
+            }
+            // Handle comments/notes
+            else if (currentTask && trimmedLine.startsWith('COMMENT')) {
+                const commentText = trimmedLine.substring(7).trim();
+                if (commentText) {
+                    currentTask.comments.push({
+                        text: commentText,
+                        date: new Date().toISOString()
+                    });
+                }
+            }
+            // Add to description if we're in a task
+            else if (currentTask && trimmedLine && !trimmedLine.startsWith(':END:')) {
+                currentDescription.push(line.trimLeft());
+            }
+        });
+
+        // Handle description of last task if any
+        finalizeDescription();
+
+        return tasks;
+    }
+
     async function importTasks(tasks) {
         if (!db) return;
 
@@ -1844,39 +1953,39 @@
         const pageOverlay = document.getElementById('pageDropOverlay');
 
         // Function to handle file processing
-        async function processFile(file) {
+        function processFile(file) {
             if (!file) {
                 showStatus('Please drop a valid file', true);
                 return;
             }
 
             const fileExt = file.name.toLowerCase().split('.').pop();
-            if (!['opml', 'csv', 'txt'].includes(fileExt)) {
-                showStatus('Please drop an OPML, CSV, or TXT file', true);
+            if (!['opml', 'csv', 'txt', 'org'].includes(fileExt)) {
+                showStatus('Please drop an OPML, CSV, TXT, or ORG file', true);
                 return;
             }
 
-            try {
-                const text = await file.text();
+            return file.text().then(text => {
                 let tasks;
-
                 switch (fileExt) {
+                    case 'org':
+                        tasks = parseOrgToTasks(text);
+                        break;
                     case 'opml':
                         tasks = parseOPMLToTasks(text);
                         break;
                     case 'csv':
-                        tasks = await parseCSVToTasks(text);
+                        tasks = parseCSVToTasks(text);
                         break;
                     case 'txt':
                         tasks = parseTextToTasks(text);
                         break;
                 }
-
-                await importTasks(tasks);
-            } catch (error) {
+                return importTasks(tasks);
+            }).catch(error => {
                 console.error(`Error processing ${fileExt.toUpperCase()} file:`, error);
                 showStatus(`Error processing ${fileExt.toUpperCase()} file: ${error.message}`, true);
-            }
+            });
         }
 
         // Function to handle plain text content
@@ -1899,7 +2008,7 @@
                 // Update message based on drag type
                 const message = pageOverlay.querySelector('.page-drop-message');
                 message.textContent = e.dataTransfer.types.includes('Files')
-                    ? 'Drop your OPML, CSV, or TXT file here'
+                    ? 'Drop your OPML, CSV, TXT, or ORG file here'
                     : 'Drop text here to create tasks';
             }
         });
