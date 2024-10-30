@@ -267,6 +267,33 @@
             margin-bottom: 5px;
             border-radius: 4px;
             align-items: flex-start;
+            position: relative;
+            padding-right: 40px;
+        }
+
+        .journal-item .delete-button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: #666;
+            display: block;
+        }
+
+        .journal-item:hover .delete-button {
+            opacity: 1;
+        }
+
+        .journal-item .delete-button:hover {
+            color: #ff4444;
+            background: #f5f5f5;
+            border-radius: 4px;
         }
 
         .journal-time {
@@ -1725,12 +1752,16 @@
                 ...completedTasks.map(task => ({
                     type: 'completion',
                     timestamp: task.completedAt,
-                    task
+                    task,
+                    id: task.id,
+                    storeType: COMPLETED_STORE
                 })),
                 ...kanbanMoves.map(move => ({
                     type: 'kanban_move',
                     timestamp: move.timestamp,
-                    ...move
+                    ...move,
+                    id: move.id,
+                    storeType: KANBAN_JOURNAL_STORE
                 }))
             ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
@@ -1751,9 +1782,11 @@
                 dayDiv.appendChild(dayHeader);
 
                 entries.forEach(entry => {
-                    const entryDiv = entry.type === 'completion'
-                        ? createJournalItem(entry.task)
-                        : createKanbanJournalItem(entry);
+                    const entryDiv = entry.type === 'completion' ?
+                        createJournalItem(entry.task) :
+                        createKanbanJournalItem(entry);
+                    entryDiv.dataset.id = entry.id;
+                    entryDiv.dataset.storeType = entry.storeType;
                     dayDiv.appendChild(entryDiv);
                 });
 
@@ -1799,6 +1832,8 @@
     function createJournalItem(task) {
         const div = document.createElement('div');
         div.className = 'journal-item';
+        div.dataset.id = task.id;
+        div.dataset.storeType = 'completed';
 
         const timeDiv = document.createElement('div');
         timeDiv.className = 'journal-time';
@@ -1813,7 +1848,6 @@
         const titleDiv = document.createElement('div');
         titleDiv.className = 'journal-title';
         titleDiv.textContent = task.text;
-
         contentDiv.appendChild(titleDiv);
 
         if (task.description) {
@@ -1822,6 +1856,13 @@
             descDiv.textContent = task.description;
             contentDiv.appendChild(descDiv);
         }
+
+        // Create and append delete button
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-button';
+        deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+        deleteButton.onclick = () => confirmDeleteJournalEntry(task.id, 'completed');
+        div.appendChild(deleteButton);
 
         div.appendChild(timeDiv);
         div.appendChild(contentDiv);
@@ -2215,6 +2256,8 @@
     function createKanbanJournalItem(entry) {
         const div = document.createElement('div');
         div.className = 'journal-item';
+        div.dataset.id = entry.id;
+        div.dataset.storeType = 'kanbanJournal';
 
         const timeDiv = document.createElement('div');
         timeDiv.className = 'journal-time';
@@ -2236,6 +2279,13 @@
 
         contentDiv.appendChild(titleDiv);
         contentDiv.appendChild(descDiv);
+
+        // Create and append delete button
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-button';
+        deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+        deleteButton.onclick = () => confirmDeleteJournalEntry(entry.id, 'kanbanJournal');
+        div.appendChild(deleteButton);
 
         div.appendChild(timeDiv);
         div.appendChild(contentDiv);
@@ -2511,6 +2561,34 @@
         }
     }
 
+    async function confirmDeleteJournalEntry(id, storeType) {
+        const confirmed = await showDeleteConfirmation('Are you sure you want to delete this journal entry?');
+        if (confirmed) {
+            await deleteJournalEntry(id, storeType);
+        }
+    }
+
+    async function deleteJournalEntry(id, storeType) {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction(storeType, 'readwrite');
+            const store = transaction.objectStore(storeType);
+
+            await new Promise((resolve, reject) => {
+                const request = store.delete(id);
+                request.onsuccess = resolve;
+                request.onerror = reject;
+            });
+
+            // Reload journal to reflect changes
+            loadJournal();
+            showStatus('Journal entry deleted successfully');
+        } catch (error) {
+            console.error('Error deleting journal entry:', error);
+            showStatus('Error deleting journal entry', true);
+        }
+    }
 
 
 
