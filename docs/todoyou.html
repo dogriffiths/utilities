@@ -16,7 +16,7 @@
             background-position: left 20px top 20px;
         }
 
-        @media (max-width: 1200px) {
+        @media (max-width: 1600px) {
             body {
                 background-size: 200px 38px;
             }
@@ -636,9 +636,84 @@
             color: #666;
             margin-right: 8px;
         }
+
+        .privacy-notice {
+            background: #f5f5f5;
+            padding: 8px 16px;
+            margin: 20px auto;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 900px;
+            font-size: 0.9em;
+            color: #666;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .data-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .data-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #666;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .data-button:hover {
+            background: #f0f0f0;
+            border-color: #ccc;
+        }
+
+        .data-button svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .privacy-notice {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+                margin: 20px;
+                padding: 12px;
+            }
+        }
     </style>
 </head>
 <body>
+<div class="privacy-notice">
+    <span>🔒 All data is stored locally in your browser - nothing is sent to any server.</span>
+    <div class="data-buttons">
+        <button onclick="exportDatabase()" class="data-button" title="CMD/CTRL-S">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export
+        </button>
+        <label class="data-button" title="CMD/CTRL-O">
+            <input type="file" id="importInput" accept=".json" style="display: none;" onchange="handleImport(event)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Import
+        </label>
+    </div>
+</div>
 <div class="tabs">
     <button class="tab active" data-tab="tasks">Tasks</button>
     <button class="tab" data-tab="kanban">Kanban</button>
@@ -965,6 +1040,15 @@
             console.error('Error in addTask:', error);
             showStatus('Error adding task', true);
         }
+    }
+
+    function handleImport(event) {
+        const file = event.target.files[0];
+        if (file) {
+            importDatabase(file);
+        }
+        // Reset the input so the same file can be imported again if needed
+        event.target.value = '';
     }
 
     function setupAutoReset() {
