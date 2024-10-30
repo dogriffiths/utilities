@@ -1,5 +1,6 @@
 import Component from "../relish-core/Component";
 import CypressWidget from "../relish-cypress/CypressWidget";
+import Checkbox from "../relish-cypress/Checkbox";
 
 export default class TaskItem extends CypressWidget {
     constructor(selector: string | HTMLElement, parent: Component) {
@@ -7,11 +8,11 @@ export default class TaskItem extends CypressWidget {
     }
 
     get checkbox() {
-        return new CypressWidget('.task-checkbox', this);
+        return new Checkbox('.task-checkbox', this);
     }
 
     get text() {
-        return new CypressWidget('span', this);
+        return new CypressWidget('.task-text span', this);
     }
 
     get description() {

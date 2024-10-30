@@ -34,6 +34,7 @@ export default class CollectionWidget<
     }
 
     assertEmpty() {
+        cy.log('XXXXXXXX assert empty')
         this.getChainer()
             .find(this.subSelector)
             .should("not.exist");

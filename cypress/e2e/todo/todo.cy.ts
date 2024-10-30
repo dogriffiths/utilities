@@ -67,4 +67,23 @@ describe('Todo Application', () => {
         | Buy fish | 1        |
         `)
     });
+
+    it.only('should reset resettable tasks the next day', () => {
+        toDoPage.newTask.set("Buy fish")
+        toDoPage.saveButton.click()
+        toDoPage.tasks.item(0).click()
+        toDoPage.editDialog.reset.check()
+        toDoPage.editDialog.saveButton.click()
+        toDoPage.tasks.item(0).checkbox.check()
+        toDoPage.tasks.assertEmpty()
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 1, 0, 0);
+        cy.clock(tomorrow.getTime());
+        cy.reload()
+        toDoPage.tasks.matches(table`
+        | text         |
+        | Buy fish     |
+        `)
+    });
 });
