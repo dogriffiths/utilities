@@ -6,6 +6,8 @@ import {table} from "../../support/utils";
 describe('Todo Application', () => {
     beforeEach(() => {
         cy.viewport(1280, 720);
+        const now = new Date(2024, 0, 1, 23, 30);  // Jan 1, 2024, 23:30
+        cy.clock(now);
         cy.visit("/")
         // @ts-ignore
         cy.deleteDatabase('TodoDB')
@@ -68,7 +70,7 @@ describe('Todo Application', () => {
         `)
     });
 
-    it.only('should reset resettable tasks the next day', () => {
+    it('should reset resettable tasks the next day', () => {
         toDoPage.newTask.set("Buy fish")
         toDoPage.saveButton.click()
         toDoPage.tasks.item(0).click()
@@ -76,11 +78,7 @@ describe('Todo Application', () => {
         toDoPage.editDialog.saveButton.click()
         toDoPage.tasks.item(0).checkbox.check()
         toDoPage.tasks.assertEmpty()
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(0, 1, 0, 0);
-        cy.clock(tomorrow.getTime());
-        cy.reload()
+        cy.tick(30 * 60 * 1000 + 1); // Advance to 1 millisecond past midnight
         toDoPage.tasks.matches(table`
         | text         |
         | Buy fish     |

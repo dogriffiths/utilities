@@ -780,6 +780,7 @@
     let currentEditingId = null;
     let currentCalendarDate = new Date();
     let draggedTask = null;
+    window.lastCheckDate = new Date().toISOString().split('T')[0];
 
     // Initialize database connection
     initDB().catch(error => {
@@ -964,6 +965,44 @@
             console.error('Error in addTask:', error);
             showStatus('Error adding task', true);
         }
+    }
+
+    function setupAutoReset() {
+        // Check how long until next midnight
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+
+        // Calculate milliseconds until next midnight
+        const msUntilMidnight = tomorrow - now;
+
+        // Set initial timeout for next midnight
+        setTimeout(() => {
+            // Perform the reset
+            checkDailyResets();
+            loadTasks();
+            loadKanban();
+
+            // Set up recurring check every 24 hours
+            setInterval(() => {
+                checkDailyResets();
+                loadTasks();
+                loadKanban();
+            }, 24 * 60 * 60 * 1000);
+
+            // Also set up a check every minute to handle system sleep/hibernate cases
+            setInterval(() => {
+                const currentDate = new Date().toISOString().split('T')[0];
+                if (window.lastCheckDate && window.lastCheckDate !== currentDate) {
+                    checkDailyResets();
+                    loadTasks();
+                    loadKanban();
+                }
+                window.lastCheckDate = currentDate;
+            }, 60 * 1000);
+
+        }, msUntilMidnight);
     }
 
     function createTaskElement(task) {
@@ -2703,6 +2742,7 @@
         loadKanban();
         loadCompletedTasks();
         checkDailyResets();
+        setupAutoReset();
 
         const toggleBtn = document.getElementById('toggleCompletedBtn');
         const completedList = document.getElementById('completedTaskList');
