@@ -727,7 +727,7 @@
     <div class="dialog">
         <h3>Edit Task</h3>
         <div class="form-group">
-            <label for="editTaskText">Task Title</label>
+            <label for="editTaskText">Title</label>
             <input type="text" id="editTaskText" placeholder="Task title">
         </div>
 
@@ -815,7 +815,9 @@
                     store.createIndex('description', 'description', { unique: false });
                     store.createIndex('dueDate', 'dueDate', { unique: false });
                     store.createIndex('section', 'section', { unique: false });
-                    store.createIndex('context', 'context', { unique: false }); // Add context index
+                    store.createIndex('context', 'context', { unique: false });
+                    store.createIndex('resetDaily', 'resetDaily', { unique: false });
+                    store.createIndex('lastReset', 'lastReset', { unique: false });
                 } else if (event.oldVersion < 5) {
                     const store = event.target.transaction.objectStore(STORE_NAME);
                     if (!store.indexNames.contains('context')) {
@@ -915,8 +917,12 @@
         if (taskText === '') return;
 
         const contextMatch = taskText.match(/@(\w+)/);
+        const resetDailyMatch = taskText.match(/\[daily\]/i); // Match [daily] flag
         const context = contextMatch ? contextMatch[1] : null;
-        const cleanText = taskText.replace(/@\w+/, '').trim();
+        const cleanText = taskText
+            .replace(/@\w+/, '')
+            .replace(/\[daily\]/i, '')
+            .trim();
 
         try {
             const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -932,7 +938,9 @@
                     comments: [],
                     position: position,
                     section: 'todo',
-                    created: new Date().toISOString()
+                    created: new Date().toISOString(),
+                    resetDaily: !!resetDailyMatch, // Add resetDaily flag
+                    lastReset: new Date().toISOString().split('T')[0] // Track last reset date
                 };
 
                 const addRequest = store.add(task);
@@ -943,7 +951,7 @@
                     const li = createTaskElement(task);
                     taskList.appendChild(li);
                     input.value = '';
-                    loadKanban(); // Reload Kanban board
+                    loadKanban();
                     showStatus('Task added successfully');
                 };
             };
@@ -997,6 +1005,14 @@
             margin-right: 8px;
         `;
             textContainer.appendChild(contextBadge);
+        }
+
+        if (task.resetDaily) {
+            const resetIcon = document.createElement('span');
+            resetIcon.innerHTML = '🔄';
+            resetIcon.title = 'Resets daily';
+            resetIcon.style.marginRight = '8px';
+            li.insertBefore(resetIcon, li.firstChild);
         }
 
         // Create a metadata container for due date and comments
@@ -1095,6 +1111,20 @@
 
         dialog.style.display = 'flex';
         document.getElementById('newComment').value = '';
+
+        const resetDailyLabel = document.createElement('div');
+        resetDailyLabel.className = 'form-group';
+        resetDailyLabel.style.cssText = 'display: flex; align-items: center; gap: 8px; margin: 10px 0;';
+        resetDailyLabel.innerHTML = `
+        <input type="checkbox"
+               id="editTaskResetDaily"
+               style="margin: 0; width: auto;"
+               ${task.resetDaily ? 'checked' : ''}>
+        <label for="editTaskResetDaily" style="margin: 0;">
+            Reset daily
+        </label>
+    `;
+        document.querySelector('.dialog .form-group').after(resetDailyLabel);
     }
 
     function closeEditDialog() {
@@ -1156,6 +1186,7 @@
         const taskDesc = document.getElementById('editTaskDescription').value.trim();
         const taskDueDate = document.getElementById('editTaskDueDate').value;
         const taskContext = document.getElementById('editTaskContext').value.trim();
+        const resetDaily = document.getElementById('editTaskResetDaily').checked;
 
         if (taskText === '') return;
 
@@ -1170,6 +1201,8 @@
                 task.description = taskDesc;
                 task.context = taskContext || null;
                 task.dueDate = taskDueDate ? new Date(taskDueDate).toISOString() : null;
+                task.resetDaily = resetDaily;
+                task.lastReset = task.lastReset || new Date().toISOString().split('T')[0];
 
                 store.put(task).onsuccess = () => {
                     // Update all views
@@ -1198,37 +1231,63 @@
             // Get the task before deleting
             const getRequest = store.get(id);
 
-            getRequest.onsuccess = () => {
+            getRequest.onsuccess = async () => {
                 const task = getRequest.result;
                 if (task) {
-                    // Add completion timestamp
-                    const completedTask = {
-                        ...task,
-                        completedAt: new Date().toISOString()
-                    };
+                    if (task.resetDaily) {
+                        // For daily reset tasks, just update lastReset
+                        task.lastReset = new Date().toISOString().split('T')[0];
+                        await store.put(task);
+                    } else {
+                        // For normal tasks, move to completed store
+                        const completedTask = {
+                            ...task,
+                            completedAt: new Date().toISOString()
+                        };
+                        await completedStore.add(completedTask);
+                        await store.delete(id);
+                    }
 
-                    // Add to completed store
-                    completedStore.add(completedTask);
+                    checkAndUpdateContextFilter();
+                    loadTasks();
+                    loadKanban();
+                    updateCalendar();
+                    loadJournal();
+                    loadCompletedTasks();
 
-                    // Delete from todos store
-                    store.delete(id).onsuccess = () => {
-                        // Check if we need to update the context filter
-                        checkAndUpdateContextFilter();
-
-                        // Update all views
-                        loadTasks();     // Update task list
-                        loadKanban();    // Update kanban board
-                        updateCalendar(); // Update calendar if tasks have due dates
-                        loadJournal();   // Update journal with completed task
-                        loadCompletedTasks();
-
-                        showStatus('Task completed successfully');
-                    };
+                    showStatus('Task completed successfully');
                 }
             };
         } catch (error) {
             console.error('Error completing task:', error);
             showStatus('Error completing task', true);
+        }
+    }
+
+    async function checkDailyResets() {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                const tasks = request.result;
+                const today = new Date().toISOString().split('T')[0];
+
+                tasks.forEach(task => {
+                    if (task.resetDaily && task.lastReset < today) {
+                        task.lastReset = today;
+                        store.put(task);
+                    }
+                });
+
+                loadTasks();
+                loadKanban();
+            };
+        } catch (error) {
+            console.error('Error checking daily resets:', error);
         }
     }
 
@@ -2597,6 +2656,7 @@
         setupDropZone();
         loadKanban();
         loadCompletedTasks();
+        checkDailyResets();
 
         const toggleBtn = document.getElementById('toggleCompletedBtn');
         const completedList = document.getElementById('completedTaskList');
