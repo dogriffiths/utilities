@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager with Time Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .task-input {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        .timer-btn {
+            background-color: #28a745;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .timer-btn:hover {
+            background-color: #218838;
+        }
+        .timer-btn.stop {
+            background-color: #ffc107;
+            color: black;
+        }
+        .timer-btn.stop:hover {
+            background-color: #e0a800;
+        }
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+        .task-item.completed {
+            background-color: #e2e3e5;
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+        .task-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        .task-text {
+            flex-grow: 1;
+            min-width: 200px;
+        }
+        .time-spent {
+            color: #6c757d;
+            font-size: 0.875rem;
+            min-width: 100px;
+        }
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .dashboard {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .chart-container {
+            margin-top: 1rem;
+            width: 100%;
+            height: 300px;
+            position: relative;
+        }
+        .bar {
+            transition: height 0.3s ease;
+        }
+        .bar-label {
+            font-size: 12px;
+            text-anchor: middle;
+        }
+        .bar-time {
+            font-size: 12px;
+            text-anchor: middle;
+        }
+        .chart-axis {
+            stroke: #666;
+            stroke-width: 1;
+        }
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task Manager</h1>
+    
+    <div class="task-input">
+        <input type="text" id="taskInput" placeholder="Enter a new task">
+        <button onclick="addTask()">Add Task</button>
+    </div>
+    
+    <ul id="taskList" class="task-list">
+    </ul>
+
+    <div class="dashboard">
+        <div class="chart-title">Time Spent on Tasks</div>
+        <div id="chartContainer" class="chart-container">
+            <!-- SVG chart will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        // Store tasks in localStorage
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let activeTimer = null;
+
+        // Format time in HH:MM:SS
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Get current time for a task
+        function getCurrentTaskTime(task) {
+            let time = task.timeSpent || 0;
+            if (task.timerActive) {
+                time += Math.floor((Date.now() - task.lastStartTime) / 1000);
+            }
+            return time;
+        }
+
+        // Update chart
+        function updateChart() {
+            const container = document.getElementById('chartContainer');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const margin = { top: 20, right: 20, bottom: 60, left: 60 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+
+            // Calculate task times
+            const taskTimes = tasks.map(task => ({
+                name: task.text,
+                time: getCurrentTaskTime(task),
+                active: task.timerActive
+            }));
+
+            // Find maximum time for scaling
+            const maxTime = Math.max(...taskTimes.map(t => t.time), 1);
+            const barWidth = Math.min(100, chartWidth / taskTimes.length - 10);
+
+            // Create SVG
+            const svg = `
+                <svg width="${width}" height="${height}">
+                    <g transform="translate(${margin.left}, ${margin.top})">
+                        ${taskTimes.map((task, i) => {
+                            const barHeight = (task.time / maxTime) * chartHeight;
+                            const x = (i * (chartWidth / taskTimes.length)) + ((chartWidth / taskTimes.length - barWidth) / 2);
+                            const y = chartHeight - barHeight;
+                            
+                            return `
+                                <g class="bar-group" transform="translate(${x}, 0)">
+                                    <rect
+                                        class="bar"
+                                        x="0"
+                                        y="${y}"
+                                        width="${barWidth}"
+                                        height="${barHeight}"
+                                        fill="${task.active ? '#ffc107' : '#007bff'}"
+                                    />
+                                    <text
+                                        class="bar-label"
+                                        x="${barWidth/2}"
+                                        y="${height - margin.top - margin.bottom + 20}"
+                                        transform="rotate(45, ${barWidth/2}, ${height - margin.top - margin.bottom + 20})"
+                                    >${task.name}</text>
+                                    <text
+                                        class="bar-time"
+                                        x="${barWidth/2}"
+                                        y="${y - 5}"
+                                    >${formatTime(task.time)}</text>
+                                </g>
+                            `;
+                        }).join('')}
+                        
+                        <!-- Y-axis -->
+                        <line
+                            class="chart-axis"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="${chartHeight}"
+                        />
+                        
+                        <!-- X-axis -->
+                        <line
+                            class="chart-axis"
+                            x1="0"
+                            y1="${chartHeight}"
+                            x2="${chartWidth}"
+                            y2="${chartHeight}"
+                        />
+                    </g>
+                </svg>
+            `;
+
+            container.innerHTML = svg;
+        }
+
+        // Update a single task's display
+        function updateTaskDisplay(task, index) {
+            const li = document.getElementById(`task-${index}`);
+            if (!li) return;
+
+            // Update timer display
+            const timeElement = li.querySelector('.time-spent');
+            if (task.timerActive) {
+                const elapsed = Math.floor((Date.now() - task.lastStartTime) / 1000);
+                const totalSeconds = (task.timeSpent || 0) + elapsed;
+                timeElement.textContent = formatTime(totalSeconds);
+            } else {
+                timeElement.textContent = formatTime(task.timeSpent || 0);
+            }
+
+            // Update timer button
+            const timerButton = li.querySelector('.timer-btn');
+            timerButton.textContent = task.timerActive ? 'Stop' : 'Start';
+            timerButton.className = `timer-btn ${task.timerActive ? 'stop' : ''}`;
+
+            // Update chart
+            updateChart();
+        }
+
+        // Initialize the task list
+        function initializeTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = `task-item ${task.completed ? 'completed' : ''}`;
+                li.id = `task-${index}`;
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = task.completed;
+                checkbox.onchange = () => toggleTask(index);
+                
+                const span = document.createElement('span');
+                span.className = 'task-text';
+                span.textContent = task.text;
+                
+                const timeSpent = document.createElement('span');
+                timeSpent.className = 'time-spent';
+                timeSpent.textContent = formatTime(task.timeSpent || 0);
+
+                const controls = document.createElement('div');
+                controls.className = 'controls';
+
+                const timerButton = document.createElement('button');
+                timerButton.className = `timer-btn ${task.timerActive ? 'stop' : ''}`;
+                timerButton.textContent = task.timerActive ? 'Stop' : 'Start';
+                timerButton.onclick = () => toggleTimer(index);
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-btn';
+                deleteButton.textContent = '×';
+                deleteButton.onclick = () => deleteTask(index);
+                
+                controls.appendChild(timerButton);
+                controls.appendChild(deleteButton);
+
+                li.appendChild(checkbox);
+                li.appendChild(span);
+                li.appendChild(timeSpent);
+                li.appendChild(controls);
+                taskList.appendChild(li);
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            
+            // Update chart
+            updateChart();
+        }
+
+        // Add a new task
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                tasks.push({
+                    text: text,
+                    completed: false,
+                    timeSpent: 0,
+                    timerActive: false,
+                    lastStartTime: null
+                });
+                
+                input.value = '';
+                initializeTasks();
+            }
+        }
+
+        // Toggle task completion
+        function toggleTask(index) {
+            tasks[index].completed = !tasks[index].completed;
+            // Stop timer if task is completed
+            if (tasks[index].completed && tasks[index].timerActive) {
+                toggleTimer(index);
+            }
+            initializeTasks();
+        }
+
+        // Delete a task
+        function deleteTask(index) {
+            if (tasks[index].timerActive) {
+                toggleTimer(index);
+            }
+            tasks.splice(index, 1);
+            initializeTasks();
+        }
+
+        // Toggle timer for a task
+        function toggleTimer(index) {
+            const task = tasks[index];
+            
+            if (!task.timerActive) {
+                // Stop any other active timers
+                tasks.forEach((t, i) => {
+                    if (t.timerActive) {
+                        toggleTimer(i);
+                    }
+                });
+                
+                // Start timer
+                task.timerActive = true;
+                task.lastStartTime = Date.now();
+                
+                // Set up live updates
+                activeTimer = setInterval(() => {
+                    updateTaskDisplay(task, index);
+                }, 1000);
+            } else {
+                // Stop timer
+                task.timerActive = false;
+                const elapsed = Math.floor((Date.now() - task.lastStartTime) / 1000);
+                task.timeSpent = (task.timeSpent || 0) + elapsed;
+                task.lastStartTime = null;
+                clearInterval(activeTimer);
+            }
+            
+            updateTaskDisplay(task, index);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Handle enter key in input
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', updateChart);
+
+        // Initialize the app
+        initializeTasks();
+
+        // Resume any active timers after page reload
+        tasks.forEach((task, index) => {
+            if (task.timerActive) {
+                // Restart the timer
+                task.lastStartTime = Date.now() - ((task.timeSpent || 0) * 1000);
+                activeTimer = setInterval(() => {
+                    updateTaskDisplay(task, index);
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
