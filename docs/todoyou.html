@@ -689,6 +689,50 @@
                 padding: 12px;
             }
         }
+
+        .autocomplete-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+        }
+
+        .autocomplete-container input {
+            width: 100%;
+            flex: 1;
+        }
+
+        .suggestions-container {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background: #f5f5f5;
+        }
+
+        .suggestion-item.selected {
+            background: #e8f5e9;
+        }
     </style>
 </head>
 <body>
@@ -856,6 +900,9 @@
     let currentCalendarDate = new Date();
     let draggedTask = null;
     window.lastCheckDate = new Date().toISOString().split('T')[0];
+    let currentContexts = new Set();
+    let selectedSuggestionIndex = -1;
+
 
     // Initialize database connection
     initDB().catch(error => {
@@ -984,7 +1031,55 @@
         console.log('Tasks loaded:', tasks.length);
     }
 
-    function addTask() {
+    async function updateContextFilter() {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const tasks = await new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = reject;
+            });
+
+            const contextFilter = document.getElementById('contextFilter');
+            const selectedContext = contextFilter.value;
+
+            // Get unique contexts preserving case
+            const contexts = new Set(tasks
+                .map(task => task.context)
+                .filter(Boolean));
+
+            // Clear existing options except the first one (All Contexts)
+            while (contextFilter.options.length > 1) {
+                contextFilter.remove(1);
+            }
+
+            // Add context options
+            Array.from(contexts)
+                .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                .forEach(context => {
+                    const option = new Option(context, context);
+                    contextFilter.add(option);
+                });
+
+            // Restore previous selection if it still exists
+            if (selectedContext && contexts.has(selectedContext)) {
+                contextFilter.value = selectedContext;
+            }
+
+            // Update clear filter button visibility
+            const clearFilter = document.getElementById('clearFilter');
+            if (clearFilter) {
+                clearFilter.style.display = contextFilter.value ? 'block' : 'none';
+            }
+        } catch (error) {
+            console.error('Error updating context filter:', error);
+        }
+    }
+
+    async function addTask() {
         if (!db) {
             console.error('Database not initialized');
             showStatus('Database not ready', true);
@@ -998,7 +1093,6 @@
 
         const contextMatch = taskText.match(/@(\w+)/);
         const resetDailyMatch = taskText.match(/\[daily\]/i);
-        console.log('XXXXXXXX resetDailyMatch', taskText, resetDailyMatch)
         const context = contextMatch ? contextMatch[1] : null;
         const cleanText = taskText
             .replace(/@\w+/, '')
@@ -1010,7 +1104,7 @@
             const store = transaction.objectStore(STORE_NAME);
             const countRequest = store.count();
 
-            countRequest.onsuccess = () => {
+            countRequest.onsuccess = async () => {
                 const position = countRequest.result;
                 const task = {
                     text: cleanText,
@@ -1021,17 +1115,22 @@
                     section: 'todo',
                     created: new Date().toISOString(),
                     resetDaily: !!resetDailyMatch,
-                    lastReset: null  // Always initialize as null
+                    lastReset: null
                 };
 
                 const addRequest = store.add(task);
 
-                addRequest.onsuccess = (event) => {
+                addRequest.onsuccess = async (event) => {
                     task.id = event.target.result;
                     const taskList = document.getElementById('taskList');
                     const li = createTaskElement(task);
                     taskList.appendChild(li);
                     input.value = '';
+
+                    // Update both the context filter and autocomplete lists
+                    await updateContextsList();
+                    await updateContextFilter();
+
                     loadKanban();
                     showStatus('Task added successfully');
                 };
@@ -2927,6 +3026,216 @@
         }
     }
 
+    async function updateContextsList() {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const tasks = await new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = reject;
+            });
+
+            // Update the autocomplete contexts set
+            currentContexts = new Set(
+                tasks
+                    .map(task => task.context)
+                    .filter(Boolean)
+                    .map(context => context.toLowerCase())
+            );
+
+            // Update the context filter dropdown
+            const contextFilter = document.getElementById('contextFilter');
+            const selectedContext = contextFilter.value; // Store current selection
+
+            // Get unique contexts preserving case
+            const uniqueContexts = [...new Set(tasks
+                .map(task => task.context)
+                .filter(Boolean))];
+
+            // Clear existing options except the first one (All Contexts)
+            while (contextFilter.options.length > 1) {
+                contextFilter.remove(1);
+            }
+
+            // Add context options
+            uniqueContexts.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                .forEach(context => {
+                    const option = new Option(context, context);
+                    contextFilter.add(option);
+                });
+
+            // Restore previous selection if it still exists
+            if (selectedContext && uniqueContexts.includes(selectedContext)) {
+                contextFilter.value = selectedContext;
+            }
+
+            // Update clear filter button visibility
+            const clearFilter = document.getElementById('clearFilter');
+            if (clearFilter) {
+                clearFilter.style.display = contextFilter.value ? 'block' : 'none';
+            }
+
+        } catch (error) {
+            console.error('Error updating contexts list:', error);
+        }
+    }
+
+    function getContextAtCursor(input, cursorPosition) {
+        // Find the last @ before the cursor
+        const textBeforeCursor = input.slice(0, cursorPosition);
+        const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+        if (lastAtIndex === -1) return null;
+
+        // Find the end of the context (next space or end of string)
+        const textAfterAt = input.slice(lastAtIndex + 1);
+        const nextSpaceIndex = textAfterAt.indexOf(' ');
+        const contextEnd = nextSpaceIndex === -1 ? textAfterAt.length : nextSpaceIndex;
+
+        return {
+            start: lastAtIndex,
+            end: lastAtIndex + 1 + contextEnd,
+            text: textAfterAt.slice(0, contextEnd)
+        };
+    }
+
+    // Function to setup autocomplete for an input field
+    function setupContextAutocomplete(inputEl, isContextField = false) {
+        let container = inputEl.parentElement.querySelector('.suggestions-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'suggestions-container';
+            inputEl.parentElement.appendChild(container);
+        }
+
+        function showContextSuggestions(input, cursorPosition) {
+            let searchText;
+            let contextInfo = null;
+
+            if (isContextField) {
+                // For context field, use the entire input
+                searchText = input.toLowerCase();
+            } else {
+                // For main input, find the context at cursor position
+                contextInfo = getContextAtCursor(input, cursorPosition);
+                if (!contextInfo) {
+                    container.style.display = 'none';
+                    return;
+                }
+                searchText = contextInfo.text.toLowerCase();
+            }
+
+            // Filter contexts that match the search text
+            const matches = Array.from(currentContexts)
+                .filter(context => context.toLowerCase().includes(searchText))
+                .sort();
+
+            if (matches.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            // Create suggestion elements
+            container.innerHTML = '';
+            matches.forEach((context, index) => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                if (index === selectedSuggestionIndex) {
+                    div.classList.add('selected');
+                }
+                div.textContent = context;
+                div.onclick = () => {
+                    if (isContextField) {
+                        // For context field, replace entire value
+                        inputEl.value = context;
+                    } else {
+                        // For main input, replace only the current @context
+                        const before = input.slice(0, contextInfo.start + 1); // Include the @
+                        const after = input.slice(contextInfo.end);
+                        inputEl.value = before + context + after;
+                        inputEl.setSelectionRange(
+                            contextInfo.start + context.length + 1,
+                            contextInfo.start + context.length + 1
+                        );
+                    }
+                    container.style.display = 'none';
+                    inputEl.focus();
+                };
+                container.appendChild(div);
+            });
+
+            container.style.display = 'block';
+        }
+
+        // Track cursor position
+        let currentCursorPosition = 0;
+        inputEl.addEventListener('keyup', (e) => {
+            currentCursorPosition = e.target.selectionStart;
+        });
+        inputEl.addEventListener('click', (e) => {
+            currentCursorPosition = e.target.selectionStart;
+        });
+
+        // Input event handler
+        inputEl.addEventListener('input', (e) => {
+            const input = e.target.value;
+            currentCursorPosition = e.target.selectionStart;
+
+            if (isContextField || input.includes('@')) {
+                showContextSuggestions(input, currentCursorPosition);
+            }
+        });
+
+        // Keyboard navigation
+        inputEl.addEventListener('keydown', (e) => {
+            if (container.style.display !== 'block') return;
+
+            const suggestions = container.children;
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.min(
+                        selectedSuggestionIndex + 1,
+                        suggestions.length - 1
+                    );
+                    if (selectedSuggestionIndex === -1) selectedSuggestionIndex = 0;
+                    showContextSuggestions(inputEl.value, currentCursorPosition);
+                    break;
+
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, 0);
+                    showContextSuggestions(inputEl.value, currentCursorPosition);
+                    break;
+
+                case 'Enter':
+                    if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+                        e.preventDefault();
+                        suggestions[selectedSuggestionIndex].click();
+                        selectedSuggestionIndex = -1;
+                    }
+                    break;
+
+                case 'Escape':
+                    container.style.display = 'none';
+                    selectedSuggestionIndex = -1;
+                    break;
+            }
+        });
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-container')) {
+                container.style.display = 'none';
+                selectedSuggestionIndex = -1;
+            }
+        });
+    }
+
+
 
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -2936,6 +3245,18 @@
         loadCompletedTasks();
         checkDailyResets();
         setupAutoReset();
+        updateContextsList();
+
+        // Setup autocomplete for main input
+        const mainInput = document.getElementById('newTask');
+        if (!mainInput.parentElement.classList.contains('autocomplete-container')) {
+            const container = document.createElement('div');
+            container.className = 'autocomplete-container';
+            mainInput.parentNode.insertBefore(container, mainInput);
+            container.appendChild(mainInput);
+        }
+        setupContextAutocomplete(mainInput, false);
+
 
         const toggleBtn = document.getElementById('toggleCompletedBtn');
         const completedList = document.getElementById('completedTaskList');
@@ -2961,10 +3282,38 @@
             clearFilter.style.display = 'none';
         });
 
-        const oldLoadTasks = loadTasks;
-        loadTasks = async function() {
+        const originalOpenEditDialog = window.openEditDialog;
+        window.openEditDialog = function(task) {
+            originalOpenEditDialog(task);
+            const editContextInput = document.getElementById('editTaskContext');
+            if (!editContextInput.parentElement.classList.contains('autocomplete-container')) {
+                const container = document.createElement('div');
+                container.className = 'autocomplete-container';
+                editContextInput.parentNode.insertBefore(container, editContextInput);
+                container.appendChild(editContextInput);
+            }
+            setupContextAutocomplete(editContextInput, true);
+        };
+
+
+        // Update contexts list when tasks change
+        const oldLoadTasks = window.loadTasks;
+        window.loadTasks = async function() {
             await oldLoadTasks();
-            await updateContextFilter();
+            await updateContextsList();
+        };
+
+        const originalSaveEditedTask = window.saveEditedTask;
+        window.saveEditedTask = async function() {
+            await originalSaveEditedTask();
+            await updateContextsList();
+        };
+
+// Update the delete task function
+        const originalDeleteTask = window.deleteTask;
+        window.deleteTask = async function(id) {
+            await originalDeleteTask(id);
+            await updateContextsList();
         };
 
         // Load completed tasks initially
@@ -3017,53 +3366,7 @@
             });
         });
 
-        async function updateContextFilter() {
-            if (!db) return;
 
-            try {
-                const transaction = db.transaction(STORE_NAME, 'readonly');
-                const store = transaction.objectStore(STORE_NAME);
-                const tasks = await new Promise((resolve, reject) => {
-                    const request = store.getAll();
-                    request.onsuccess = () => resolve(request.result);
-                    request.onerror = reject;
-                });
-
-                // Get unique contexts
-                const contexts = new Set();
-                tasks.forEach(task => {
-                    if (task.context) contexts.add(task.context);
-                });
-
-                // Update select options
-                const contextFilter = document.getElementById('contextFilter');
-                const currentValue = contextFilter.value; // Store current selection
-
-                // Clear existing options except the first one (All Contexts)
-                while (contextFilter.options.length > 1) {
-                    contextFilter.remove(1);
-                }
-
-                // Add context options
-                Array.from(contexts).sort().forEach(context => {
-                    const option = new Option(context, context);
-                    contextFilter.add(option);
-                });
-
-                // Restore previous selection if it still exists
-                if (currentValue && Array.from(contexts).includes(currentValue)) {
-                    contextFilter.value = currentValue;
-                }
-
-                // Show/hide clear filter button
-                document.getElementById('clearFilter').style.display =
-                    contextFilter.value ? 'block' : 'none';
-
-            } catch (error) {
-                console.error('Error updating context filter:', error);
-                showStatus('Error updating context filter', true);
-            }
-        }
 
         document.getElementById('newTask').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
