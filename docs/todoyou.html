@@ -961,6 +961,42 @@
         });
     }
 
+    const idb = {
+        /**
+         * Execute a single database operation
+         * @param {IDBDatabase} db - The database instance
+         * @param {string} storeName - Name of the object store
+         * @param {string} mode - Transaction mode ('readonly' or 'readwrite')
+         * @param {function} operation - Function that takes an IDBObjectStore and returns an IDBRequest
+         * @returns {Promise} Resolves with the result of the operation
+         */
+        async execute(db, storeName, mode, operation) {
+            if (!db) throw new Error('Database not initialized');
+
+            const transaction = db.transaction(storeName, mode);
+            const store = transaction.objectStore(storeName);
+
+            return new Promise((resolve, reject) => {
+                const request = operation(store);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        },
+
+        /**
+         * Common database operations
+         */
+        operations: {
+            getAll: (store) => store.getAll(),
+            get: (store, key) => store.get(key),
+            add: (store, item) => store.add(item),
+            put: (store, item) => store.put(item),
+            delete: (store, key) => store.delete(key),
+            clear: (store) => store.clear(),
+            count: (store) => store.count(),
+        }
+    };
+
     function showStatus(message, isError = false) {
         const status = document.getElementById('status');
         status.textContent = message;
@@ -991,7 +1027,6 @@
                 const visibleTasks = tasks.filter(task => {
                     // Daily reset tasks should only be hidden if lastReset matches today
                     if (task.resetDaily) {
-                        console.log('XXXXXX ', task.lastReset, today);
                         const isCompletedToday = task.lastReset === today;
                         return !isCompletedToday;
                     }
@@ -1491,15 +1526,20 @@
                         // Update the original task's lastReset
                         const updatedTask = { ...task };
                         updatedTask.lastReset = today;
-                        await store.put(updatedTask);
+                        await idb.execute(db, STORE_NAME, 'readwrite',
+                            store => idb.operations.put(store, updatedTask));
                     } else {
                         // For normal tasks, move to completed store
                         const completedTask = {
                             ...task,
                             completedAt: new Date().toISOString()
                         };
-                        await completedStore.add(completedTask);
-                        await store.delete(id);
+                        await idb.execute(db, COMPLETED_STORE, 'readwrite',
+                            store => idb.operations.add(store, completedTask));
+
+                        // Delete from active store
+                        await idb.execute(db, STORE_NAME, 'readwrite',
+                            store => idb.operations.delete(store, id));
                     }
 
                     await checkAndUpdateContextFilter();
