@@ -3351,7 +3351,7 @@
             await updateContextsList();
         };
 
-// Update the delete task function
+        // Update the delete task function
         const originalDeleteTask = window.deleteTask;
         window.deleteTask = async function(id) {
             await originalDeleteTask(id);

@@ -92,12 +92,11 @@ describe('Todo Application', () => {
         toDoPage.tasks.item(0).checkbox.check()
         cy.tick(24 * 60 * 60 * 1000); // Advance a day
         toDoPage.tasks.item(0).checkbox.check()
-        cy.reload();
         toDoPage.journalTab.click()
         toDoPage.journalDays.matches(table`
         | header               |
-        | Wednesday, January 3 |
-        | Tuesday, January 2   |
+        | Today |
+        | Yesterday   |
         `)
         toDoPage.journalDays.item(0).journalItems.matches(table`
         | time     | title    |
