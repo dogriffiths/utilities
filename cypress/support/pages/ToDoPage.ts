@@ -68,4 +68,38 @@ export default class ToDoPage extends CypressPage {
             '.kanban-container'
         );
     }
+
+    importDatabase(testData: {
+        kanbanJournal: any[];
+        todos: any[];
+        completed: {
+            completedAt: string;
+            comments: any[];
+            created: string;
+            context: string;
+            description: string;
+            section: string;
+            id: number;
+            text: string;
+            position: number
+        }[]
+    }) {
+        cy.wait(1000); // To make sure the database is initialized
+        cy.window().then((win) => {
+            // Create a JSON blob
+            const blob = new Blob([JSON.stringify(testData)], {type: 'application/json'});
+            const testFile = new File([blob], 'test-import.json', {type: 'application/json'});
+
+            // Create a DataTransfer object and add the file
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(testFile);
+
+            // Trigger the file input change event
+            const inputEl = win.document.querySelector('#importInput');
+            // @ts-ignore
+            inputEl.files = dataTransfer.files;
+            // @ts-ignore
+            inputEl.dispatchEvent(new Event('change', {bubbles: true}));
+        });
+    }
 }

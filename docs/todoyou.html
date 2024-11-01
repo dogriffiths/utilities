@@ -1515,13 +1515,13 @@
                 if (task) {
                     const today = new Date().toISOString().split('T')[0];
 
+                    const { id: originalId, ...taskWithoutId } = task;
+                    const completedTask = {
+                        ...taskWithoutId,
+                        completedAt: new Date().toISOString()
+                    };
                     if (task.resetDaily) {
                         // For daily reset tasks, mark as completed for today
-                        const { id: originalId, ...taskWithoutId } = task;
-                        const completedTask = {
-                            ...taskWithoutId,
-                            completedAt: new Date().toISOString()
-                        };
                         await idb.execute(db, COMPLETED_STORE, 'readwrite',
                             store => idb.operations.add(store, completedTask));
 
@@ -1532,10 +1532,6 @@
                             store => idb.operations.put(store, updatedTask));
                     } else {
                         // For normal tasks, move to completed store
-                        const completedTask = {
-                            ...task,
-                            completedAt: new Date().toISOString()
-                        };
                         await idb.execute(db, COMPLETED_STORE, 'readwrite',
                             store => idb.operations.add(store, completedTask));
 

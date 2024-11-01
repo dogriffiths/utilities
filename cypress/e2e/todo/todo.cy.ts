@@ -1,6 +1,6 @@
 // cypress/e2e/todo.cy.ts
 
-import {toDoPage, multiboardPage} from "../../support/pages";
+import {toDoPage} from "../../support/pages";
 import {table} from "../../support/utils";
 
 describe('Todo Application', () => {
@@ -164,5 +164,30 @@ describe('Todo Application', () => {
         | 11:30 PM | 🔄 Moved task: "Buy bread" | From todo to in progress |
         | 11:30 PM | 🔄 Moved task: "Buy fish"  | From todo to done        |
         `)
+    });
+
+    it('should be complete tasks after importing a database', () => {
+        toDoPage.importDatabase({
+            todos: [],
+            completed: [
+                {
+                    id: 1,
+                    text: "Set up development environment",
+                    description: "Install all required tools",
+                    position: 0,
+                    section: "done",
+                    context: "work",
+                    comments: [],
+                    created: "2024-01-01T09:00:00.000Z",
+                    completedAt: "2024-01-01T15:00:00.000Z"
+                }
+            ],
+            kanbanJournal: []
+        });
+
+        toDoPage.newTask.set("Buy fish")
+        toDoPage.saveButton.click()
+        toDoPage.tasks.item(0).checkbox.check()
+        toDoPage.tasks.assertEmpty()
     });
 });
