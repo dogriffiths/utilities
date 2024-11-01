@@ -4,6 +4,7 @@ import InputText from "../relish-cypress/InputText";
 import CypressWidget from "../relish-cypress/CypressWidget";
 import TaskEditDialog from "../components/TaskEditDialog";
 import JournalDay from "../components/JournalDay";
+import KanbanColumn from "../components/KanbanColumn";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -57,6 +58,14 @@ export default class ToDoPage extends CypressPage {
             '.journal-day',
             e => new JournalDay(e, this),
             '#journalList'
+        );
+    }
+
+    get kanbanColumns() {
+        return this.collection(
+            '.kanban-column',
+            e => new KanbanColumn(e, this),
+            '.kanban-container'
         );
     }
 }

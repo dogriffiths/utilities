@@ -239,6 +239,11 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
         }
     }
 
+    // Useful for checking a list of simple CypressWidgets against a table of values
+    get content() {
+        return this;
+    }
+
     dragTo(target: CypressWidget, options: any = {}) {
         const dataTransfer = options?.dataTransfer || new DataTransfer();
         const offsetX = options?.offsetX || 0;

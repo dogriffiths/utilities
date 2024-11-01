@@ -68,6 +68,7 @@ export default class CollectionWidget<
         return cy.get(selector as string);
     }
 
+
     matches(tableRows: TableRow[]) {
         const assertion = ($elems: any) => {
             try {
@@ -100,7 +101,16 @@ export default class CollectionWidget<
 
         this.getChainer()
             .find(this.subSelector)
-            .then(assertion);
+            .then(($elems: any) => {
+                try {
+                    assertion($elems)
+                } catch (error) {
+                    // Wait 1 second and try again
+                    cy.wait(500)
+                    this.getChainer()
+                        .find(this.subSelector).then(($elems: any) => assertion($elems))
+                }
+            });
     }
 
     screenshot() {
