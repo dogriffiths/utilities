@@ -14,7 +14,7 @@ describe('Todo Application', () => {
         toDoPage.launch()
     });
 
-    it('should be able to drag boards around', () => {
+    it('should be able to drag tasks around', () => {
         toDoPage.newTask.set("Buy fish")
         toDoPage.saveButton.click()
         toDoPage.newTask.set("Buy bread")
@@ -82,6 +82,30 @@ describe('Todo Application', () => {
         toDoPage.tasks.matches(table`
         | text         |
         | Buy fish     |
+        `)
+    });
+
+    it('should show completions on the journal', () => {
+        toDoPage.newTask.set("Buy fish [daily]")
+        toDoPage.saveButton.click()
+        cy.tick(24 * 60 * 60 * 1000); // Advance a day
+        toDoPage.tasks.item(0).checkbox.check()
+        cy.tick(24 * 60 * 60 * 1000); // Advance a day
+        toDoPage.tasks.item(0).checkbox.check()
+        cy.reload();
+        toDoPage.journalTab.click()
+        toDoPage.journalDays.matches(table`
+        | header               |
+        | Wednesday, January 3 |
+        | Tuesday, January 2   |
+        `)
+        toDoPage.journalDays.item(0).journalItems.matches(table`
+        | time     | title    |
+        | 11:30 PM | Buy fish |
+        `)
+        toDoPage.journalDays.item(1).journalItems.matches(table`
+        | time     | title    |
+        | 11:30 PM | Buy fish |
         `)
     });
 });

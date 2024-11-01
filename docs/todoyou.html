@@ -1517,11 +1517,13 @@
 
                     if (task.resetDaily) {
                         // For daily reset tasks, mark as completed for today
+                        const { id: originalId, ...taskWithoutId } = task;
                         const completedTask = {
-                            ...task,
+                            ...taskWithoutId,
                             completedAt: new Date().toISOString()
                         };
-                        await completedStore.add(completedTask);
+                        await idb.execute(db, COMPLETED_STORE, 'readwrite',
+                            store => idb.operations.add(store, completedTask));
 
                         // Update the original task's lastReset
                         const updatedTask = { ...task };

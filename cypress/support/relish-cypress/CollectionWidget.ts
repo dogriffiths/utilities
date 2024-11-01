@@ -34,7 +34,6 @@ export default class CollectionWidget<
     }
 
     assertEmpty() {
-        cy.log('XXXXXXXX assert empty')
         this.getChainer()
             .find(this.subSelector)
             .should("not.exist");
@@ -56,6 +55,9 @@ export default class CollectionWidget<
         }
         let parent1 = this.getParent();
         if (parent1 instanceof CypressWidget) {
+            if (selector === ":self") {
+                return (parent1 as CypressWidget).getChainer();
+            }
             return (parent1 as CypressWidget).getChainer().find(selector);
         }
         if (parent1 instanceof CollectionWidget) {
