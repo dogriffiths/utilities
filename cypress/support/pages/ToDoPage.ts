@@ -1,5 +1,4 @@
 import CypressPage from "../relish-cypress/CypressPage";
-import CollectionWidget from "../relish-cypress/CollectionWidget";
 import TaskItem from "../components/TaskItem";
 import InputText from "../relish-cypress/InputText";
 import CypressWidget from "../relish-cypress/CypressWidget";
@@ -46,22 +45,18 @@ export default class ToDoPage extends CypressPage {
     }
 
     get tasks() {
-        const widget: CollectionWidget<TaskItem> = new CollectionWidget<TaskItem>(
-            '#taskList',
+        return this.collection(
             '.task-item',
-            e => new TaskItem(e, widget),
-            this
+            e => new TaskItem(e, this),
+            '#taskList'
         );
-        return widget;
     }
 
     get journalDays() {
-        const widget: CollectionWidget<JournalDay> = new CollectionWidget<JournalDay>(
-            '#journalList',
+        return this.collection(
             '.journal-day',
-            e => new JournalDay(e, widget),
-            this
+            e => new JournalDay(e, this),
+            '#journalList'
         );
-        return widget;
     }
 }

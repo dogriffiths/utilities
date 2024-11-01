@@ -1,7 +1,6 @@
 import Component from "../relish-core/Component";
 import CypressWidget from "../relish-cypress/CypressWidget";
 import InputText from "../relish-cypress/InputText";
-import CollectionWidget from "../relish-cypress/CollectionWidget";
 import Comment from "./Comment";
 import Checkbox from "../relish-cypress/Checkbox";
 
@@ -42,12 +41,10 @@ export default class TaskEditDialog extends CypressWidget {
     }
 
     get comments() {
-        const widget: CollectionWidget<Comment> = new CollectionWidget<Comment>(
-            '.comments-list',
+        return this.collection(
             '.comment-item',
-            e => new Comment(e, widget),
-            this
+            e => new Comment(e, this),
+            '.comments-list'
         );
-        return widget;
     }
 }

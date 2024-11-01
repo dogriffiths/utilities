@@ -94,9 +94,9 @@ describe('Todo Application', () => {
         toDoPage.tasks.item(0).checkbox.check()
         toDoPage.journalTab.click()
         toDoPage.journalDays.matches(table`
-        | header               |
-        | Today |
-        | Yesterday   |
+        | header    |
+        | Today     |
+        | Yesterday |
         `)
         toDoPage.journalDays.item(0).journalItems.matches(table`
         | time     | title    |

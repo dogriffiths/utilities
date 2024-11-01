@@ -225,6 +225,12 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
         return this.getChainer().should("not.be.disabled");
     }
 
+    // @ts-ignore
+    collection<T>(itemSelector: string, itemFactory: (element: HTMLElement) => T, parentSelector: string = ':self'): CollectionWidget<T> {
+        // @ts-ignore
+        return new CollectionWidget<T>(parentSelector, itemSelector, itemFactory, this);
+    }
+
     screenshot(filename?: string, options?: Partial<Cypress.ScreenshotOptions> | undefined) {
         if (filename) {
             return this.getChainer().screenshot(filename, options);
@@ -241,19 +247,19 @@ export default class CypressWidget extends Widget<string | HTMLElement> {
 
 
         target.getChainer().then(($el) => {
-                const rect = $el[0].getBoundingClientRect();
-                const x = rect.left + (rect.width / 2) + offsetX;
-                const y = rect.top + (rect.height / 2) + offsetY;
+            const rect = $el[0].getBoundingClientRect();
+            const x = rect.left + (rect.width / 2) + offsetX;
+            const y = rect.top + (rect.height / 2) + offsetY;
 
-                cy.get($el).trigger('dragover', {dataTransfer, clientX: x, clientY: y});
-            });
+            cy.get($el).trigger('dragover', {dataTransfer, clientX: x, clientY: y});
+        });
 
         target.getChainer().then(($el) => {
-                const rect = $el[0].getBoundingClientRect();
-                const x = rect.left + (rect.width / 2) + offsetX;
-                const y = rect.top + (rect.height / 2) + offsetY;
+            const rect = $el[0].getBoundingClientRect();
+            const x = rect.left + (rect.width / 2) + offsetX;
+            const y = rect.top + (rect.height / 2) + offsetY;
 
-                cy.get($el).trigger('drop', {dataTransfer, clientX: x, clientY: y});
-            });
+            cy.get($el).trigger('drop', {dataTransfer, clientX: x, clientY: y});
+        });
     }
 }

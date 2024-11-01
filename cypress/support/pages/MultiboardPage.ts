@@ -1,11 +1,10 @@
 import CypressPage from "../relish-cypress/CypressPage";
 import CypressWidget from "../relish-cypress/CypressWidget";
 import CanvasWidget from "../components/CanvasWidget";
-import OverviewContainer from "../components/OverviewContainer";
 import Navigation from "../components/Navigation";
 import Tools from "../components/Tools";
 import TableRow from "../relish-core/TableRow";
-import Component from "../relish-core/Component";
+import OverviewItemWidget from "../components/OverviewItemWidget";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -64,7 +63,11 @@ export default class MultiboardPage extends CypressPage {
     }
 
     get overviewContainer() {
-        return new OverviewContainer('#overviewContainer', this);
+        return this.collection(
+            '.overviewItem',
+            e => new OverviewItemWidget(e, this),
+            '#overviewContainer'
+        );
     }
 
     set(rows: TableRow[]): MultiboardPage {

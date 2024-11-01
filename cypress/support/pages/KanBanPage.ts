@@ -1,6 +1,5 @@
 import CypressPage from "../relish-cypress/CypressPage";
 import CypressWidget from "../relish-cypress/CypressWidget";
-import CollectionWidget from "../relish-cypress/CollectionWidget";
 import Column from "../components/Column";
 
 // <reference path="cypress/types/index.d.ts" />
@@ -15,12 +14,10 @@ export default class KanBanPage extends CypressPage {
     }
 
     get columns() {
-        const widget: CollectionWidget<Column> = new CollectionWidget<Column>(
-            '#board',
+        return this.collection(
             '.column',
-            e => new Column(e, widget),
-            this
+            e => new Column(e, this),
+            '#board'
         );
-        return widget;
     }
 }
