@@ -72,17 +72,7 @@ export default class ToDoPage extends CypressPage {
     importDatabase(testData: {
         kanbanJournal: any[];
         todos: any[];
-        completed: {
-            completedAt: string;
-            comments: any[];
-            created: string;
-            context: string;
-            description: string;
-            section: string;
-            id: number;
-            text: string;
-            position: number
-        }[]
+        completed: any[]
     }) {
         cy.wait(1000); // To make sure the database is initialized
         cy.window().then((win) => {
