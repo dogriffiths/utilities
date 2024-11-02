@@ -75,6 +75,7 @@
             border-radius: 4px;
             cursor: move;
             border-left: 4px solid transparent;
+            min-height: 27px;
         }
 
         .task-item[data-section="todo"] {
@@ -830,6 +831,96 @@
             color: #2e7d32;
             font-size: 0.9em;
         }
+
+        .habits-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .habits-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .habit-sort {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .sort-direction {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .habit-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .habit-info {
+            flex-grow: 1;
+        }
+
+        .habit-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .habit-description {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .habit-streak {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: #e8f5e9;
+            border-radius: 12px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .habit-streak-icon {
+            color: #ff6b6b;
+        }
+
+        .habit-last-update {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .no-habits {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -859,6 +950,7 @@
 </div>
 <div class="tabs">
     <button class="tab active" data-tab="tasks">Tasks</button>
+    <button class="tab" data-tab="habits">Habits</button>
     <button class="tab" data-tab="kanban">Kanban</button>
     <button class="tab" data-tab="calendar">Calendar</button>
     <button class="tab" data-tab="journal">Journal</button>
@@ -896,6 +988,25 @@
             </ul>
         </div>
         <div id="status"></div>
+    </div>
+</div>
+<div id="habits-tab" class="tab-content">
+    <div class="habits-container">
+        <div class="habits-header">
+            <h2>Daily Habits</h2>
+            <div class="sort-controls">
+                <select id="habitSort" class="habit-sort">
+                    <option value="streak">Sort by Streak</option>
+                    <option value="name">Sort by Name</option>
+                </select>
+                <button id="sortDirection" class="sort-direction" title="Toggle sort direction">
+                    ↓
+                </button>
+            </div>
+        </div>
+        <div id="habitsList" class="habits-list">
+            <!-- Habits will be populated here -->
+        </div>
     </div>
 </div>
 <div id="kanban-tab" class="tab-content">
@@ -2604,13 +2715,16 @@
                 const tabId = `${tab.dataset.tab}-tab`;
                 document.getElementById(tabId).classList.add('active');
 
-                // Update calendar when switching to calendar tab
+                // Load content based on tab
                 if (tab.dataset.tab === 'calendar') {
                     updateCalendar();
+                } else if (tab.dataset.tab === 'habits') {
+                    loadHabits();
                 }
             });
         });
     }
+
 
     function updateCalendar() {
         if (!db) return;
@@ -3501,15 +3615,91 @@
         }
     }
 
+    function loadHabits() {
+        if (!db) return;
+
+        const habitsList = document.getElementById('habitsList');
+        const sortSelect = document.getElementById('habitSort');
+        const sortDirection = document.getElementById('sortDirection');
+
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            const tasks = request.result;
+            const habits = tasks.filter(task => task.resetDaily);
+
+            if (habits.length === 0) {
+                habitsList.innerHTML = '<div class="no-habits">No daily habits created yet. Add a task with [daily] to create one.</div>';
+                return;
+            }
+
+            // Sort habits based on current criteria
+            const sortField = sortSelect.value;
+            const isAscending = sortDirection.textContent === '↑';
+
+            habits.sort((a, b) => {
+                if (sortField === 'streak') {
+                    const streakA = a.currentStreak || 0;
+                    const streakB = b.currentStreak || 0;
+                    return isAscending ? streakA - streakB : streakB - streakA;
+                } else {
+                    return isAscending ?
+                        a.text.localeCompare(b.text) :
+                        b.text.localeCompare(a.text);
+                }
+            });
+
+            // Render habits
+            habitsList.innerHTML = habits.map(habit => {
+                const streak = habit.currentStreak || 0;
+                const lastUpdate = habit.lastStreakUpdate ?
+                    new Date(habit.lastStreakUpdate).toLocaleDateString() :
+                    'Not started';
+
+                return `
+                <div class="habit-item">
+                    <div class="habit-info">
+                        <div class="habit-name">${habit.text}</div>
+                        ${habit.description ?
+                    `<div class="habit-description">${habit.description}</div>` :
+                    ''}
+                        <div class="habit-last-update">Last completed: ${lastUpdate}</div>
+                    </div>
+                    <div class="habit-streak">
+                        <span class="habit-streak-icon">🔥</span>
+                        ${streak}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        };
+    }
+
 
     document.addEventListener('DOMContentLoaded', () => {
         setupTabs();
         setupDropZone();
         loadKanban();
+        loadHabits();
         loadCompletedTasks();
         checkDailyResets();
         setupAutoReset();
         updateContextsList();
+
+        document.getElementById('habitSort')?.addEventListener('change', loadHabits);
+
+        document.getElementById('sortDirection')?.addEventListener('click', (e) => {
+            e.target.textContent = e.target.textContent === '↓' ? '↑' : '↓';
+            loadHabits();
+        });
+
+        const oldSetupTabs = window.setupTabs;
+        window.setupTabs = function() {
+            oldSetupTabs();
+            document.querySelector('[data-tab="habits"]').addEventListener('click', loadHabits);
+        };
 
         // Setup autocomplete for main input
         const mainInput = document.getElementById('newTask');
