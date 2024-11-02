@@ -912,7 +912,7 @@
 
     function initDB() {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, 5); // Increment version for schema update
+            const request = indexedDB.open(DB_NAME, 6); // Increment version for schema update
 
             request.onerror = (event) => {
                 console.error('Database error:', event.target.error);
@@ -941,10 +941,18 @@
                     store.createIndex('context', 'context', { unique: false });
                     store.createIndex('resetDaily', 'resetDaily', { unique: false });
                     store.createIndex('lastReset', 'lastReset', { unique: false });
-                } else if (event.oldVersion < 5) {
+                    store.createIndex('currentStreak', 'currentStreak', { unique: false }); // Add streak tracking
+                    store.createIndex('lastStreakUpdate', 'lastStreakUpdate', { unique: false });
+                } else if (event.oldVersion < 6) {
                     const store = event.target.transaction.objectStore(STORE_NAME);
                     if (!store.indexNames.contains('context')) {
                         store.createIndex('context', 'context', { unique: false });
+                    }
+                    if (!store.indexNames.contains('currentStreak')) {
+                        store.createIndex('currentStreak', 'currentStreak', { unique: false });
+                    }
+                    if (!store.indexNames.contains('lastStreakUpdate')) {
+                        store.createIndex('lastStreakUpdate', 'lastStreakUpdate', { unique: false });
                     }
                 }
 
@@ -1270,14 +1278,46 @@
         }
 
         if (task.resetDaily) {
+            const resetContainer = document.createElement('div');
+            resetContainer.style.display = 'flex';
+            resetContainer.style.alignItems = 'center';
+            resetContainer.style.marginRight = '8px';
+            resetContainer.style.gap = '4px';
+
             const resetIcon = document.createElement('span');
             resetIcon.innerHTML = '🔄';
             resetIcon.title = 'Resets daily at midnight';
-            resetIcon.style.marginRight = '8px';
-            li.insertBefore(resetIcon, li.firstChild);
+            resetContainer.appendChild(resetIcon);
+
+            // Only show streak if task was completed yesterday or today
+            if (task.currentStreak > 0 && task.lastStreakUpdate) {
+                const lastUpdate = new Date(task.lastStreakUpdate);
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                const lastUpdateDate = lastUpdate.toISOString().split('T')[0];
+                const todayDate = today.toISOString().split('T')[0];
+                const yesterdayDate = yesterday.toISOString().split('T')[0];
+
+                if (lastUpdateDate === todayDate || lastUpdateDate === yesterdayDate) {
+                    const streakSpan = document.createElement('span');
+                    streakSpan.className = 'task-streak';
+                    streakSpan.style.display = 'flex';
+                    streakSpan.style.alignItems = 'center';
+                    streakSpan.style.fontSize = '0.9em';
+                    streakSpan.style.color = '#ff6b6b';
+                    streakSpan.style.fontWeight = 'bold';
+                    streakSpan.title = `${task.currentStreak} day streak`;
+                    streakSpan.innerHTML = `${task.currentStreak}<span style="margin-left: 2px">🔥</span>`;
+                    resetContainer.appendChild(streakSpan);
+                }
+            }
+
+            li.insertBefore(resetContainer, li.firstChild);
         }
 
-        // Create a metadata container for due date and comments
+        // Create metadata container for due date and comments
         const metadataContainer = document.createElement('div');
         metadataContainer.className = 'task-metadata';
         metadataContainer.style.cssText = 'display: flex; gap: 12px; font-size: 0.8em; color: #666; margin-top: 4px;';
@@ -1305,7 +1345,6 @@
         const commentsSpan = document.createElement('span');
         commentsSpan.className = 'task-comments-augmented';
 
-        // Add comments preview if there are any
         if (task.comments && task.comments.length > 0) {
             commentsSpan.innerHTML = `💬 <span class="task-comments">${task.comments.length}</span>`;
         } else {
@@ -1314,20 +1353,19 @@
         }
         metadataContainer.appendChild(commentsSpan);
 
-        // Add metadata container to text container
         textContainer.appendChild(metadataContainer);
 
         const deleteButton = document.createElement('button');
         deleteButton.className = 'delete-button ml-2';
         deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
         deleteButton.onclick = (e) => {
-            e.stopPropagation(); // Prevent opening edit dialog
+            e.stopPropagation();
             confirmDelete(task);
         };
 
         li.appendChild(checkbox);
         li.appendChild(textContainer);
-        li.appendChild(deleteButton)
+        li.appendChild(deleteButton);
 
         li.addEventListener('dragstart', handleDragStart);
         li.addEventListener('dragend', handleDragEnd);
@@ -1520,22 +1558,62 @@
                         ...taskWithoutId,
                         completedAt: new Date().toISOString()
                     };
+
                     if (task.resetDaily) {
-                        // For daily reset tasks, mark as completed for today
+                        // Initialize streak fields if they don't exist
+                        const updatedTask = {
+                            ...task,
+                            currentStreak: task.currentStreak || 0,
+                            lastStreakUpdate: task.lastStreakUpdate || null
+                        };
+
+                        // Calculate streak
+                        if (!updatedTask.lastStreakUpdate) {
+                            // First completion ever
+                            updatedTask.currentStreak = 1;
+                            logStreakCalculation(updatedTask, 'first completion', { today });
+                        } else {
+                            const lastUpdate = updatedTask.lastStreakUpdate;
+                            const yesterday = new Date();
+                            yesterday.setDate(yesterday.getDate() - 1);
+                            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+                            logStreakCalculation(updatedTask, 'checking dates', {
+                                today,
+                                lastUpdate,
+                                yesterdayStr
+                            });
+
+                            if (lastUpdate === yesterdayStr) {
+                                // Completed on consecutive days
+                                updatedTask.currentStreak++;
+                                logStreakCalculation(updatedTask, 'consecutive day');
+                            } else if (lastUpdate === today) {
+                                // Already completed today, keep current streak
+                                logStreakCalculation(updatedTask, 'same day completion');
+                            } else {
+                                // More than a day has passed, start new streak
+                                updatedTask.currentStreak = 1;
+                                logStreakCalculation(updatedTask, 'new streak');
+                            }
+                        }
+
+                        updatedTask.lastStreakUpdate = today;
+                        updatedTask.lastReset = today;
+
+                        // Save completed instance
                         await idb.execute(db, COMPLETED_STORE, 'readwrite',
                             store => idb.operations.add(store, completedTask));
 
-                        // Update the original task's lastReset
-                        const updatedTask = { ...task };
-                        updatedTask.lastReset = today;
+                        // Update original task with new streak info
                         await idb.execute(db, STORE_NAME, 'readwrite',
                             store => idb.operations.put(store, updatedTask));
+
+                        logStreakCalculation(updatedTask, 'final state');
                     } else {
-                        // For normal tasks, move to completed store
+                        // Handle non-daily tasks as before
                         await idb.execute(db, COMPLETED_STORE, 'readwrite',
                             store => idb.operations.add(store, completedTask));
-
-                        // Delete from active store
                         await idb.execute(db, STORE_NAME, 'readwrite',
                             store => idb.operations.delete(store, id));
                     }
@@ -1569,11 +1647,28 @@
                 let updatesNeeded = false;
 
                 tasks.forEach(task => {
-                    if (task.resetDaily && task.lastReset && task.lastReset < today) {
+                    if (task.resetDaily) {
                         const updatedTask = { ...task };
-                        updatedTask.lastReset = null;  // Clear lastReset to make task visible
-                        store.put(updatedTask);
-                        updatesNeeded = true;
+
+                        if (task.lastReset) {
+                            const lastResetDate = new Date(task.lastReset);
+                            const todayDate = new Date(today);
+                            const daysDiff = Math.floor((todayDate - lastResetDate) / (1000 * 60 * 60 * 24));
+
+                            if (daysDiff >= 1) {
+                                // Only reset the lastReset to make task visible again
+                                // Don't reset the streak - it will be handled when the task is completed
+                                updatedTask.lastReset = null;
+                                store.put(updatedTask);
+                                updatesNeeded = true;
+
+                                logStreakCalculation(updatedTask, 'reset visibility at midnight', {
+                                    daysDiff,
+                                    lastResetDate: task.lastReset,
+                                    currentStreak: updatedTask.currentStreak
+                                });
+                            }
+                        }
                     }
                 });
 
@@ -3140,6 +3235,16 @@
         };
     }
 
+    function logStreakCalculation(task, action, details) {
+        console.log(`Streak calculation [${action}]:`, {
+            taskText: task.text,
+            currentStreak: task.currentStreak,
+            lastStreakUpdate: task.lastStreakUpdate,
+            lastReset: task.lastReset,
+            ...details
+        });
+    }
+
     // Function to setup autocomplete for an input field
     function setupContextAutocomplete(inputEl, isContextField = false) {
         let container = inputEl.parentElement.querySelector('.suggestions-container');
@@ -3271,6 +3376,34 @@
                 selectedSuggestionIndex = -1;
             }
         });
+    }
+
+    async function resetAllStreaks() {
+        if (!db) return;
+
+        try {
+            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                const tasks = request.result;
+                tasks.forEach(task => {
+                    if (task.resetDaily) {
+                        const updatedTask = { ...task };
+                        updatedTask.currentStreak = 0;
+                        updatedTask.lastStreakUpdate = null;
+                        updatedTask.lastReset = null;
+                        store.put(updatedTask);
+                    }
+                });
+                loadTasks();
+                loadKanban();
+                console.log('All streaks have been reset');
+            };
+        } catch (error) {
+            console.error('Error resetting streaks:', error);
+        }
     }
 
 

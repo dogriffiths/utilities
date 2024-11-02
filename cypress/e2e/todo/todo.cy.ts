@@ -56,4 +56,26 @@ describe('Todo Application', () => {
         toDoPage.tasks.item(0).checkbox.check()
         toDoPage.tasks.assertEmpty()
     });
+
+
+    it('should track completion streaks', () => {
+        toDoPage.newTask.set("Buy fish [daily]")
+        toDoPage.saveButton.click()
+        cy.tick(24 * 60 * 60 * 1000); // Advance a day
+        toDoPage.tasks.item(0).checkbox.check()
+        cy.tick(24 * 60 * 60 * 1000); // Advance a day
+        toDoPage.tasks.item(0).streak.matches("1")
+        toDoPage.tasks.item(0).checkbox.check()
+        cy.tick(24 * 60 * 60 * 1000); // Advance a day
+        toDoPage.tasks.item(0).streak.matches("2")
+        cy.tick(24 * 60 * 60 * 1000); // Advance a day
+        toDoPage.tasks.item(0).checkbox.check()
+        cy.tick(24 * 60 * 60 * 1000); // Advance a day
+        toDoPage.tasks.item(0).streak.matches("1")
+        cy.tick(48 * 60 * 60 * 1000); // Advance 2 days
+        toDoPage.tasks.item(0).streak.assertInvisible()
+        toDoPage.tasks.item(0).checkbox.check()
+        cy.tick(24 * 60 * 60 * 1000); // Advance a day
+        toDoPage.tasks.item(0).streak.matches("1")
+    });
 });
