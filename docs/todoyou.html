@@ -631,7 +631,7 @@
         .context-badge {
             display: inline-block;
             background: #e0e0e0;
-            padding: 2px 8px;
+            padding: 4px 8px;
             border-radius: 12px;
             font-size: 0.8em;
             color: #666;
@@ -1518,17 +1518,18 @@
         descSpan.textContent = task.description;
         contentWrapper.appendChild(descSpan);
 
+        // Metadata container for due date and comments
+        const metadataContainer = document.createElement('div');
+        metadataContainer.className = 'task-metadata';
+
+
         // Context badge if exists
         if (task.context) {
             const contextBadge = document.createElement('span');
             contextBadge.className = 'context-badge';
             contextBadge.textContent = `@${task.context.startsWith('@') ? task.context.substring(1) : task.context}`;
-            contentWrapper.appendChild(contextBadge);
+            metadataContainer.appendChild(contextBadge);
         }
-
-        // Metadata container for due date and comments
-        const metadataContainer = document.createElement('div');
-        metadataContainer.className = 'task-metadata';
 
         // Due date if exists
         if (task.dueDate) {
@@ -1554,7 +1555,7 @@
             metadataContainer.appendChild(commentsSpan);
         }
 
-        if (task.dueDate || (task.comments && task.comments.length > 0)) {
+        if (task.context || task.dueDate || (task.comments && task.comments.length > 0)) {
             contentWrapper.appendChild(metadataContainer);
         }
 
