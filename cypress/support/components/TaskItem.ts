@@ -12,6 +12,16 @@ class StreakWidget extends CypressWidget {
     }
 }
 
+class CommentsCountWidget extends CypressWidget {
+    constructor(selector: string | HTMLElement, parent: Component) {
+        super(selector, parent);
+    }
+
+    matches(s: string) {
+        super.matches("💬 " + s);
+    }
+}
+
 export default class TaskItem extends CypressWidget {
     constructor(selector: string | HTMLElement, parent: Component) {
         super(selector, parent);
@@ -22,11 +32,11 @@ export default class TaskItem extends CypressWidget {
     }
 
     get text() {
-        return new CypressWidget('.task-text span', this);
+        return new CypressWidget('.task-header span', this);
     }
 
     get streak() {
-        return new StreakWidget('.task-streak', this);
+        return new StreakWidget('.streak-count', this);
     }
 
     get description() {
@@ -34,7 +44,7 @@ export default class TaskItem extends CypressWidget {
     }
 
     get comments() {
-        return new CypressWidget('.task-comments', this);
+        return new CommentsCountWidget('.task-comments-count', this);
     }
 
     get dueDate() {

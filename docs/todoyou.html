@@ -569,12 +569,12 @@
             border-radius: 4px;
             padding: 12px;
             margin-bottom: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             cursor: move;
         }
 
         .kanban-task:hover {
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .kanban-task-title {
@@ -648,7 +648,7 @@
             max-width: 900px;
             font-size: 0.9em;
             color: #666;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .data-buttons {
@@ -709,7 +709,7 @@
             background: white;
             border: 1px solid #ddd;
             border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             max-height: 200px;
             overflow-y: auto;
@@ -733,6 +733,103 @@
         .suggestion-item.selected {
             background: #e8f5e9;
         }
+
+        .daily-habit-container {
+            display: flex;
+            align-items: center;
+            margin-right: 8px;
+            gap: 4px;
+        }
+
+        .daily-habit-icon {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #e8f5e9;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #2e7d32;
+        }
+
+        .daily-habit-icon span {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .streak-count {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .form-group .daily-habit-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #2e7d32;
+            font-size: 0.9em;
+        }
+
+        .daily-habit-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .daily-habit-icon {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #e8f5e9;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #2e7d32;
+        }
+
+        .streak-count {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: move;
+            border-left: 4px solid transparent;
+            gap: 10px;
+        }
+
+        .task-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group .daily-habit-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #2e7d32;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -740,7 +837,8 @@
     <span>🔒 All data is stored locally in your browser - nothing is sent to any server.</span>
     <div class="data-buttons">
         <button onclick="exportDatabase()" class="data-button" title="CMD/CTRL-S">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -749,7 +847,8 @@
         </button>
         <label class="data-button" title="CMD/CTRL-O">
             <input type="file" id="importInput" accept=".json" style="display: none;" onchange="handleImport(event)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -782,8 +881,11 @@
         </ul>
         <div class="completed-tasks-section" style="margin-top: 20px;">
             <div class="section-header" style="display: flex; align-items: center; margin-bottom: 10px;">
-                <button id="toggleCompletedBtn" class="toggle-completed" style="background: none; border: none; color: #666; cursor: pointer; display: flex; align-items: center; padding: 5px;">
-                    <svg class="chevron-right" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;">
+                <button id="toggleCompletedBtn" class="toggle-completed"
+                        style="background: none; border: none; color: #666; cursor: pointer; display: flex; align-items: center; padding: 5px;">
+                    <svg class="chevron-right" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                         stroke-linejoin="round" style="margin-right: 5px;">
                         <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
                     <span>Completed Tasks</span>
@@ -875,7 +977,9 @@
         </div>
 
         <div class="dialog-buttons">
-            <button class="complete" onclick="completeTaskFromDialog()" style="background-color: #4CAF50;">Complete Task</button>
+            <button class="complete" onclick="completeTaskFromDialog()" style="background-color: #4CAF50;">Complete
+                Task
+            </button>
             <div>
                 <button class="cancel" onclick="closeEditDialog()">Cancel</button>
                 <button class="save" onclick="saveEditedTask()">Save</button>
@@ -933,37 +1037,40 @@
                 const db = event.target.result;
 
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
-                    store.createIndex('position', 'position', { unique: false });
-                    store.createIndex('description', 'description', { unique: false });
-                    store.createIndex('dueDate', 'dueDate', { unique: false });
-                    store.createIndex('section', 'section', { unique: false });
-                    store.createIndex('context', 'context', { unique: false });
-                    store.createIndex('resetDaily', 'resetDaily', { unique: false });
-                    store.createIndex('lastReset', 'lastReset', { unique: false });
-                    store.createIndex('currentStreak', 'currentStreak', { unique: false }); // Add streak tracking
-                    store.createIndex('lastStreakUpdate', 'lastStreakUpdate', { unique: false });
+                    const store = db.createObjectStore(STORE_NAME, {keyPath: 'id', autoIncrement: true});
+                    store.createIndex('position', 'position', {unique: false});
+                    store.createIndex('description', 'description', {unique: false});
+                    store.createIndex('dueDate', 'dueDate', {unique: false});
+                    store.createIndex('section', 'section', {unique: false});
+                    store.createIndex('context', 'context', {unique: false});
+                    store.createIndex('resetDaily', 'resetDaily', {unique: false});
+                    store.createIndex('lastReset', 'lastReset', {unique: false});
+                    store.createIndex('currentStreak', 'currentStreak', {unique: false}); // Add streak tracking
+                    store.createIndex('lastStreakUpdate', 'lastStreakUpdate', {unique: false});
                 } else if (event.oldVersion < 6) {
                     const store = event.target.transaction.objectStore(STORE_NAME);
                     if (!store.indexNames.contains('context')) {
-                        store.createIndex('context', 'context', { unique: false });
+                        store.createIndex('context', 'context', {unique: false});
                     }
                     if (!store.indexNames.contains('currentStreak')) {
-                        store.createIndex('currentStreak', 'currentStreak', { unique: false });
+                        store.createIndex('currentStreak', 'currentStreak', {unique: false});
                     }
                     if (!store.indexNames.contains('lastStreakUpdate')) {
-                        store.createIndex('lastStreakUpdate', 'lastStreakUpdate', { unique: false });
+                        store.createIndex('lastStreakUpdate', 'lastStreakUpdate', {unique: false});
                     }
                 }
 
                 if (!db.objectStoreNames.contains(COMPLETED_STORE)) {
-                    const completedStore = db.createObjectStore(COMPLETED_STORE, { keyPath: 'id', autoIncrement: true });
-                    completedStore.createIndex('completedAt', 'completedAt', { unique: false });
+                    const completedStore = db.createObjectStore(COMPLETED_STORE, {keyPath: 'id', autoIncrement: true});
+                    completedStore.createIndex('completedAt', 'completedAt', {unique: false});
                 }
 
                 if (!db.objectStoreNames.contains(KANBAN_JOURNAL_STORE)) {
-                    const journalStore = db.createObjectStore(KANBAN_JOURNAL_STORE, { keyPath: 'id', autoIncrement: true });
-                    journalStore.createIndex('timestamp', 'timestamp', { unique: false });
+                    const journalStore = db.createObjectStore(KANBAN_JOURNAL_STORE, {
+                        keyPath: 'id',
+                        autoIncrement: true
+                    });
+                    journalStore.createIndex('timestamp', 'timestamp', {unique: false});
                 }
             };
         });
@@ -1239,6 +1346,7 @@
         li.dataset.position = task.position;
         li.dataset.section = task.section || 'todo';
 
+        // Checkbox first
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'task-checkbox';
@@ -1247,49 +1355,30 @@
                 deleteTask(task.id);
             }
         };
+        li.appendChild(checkbox);
 
-        const textContainer = document.createElement('div');
-        textContainer.className = 'task-text';
-        textContainer.onclick = () => openEditDialog(task);
+        // Content wrapper for everything else
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'task-content-wrapper';
 
+        // Header section with title and habit indicator
+        const taskHeader = document.createElement('div');
+        taskHeader.className = 'task-header';
+
+        // Task text
         const titleSpan = document.createElement('span');
         titleSpan.textContent = task.text;
-        textContainer.appendChild(titleSpan);
+        taskHeader.appendChild(titleSpan);
 
-        const descSpan = document.createElement('div');
-        descSpan.className = 'task-description';
-        descSpan.textContent = task.description;
-        textContainer.appendChild(descSpan);
-
-        if (task.context) {
-            const contextBadge = document.createElement('span');
-            contextBadge.className = 'task-context';
-            contextBadge.textContent = `@${task.context.startsWith('@') ? task.context.substring(1) : task.context}`;
-            contextBadge.style.cssText = `
-            display: inline-block;
-            background: #e0e0e0;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            color: #666;
-            margin-right: 8px;
-        `;
-            textContainer.appendChild(contextBadge);
-        }
-
+        // Daily habit indicator and streak if applicable
         if (task.resetDaily) {
-            const resetContainer = document.createElement('div');
-            resetContainer.style.display = 'flex';
-            resetContainer.style.alignItems = 'center';
-            resetContainer.style.marginRight = '8px';
-            resetContainer.style.gap = '4px';
+            const habitIcon = document.createElement('div');
+            habitIcon.className = 'daily-habit-icon';
+            habitIcon.innerHTML = '<span>📅 Daily habit</span>';
+            habitIcon.title = 'This task resets daily at midnight';
+            taskHeader.appendChild(habitIcon);
 
-            const resetIcon = document.createElement('span');
-            resetIcon.innerHTML = '🔄';
-            resetIcon.title = 'Resets daily at midnight';
-            resetContainer.appendChild(resetIcon);
-
-            // Only show streak if task was completed yesterday or today
+            // Add streak if applicable
             if (task.currentStreak > 0 && task.lastStreakUpdate) {
                 const lastUpdate = new Date(task.lastStreakUpdate);
                 const today = new Date();
@@ -1301,32 +1390,39 @@
                 const yesterdayDate = yesterday.toISOString().split('T')[0];
 
                 if (lastUpdateDate === todayDate || lastUpdateDate === yesterdayDate) {
-                    const streakSpan = document.createElement('span');
-                    streakSpan.className = 'task-streak';
-                    streakSpan.style.display = 'flex';
-                    streakSpan.style.alignItems = 'center';
-                    streakSpan.style.fontSize = '0.9em';
-                    streakSpan.style.color = '#ff6b6b';
-                    streakSpan.style.fontWeight = 'bold';
+                    const streakSpan = document.createElement('div');
+                    streakSpan.className = 'streak-count';
                     streakSpan.title = `${task.currentStreak} day streak`;
                     streakSpan.innerHTML = `${task.currentStreak}<span style="margin-left: 2px">🔥</span>`;
-                    resetContainer.appendChild(streakSpan);
+                    taskHeader.appendChild(streakSpan);
                 }
             }
-
-            li.insertBefore(resetContainer, li.firstChild);
         }
 
-        // Create metadata container for due date and comments
+        contentWrapper.appendChild(taskHeader);
+
+        // Description if exists
+        const descSpan = document.createElement('div');
+        descSpan.className = 'task-description';
+        descSpan.textContent = task.description;
+        contentWrapper.appendChild(descSpan);
+
+        // Context badge if exists
+        if (task.context) {
+            const contextBadge = document.createElement('span');
+            contextBadge.className = 'context-badge';
+            contextBadge.textContent = `@${task.context.startsWith('@') ? task.context.substring(1) : task.context}`;
+            contentWrapper.appendChild(contextBadge);
+        }
+
+        // Metadata container for due date and comments
         const metadataContainer = document.createElement('div');
         metadataContainer.className = 'task-metadata';
-        metadataContainer.style.cssText = 'display: flex; gap: 12px; font-size: 0.8em; color: #666; margin-top: 4px;';
 
-        // Add due date if exists
-        const dueDateSpan = document.createElement('span');
-        dueDateSpan.className = 'task-dueDate';
-        dueDateSpan.style.cssText = 'white-space: nowrap;';
+        // Due date if exists
         if (task.dueDate) {
+            const dueDateSpan = document.createElement('span');
+            dueDateSpan.className = 'task-dueDate';
             const date = new Date(task.dueDate);
             const isOverdue = date < new Date();
             dueDateSpan.style.color = isOverdue ? '#ff4444' : '#666';
@@ -1336,25 +1432,22 @@
                 hour: '2-digit',
                 minute: '2-digit'
             })}`;
-        } else {
-            dueDateSpan.style.cssText += ' height: 0';
+            metadataContainer.appendChild(dueDateSpan);
         }
-        metadataContainer.appendChild(dueDateSpan);
 
-        // Add comments count
-        const commentsSpan = document.createElement('span');
-        commentsSpan.className = 'task-comments-augmented';
-
+        // Comments count if exists
         if (task.comments && task.comments.length > 0) {
-            commentsSpan.innerHTML = `💬 <span class="task-comments">${task.comments.length}</span>`;
-        } else {
-            commentsSpan.innerHTML = `<span class="task-comments"/>`;
-            commentsSpan.style.cssText += ' height: 0';
+            const commentsSpan = document.createElement('span');
+            commentsSpan.className = 'task-comments-count';
+            commentsSpan.innerHTML = `💬 ${task.comments.length}`;
+            metadataContainer.appendChild(commentsSpan);
         }
-        metadataContainer.appendChild(commentsSpan);
 
-        textContainer.appendChild(metadataContainer);
+        if (task.dueDate || (task.comments && task.comments.length > 0)) {
+            contentWrapper.appendChild(metadataContainer);
+        }
 
+        // Delete button
         const deleteButton = document.createElement('button');
         deleteButton.className = 'delete-button ml-2';
         deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
@@ -1363,10 +1456,13 @@
             confirmDelete(task);
         };
 
-        li.appendChild(checkbox);
-        li.appendChild(textContainer);
+        li.appendChild(contentWrapper);
         li.appendChild(deleteButton);
 
+        // Add click handler for the whole task
+        contentWrapper.onclick = () => openEditDialog(task);
+
+        // Add drag and drop handlers
         li.addEventListener('dragstart', handleDragStart);
         li.addEventListener('dragend', handleDragEnd);
         li.addEventListener('dragover', handleDragOver);
@@ -1401,20 +1497,19 @@
             taskDueDate.value = '';
         }
 
-        // Add reset daily checkbox with proper styling
         const resetDailyLabel = document.createElement('div');
         resetDailyLabel.id = 'resetDailyContainer';
         resetDailyLabel.className = 'form-group';
         resetDailyLabel.style.cssText = 'display: flex; align-items: center; gap: 8px; margin: 10px 0;';
         resetDailyLabel.innerHTML = `
-        <input type="checkbox"
-               id="editTaskResetDaily"
-               style="margin: 0; width: auto;"
-               ${task.resetDaily ? 'checked' : ''}>
-        <label for="editTaskResetDaily" style="margin: 0;">
-            Reset daily
-        </label>
-    `;
+            <input type="checkbox"
+                   id="editTaskResetDaily"
+                   style="margin: 0; width: auto;"
+                   ${task.resetDaily ? 'checked' : ''}>
+            <label for="editTaskResetDaily" class="daily-habit-label">
+                <span>📅</span> Make this a daily habit
+            </label>
+        `;
 
         // Insert after the first form-group
         const firstFormGroup = dialog.querySelector('.form-group');
@@ -1553,7 +1648,7 @@
                 if (task) {
                     const today = new Date().toISOString().split('T')[0];
 
-                    const { id: originalId, ...taskWithoutId } = task;
+                    const {id: originalId, ...taskWithoutId} = task;
                     const completedTask = {
                         ...taskWithoutId,
                         completedAt: new Date().toISOString()
@@ -1571,7 +1666,7 @@
                         if (!updatedTask.lastStreakUpdate) {
                             // First completion ever
                             updatedTask.currentStreak = 1;
-                            logStreakCalculation(updatedTask, 'first completion', { today });
+                            logStreakCalculation(updatedTask, 'first completion', {today});
                         } else {
                             const lastUpdate = updatedTask.lastStreakUpdate;
                             const yesterday = new Date();
@@ -1648,7 +1743,7 @@
 
                 tasks.forEach(task => {
                     if (task.resetDaily) {
-                        const updatedTask = { ...task };
+                        const updatedTask = {...task};
 
                         if (task.lastReset) {
                             const lastResetDate = new Date(task.lastReset);
@@ -2114,7 +2209,7 @@
                 header: true,
                 skipEmptyLines: true,
                 transformHeader: header => header.trim().toUpperCase(),
-                complete: function(results) {
+                complete: function (results) {
                     if (results.errors.length > 0) {
                         reject(new Error('CSV parsing error: ' + results.errors[0].message));
                         return;
@@ -2174,7 +2269,7 @@
 
                     resolve(tasks);
                 },
-                error: function(error) {
+                error: function (error) {
                     reject(new Error('CSV parsing error: ' + error.message));
                 }
             });
@@ -3100,7 +3195,7 @@
 
             if (completedTask) {
                 // Remove completedAt and prepare for active tasks
-                const { completedAt, id: oldId, ...taskToRestore } = completedTask;
+                const {completedAt, id: oldId, ...taskToRestore} = completedTask;
 
                 // Add to active tasks
                 await new Promise((resolve, reject) => {
@@ -3337,7 +3432,7 @@
             if (container.style.display !== 'block') return;
 
             const suggestions = container.children;
-            switch(e.key) {
+            switch (e.key) {
                 case 'ArrowDown':
                     e.preventDefault();
                     selectedSuggestionIndex = Math.min(
@@ -3390,7 +3485,7 @@
                 const tasks = request.result;
                 tasks.forEach(task => {
                     if (task.resetDaily) {
-                        const updatedTask = { ...task };
+                        const updatedTask = {...task};
                         updatedTask.currentStreak = 0;
                         updatedTask.lastStreakUpdate = null;
                         updatedTask.lastReset = null;
@@ -3405,8 +3500,6 @@
             console.error('Error resetting streaks:', error);
         }
     }
-
-
 
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -3454,7 +3547,7 @@
         });
 
         const originalOpenEditDialog = window.openEditDialog;
-        window.openEditDialog = function(task) {
+        window.openEditDialog = function (task) {
             originalOpenEditDialog(task);
             const editContextInput = document.getElementById('editTaskContext');
             if (!editContextInput.parentElement.classList.contains('autocomplete-container')) {
@@ -3469,20 +3562,20 @@
 
         // Update contexts list when tasks change
         const oldLoadTasks = window.loadTasks;
-        window.loadTasks = async function() {
+        window.loadTasks = async function () {
             await oldLoadTasks();
             await updateContextsList();
         };
 
         const originalSaveEditedTask = window.saveEditedTask;
-        window.saveEditedTask = async function() {
+        window.saveEditedTask = async function () {
             await originalSaveEditedTask();
             await updateContextsList();
         };
 
         // Update the delete task function
         const originalDeleteTask = window.deleteTask;
-        window.deleteTask = async function(id) {
+        window.deleteTask = async function (id) {
             await originalDeleteTask(id);
             await updateContextsList();
         };
@@ -3536,7 +3629,6 @@
                 }
             });
         });
-
 
 
         document.getElementById('newTask').addEventListener('keypress', (e) => {
