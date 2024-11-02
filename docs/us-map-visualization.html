@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>US States UFO Sightings and Favorite Candy</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 20px;
+        }
+        .map-container {
+            flex: 1;
+            min-width: 0;
+        }
+        .state {
+            fill: #ddd;
+            stroke: #fff;
+            stroke-width: 1px;
+            cursor: pointer;
+            transition: fill 0.3s;
+        }
+        .state:hover {
+            fill: #aaa;
+        }
+        .state.active {
+            stroke: #333;
+            stroke-width: 2px;
+        }
+        .info-panel {
+            width: 250px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f8f8;
+            height: fit-content;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin: 0 0 20px 0;
+        }
+        .legend {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        .info-panel h3 {
+            margin-top: 0;
+            color: #2c5282;
+        }
+        .no-select {
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="map-container">
+            <h1>US States: UFO Sightings & Favorite Candy (2023-2024)</h1>
+            <div id="map"></div>
+        </div>
+        <div id="info-panel" class="info-panel no-select">
+            Click on a state to see details
+        </div>
+    </div>
+
+    <script>
+        // Data for states
+        const stateData = {
+            "Alabama": {"ufos": "25", "candy": "Starburst"},
+            "Alaska": {"ufos": "15", "candy": "Milky Way"},
+            "Arizona": {"ufos": "89", "candy": "Hershey Kisses"},
+            "Arkansas": {"ufos": "15", "candy": "Butterfinger"},
+            "California": {"ufos": "237", "candy": "Reese's Peanut Butter Cups"},
+            "Colorado": {"ufos": "51", "candy": "Hershey Kisses"},
+            "Connecticut": {"ufos": "17", "candy": "Almond Joy"},
+            "Delaware": {"ufos": "6", "candy": "Sour Patch Kids"},
+            "Florida": {"ufos": "170", "candy": "Reese's Peanut Butter Cups"},
+            "Georgia": {"ufos": "34", "candy": "Swedish Fish"},
+            "Hawaii": {"ufos": "7", "candy": "Hershey's Mini Bars"},
+            "Idaho": {"ufos": "14", "candy": "Snickers"},
+            "Illinois": {"ufos": "46", "candy": "Sour Patch Kids"},
+            "Indiana": {"ufos": "38", "candy": "Starburst"},
+            "Iowa": {"ufos": "20", "candy": "M&M's"},
+            "Kansas": {"ufos": "26", "candy": "M&M's"},
+            "Kentucky": {"ufos": "25", "candy": "Reese's Peanut Butter Cups"},
+            "Louisiana": {"ufos": "20", "candy": "Lemonhead"},
+            "Maine": {"ufos": "20", "candy": "Sour Patch Kids"},
+            "Maryland": {"ufos": "29", "candy": "Hershey Kisses"},
+            "Massachusetts": {"ufos": "30", "candy": "Sour Patch Kids"},
+            "Michigan": {"ufos": "50", "candy": "Starburst"},
+            "Minnesota": {"ufos": "30", "candy": "Hot Tamales"},
+            "Mississippi": {"ufos": "13", "candy": "3 Musketeers"},
+            "Missouri": {"ufos": "35", "candy": "Milky Way"},
+            "Montana": {"ufos": "14", "candy": "Twix"},
+            "Nebraska": {"ufos": "13", "candy": "Sour Patch Kids"},
+            "Nevada": {"ufos": "23", "candy": "Hot Tamales"},
+            "New Hampshire": {"ufos": "13", "candy": "M&M's"},
+            "New Jersey": {"ufos": "27", "candy": "Tootsie Pops"},
+            "New Mexico": {"ufos": "25", "candy": "Hershey's Mini Bars"},
+            "New York": {"ufos": "52", "candy": "Sour Patch Kids"},
+            "North Carolina": {"ufos": "54", "candy": "Reese's Peanut Butter Cups"},
+            "North Dakota": {"ufos": "4", "candy": "Hot Tamales"},
+            "Ohio": {"ufos": "47", "candy": "M&M's"},
+            "Oklahoma": {"ufos": "19", "candy": "Skittles"},
+            "Oregon": {"ufos": "89", "candy": "M&M's"},
+            "Pennsylvania": {"ufos": "65", "candy": "Hershey's Mini Bars"},
+            "Rhode Island": {"ufos": "2", "candy": "Twix"},
+            "South Carolina": {"ufos": "25", "candy": "Butterfinger"},
+            "South Dakota": {"ufos": "4", "candy": "Jolly Ranchers"},
+            "Tennessee": {"ufos": "36", "candy": "Tootsie Pops"},
+            "Texas": {"ufos": "108", "candy": "Starburst"},
+            "Utah": {"ufos": "14", "candy": "Tootsie Pops"},
+            "Vermont": {"ufos": "15", "candy": "M&M's"},
+            "Virginia": {"ufos": "35", "candy": "Hot Tamales"},
+            "Washington": {"ufos": "108", "candy": "Tootsie Pops"},
+            "West Virginia": {"ufos": "9", "candy": "Blow Pops"},
+            "Wisconsin": {"ufos": "29", "candy": "Butterfinger"},
+            "Wyoming": {"ufos": "4", "candy": "Reese's Peanut Butter Cups"}
+        };
+
+        // Set up the map
+        const width = 960;
+        const height = 600;
+        const svg = d3.select("#map")
+            .append("svg")
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("preserveAspectRatio", "xMidYMid meet");
+
+        // Create color scale for UFO sightings
+        const maxUFOs = Math.max(...Object.values(stateData).map(d => parseInt(d.ufos)));
+        const colorScale = d3.scaleSequential()
+            .domain([0, maxUFOs])
+            .interpolator(d3.interpolateBlues);
+
+        // Create the map projection
+        const projection = d3.geoAlbersUsa()
+            .translate([width / 2, height / 2])
+            .scale(1000);
+
+        const path = d3.geoPath().projection(projection);
+
+        // Add zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([1, 8])
+            .on("zoom", zoomed);
+
+        // Create a container for the map that will be transformed
+        const g = svg.append("g");
+
+        svg.call(zoom);
+
+        function zoomed(event) {
+            g.attr("transform", event.transform);
+        }
+
+        let activeState = null;
+
+        // Load US states TopoJSON data
+        d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
+            .then(function(us) {
+                // Draw the states
+                g.append("g")
+                    .selectAll("path")
+                    .data(topojson.feature(us, us.objects.states).features)
+                    .enter()
+                    .append("path")
+                    .attr("class", "state")
+                    .attr("d", path)
+                    .attr("fill", function(d) {
+                        const stateName = d.properties.name;
+                        return stateData[stateName] ? 
+                            colorScale(parseInt(stateData[stateName].ufos)) : 
+                            "#ddd";
+                    })
+                    .on("click", function(event, d) {
+                        event.stopPropagation();
+                        const stateName = d.properties.name;
+                        const data = stateData[stateName];
+                        
+                        if (data) {
+                            // Toggle zoom state
+                            if (activeState === stateName) {
+                                // Zoom out if clicking the same state
+                                activeState = null;
+                                d3.selectAll(".state").classed("active", false);
+                                svg.transition()
+                                    .duration(750)
+                                    .call(zoom.transform, d3.zoomIdentity);
+                                d3.select("#info-panel").html("Click on a state to see details");
+                            } else {
+                                // Zoom in to the new state
+                                activeState = stateName;
+                                d3.selectAll(".state").classed("active", false);
+                                d3.select(this).classed("active", true);
+                                
+                                // Update info panel
+                                d3.select("#info-panel").html(`
+                                    <h3>${stateName}</h3>
+                                    <p>UFO Sightings (2023): ${data.ufos}</p>
+                                    <p>Favorite Candy (2024): ${data.candy}</p>
+                                    <p><small>Click again to zoom out</small></p>
+                                `);
+
+                                // Get bounds of the state
+                                const bounds = path.bounds(d);
+                                const dx = bounds[1][0] - bounds[0][0];
+                                const dy = bounds[1][1] - bounds[0][1];
+                                const x = (bounds[0][0] + bounds[1][0]) / 2;
+                                const y = (bounds[0][1] + bounds[1][1]) / 2;
+                                const scale = 0.9 / Math.max(dx / width, dy / height);
+                                const translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+                                // Animate the zoom
+                                svg.transition()
+                                    .duration(750)
+                                    .call(
+                                        zoom.transform,
+                                        d3.zoomIdentity
+                                            .translate(translate[0], translate[1])
+                                            .scale(scale)
+                                    );
+                            }
+                        }
+                    })
+                    .append("title")
+                    .text(d => d.properties.name);
+
+                // Add state borders
+                g.append("path")
+                    .datum(topojson.mesh(us, us.objects.states))
+                    .attr("fill", "none")
+                    .attr("stroke", "white")
+                    .attr("stroke-width", "1")
+                    .attr("d", path);
+
+                // Add reset zoom on svg background click
+                svg.on("click", function(event) {
+                    if (event.target.tagName === "svg") {
+                        activeState = null;
+                        d3.selectAll(".state").classed("active", false);
+                        svg.transition()
+                            .duration(750)
+                            .call(
+                                zoom.transform,
+                                d3.zoomIdentity
+                            );
+                        d3.select("#info-panel").html("Click on a state to see details");
+                    }
+                });
+            });
+    </script>
+</body>
+</html>
