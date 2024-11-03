@@ -5,6 +5,7 @@ import CypressWidget from "../relish-cypress/CypressWidget";
 import TaskEditDialog from "../components/TaskEditDialog";
 import JournalDay from "../components/JournalDay";
 import KanbanColumn from "../components/KanbanColumn";
+import HabitItem from "../components/HabitItem";
 
 // <reference path="cypress/types/index.d.ts" />
 
@@ -23,6 +24,10 @@ export default class ToDoPage extends CypressPage {
 
     get tasksTab() {
         return this.tab("tasks")
+    }
+
+    get habitsTab() {
+        return this.tab("habits")
     }
 
     get kanbanTab() {
@@ -50,6 +55,14 @@ export default class ToDoPage extends CypressPage {
             '.task-item',
             e => new TaskItem(e, this),
             '#taskList'
+        );
+    }
+
+    get habits() {
+        return this.collection(
+            '.habit-item',
+            e => new HabitItem(e, this),
+            '#habitsList'
         );
     }
 

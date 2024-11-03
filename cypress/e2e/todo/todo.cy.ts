@@ -57,18 +57,47 @@ describe('Todo Application', () => {
         toDoPage.tasks.assertEmpty()
     });
 
-
     it('should track completion streaks', () => {
         toDoPage.newTask.set("Buy fish [daily]")
         toDoPage.saveButton.click()
+        toDoPage.habitsTab.click()
+        toDoPage.habits.matches(table`
+        | name     | lastUpdate                  | bestStreak | currentStreak |
+        | Buy fish | Last completed: Not started | 0          | 0             |
+        `)
+        toDoPage.tasksTab.click()
         cy.tick(24 * 60 * 60 * 1000); // Advance a day
         toDoPage.tasks.item(0).checkbox.check()
+        toDoPage.habitsTab.click()
+        toDoPage.habits.matches(table`
+        | name     | lastUpdate               | bestStreak | currentStreak |
+        | Buy fish | Last completed: 1/2/2024 | 1          | 1             |
+        `)
+        toDoPage.tasksTab.click()
         cy.tick(24 * 60 * 60 * 1000); // Advance a day
         toDoPage.tasks.item(0).streak.matches("1")
+        toDoPage.habitsTab.click()
+        toDoPage.habits.matches(table`
+        | name     | lastUpdate               | bestStreak | currentStreak |
+        | Buy fish | Last completed: 1/2/2024 | 1          | 1             |
+        `)
+        toDoPage.tasksTab.click()
         toDoPage.tasks.item(0).checkbox.check()
+        toDoPage.habitsTab.click()
+        toDoPage.habits.matches(table`
+        | name     | lastUpdate               | bestStreak | currentStreak |
+        | Buy fish | Last completed: 1/3/2024 | 2          | 2             |
+        `)
+        toDoPage.tasksTab.click()
         cy.tick(24 * 60 * 60 * 1000); // Advance a day
         toDoPage.tasks.item(0).streak.matches("2")
         cy.tick(24 * 60 * 60 * 1000); // Advance a day
+        toDoPage.habitsTab.click()
+        toDoPage.habits.matches(table`
+        | name     | lastUpdate               | bestStreak | currentStreak |
+        | Buy fish | Last completed: 1/3/2024 | 2          | 0             |
+        `)
+        toDoPage.tasksTab.click()
         toDoPage.tasks.item(0).checkbox.check()
         cy.tick(24 * 60 * 60 * 1000); // Advance a day
         toDoPage.tasks.item(0).streak.matches("1")
@@ -77,5 +106,10 @@ describe('Todo Application', () => {
         toDoPage.tasks.item(0).checkbox.check()
         cy.tick(24 * 60 * 60 * 1000); // Advance a day
         toDoPage.tasks.item(0).streak.matches("1")
+        toDoPage.habitsTab.click()
+        toDoPage.habits.matches(table`
+        | name     | lastUpdate               | bestStreak | currentStreak |
+        | Buy fish | Last completed: 1/8/2024 | 2          | 1             |
+        `)
     });
 });

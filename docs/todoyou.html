@@ -921,6 +921,95 @@
             color: #666;
             font-style: italic;
         }
+
+        .streak-chart {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            height: 300px;
+            border: 1px solid #eee;
+        }
+
+        .streak-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trophy-icon {
+            color: #FFD700;
+            font-size: 24px;
+        }
+
+        .habit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .habit-info {
+            flex-grow: 1;
+        }
+
+        .habit-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .streak-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .current-streak {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .best-streak {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .habit-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .habit-description {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .habit-last-update {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .habit-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .habit-stats {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
@@ -993,16 +1082,23 @@
 <div id="habits-tab" class="tab-content">
     <div class="habits-container">
         <div class="habits-header">
-            <h2>Daily Habits</h2>
+            <div class="streak-header">
+                <span class="trophy-icon">🏆</span>
+                <h2>Daily Habits & Streaks</h2>
+            </div>
             <div class="sort-controls">
                 <select id="habitSort" class="habit-sort">
                     <option value="streak">Sort by Streak</option>
                     <option value="name">Sort by Name</option>
+                    <option value="bestStreak">Sort by Best Streak</option>
                 </select>
                 <button id="sortDirection" class="sort-direction" title="Toggle sort direction">
                     ↓
                 </button>
             </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="streakChart"></canvas>
         </div>
         <div id="habitsList" class="habits-list">
             <!-- Habits will be populated here -->
@@ -1104,9 +1200,11 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
 
 <script>
     let db = null;
+    let habitChart = null;
     const DB_NAME = 'TodoDB';
     const STORE_NAME = 'todos';
     const COMPLETED_STORE = 'completed';
@@ -1766,43 +1864,39 @@
                         completedAt: new Date().toISOString()
                     };
 
+                    // Inside your deleteTask function where you handle streaks
                     if (task.resetDaily) {
                         // Initialize streak fields if they don't exist
                         const updatedTask = {
                             ...task,
                             currentStreak: task.currentStreak || 0,
+                            bestStreak: task.bestStreak || 0, // Keep existing bestStreak
                             lastStreakUpdate: task.lastStreakUpdate || null
                         };
 
-                        // Calculate streak
-                        if (!updatedTask.lastStreakUpdate) {
+                        const lastUpdate = updatedTask.lastStreakUpdate;
+                        const today = new Date().toISOString().split('T')[0];
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+                        // Update current streak
+                        if (!lastUpdate) {
                             // First completion ever
                             updatedTask.currentStreak = 1;
-                            logStreakCalculation(updatedTask, 'first completion', {today});
+                        } else if (lastUpdate === yesterdayStr) {
+                            // Completed on consecutive days
+                            updatedTask.currentStreak++;
+                        } else if (lastUpdate === today) {
+                            // Already completed today, keep current streak
                         } else {
-                            const lastUpdate = updatedTask.lastStreakUpdate;
-                            const yesterday = new Date();
-                            yesterday.setDate(yesterday.getDate() - 1);
-                            const yesterdayStr = yesterday.toISOString().split('T')[0];
+                            // More than a day has passed, start new streak
+                            updatedTask.currentStreak = 1;
+                        }
 
-                            logStreakCalculation(updatedTask, 'checking dates', {
-                                today,
-                                lastUpdate,
-                                yesterdayStr
-                            });
-
-                            if (lastUpdate === yesterdayStr) {
-                                // Completed on consecutive days
-                                updatedTask.currentStreak++;
-                                logStreakCalculation(updatedTask, 'consecutive day');
-                            } else if (lastUpdate === today) {
-                                // Already completed today, keep current streak
-                                logStreakCalculation(updatedTask, 'same day completion');
-                            } else {
-                                // More than a day has passed, start new streak
-                                updatedTask.currentStreak = 1;
-                                logStreakCalculation(updatedTask, 'new streak');
-                            }
+                        // Only update best streak if current streak exceeds it
+                        if (updatedTask.currentStreak > (updatedTask.bestStreak || 0)) {
+                            updatedTask.bestStreak = updatedTask.currentStreak;
                         }
 
                         updatedTask.lastStreakUpdate = today;
@@ -1815,8 +1909,6 @@
                         // Update original task with new streak info
                         await idb.execute(db, STORE_NAME, 'readwrite',
                             store => idb.operations.put(store, updatedTask));
-
-                        logStreakCalculation(updatedTask, 'final state');
                     } else {
                         // Handle non-daily tasks as before
                         await idb.execute(db, COMPLETED_STORE, 'readwrite',
@@ -3588,6 +3680,16 @@
         });
     }
 
+    function checkExpiredStreak(habit) {
+        if (!habit.lastStreakUpdate) return 0;
+
+        const lastUpdate = new Date(habit.lastStreakUpdate);
+        const now = new Date();
+        const daysSinceUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+
+        return daysSinceUpdate > 1 ? 0 : (habit.currentStreak || 0);
+    }
+
     async function resetAllStreaks() {
         if (!db) return;
 
@@ -3604,26 +3706,34 @@
                         updatedTask.currentStreak = 0;
                         updatedTask.lastStreakUpdate = null;
                         updatedTask.lastReset = null;
+                        // Keep the bestStreak value!
+                        // updatedTask.bestStreak stays unchanged
                         store.put(updatedTask);
                     }
                 });
                 loadTasks();
                 loadKanban();
-                console.log('All streaks have been reset');
+                console.log('All current streaks have been reset');
             };
         } catch (error) {
             console.error('Error resetting streaks:', error);
         }
     }
 
-    function loadHabits() {
+    async function loadHabits() {
         if (!db) return;
+
+        // First, ensure Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            await loadChartJS();
+        }
 
         const habitsList = document.getElementById('habitsList');
         const sortSelect = document.getElementById('habitSort');
         const sortDirection = document.getElementById('sortDirection');
+        const chartContainer = document.querySelector('.chart-container');
 
-        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const transaction = db.transaction(STORE_NAME, 'readwrite'); // Changed to readwrite
         const store = transaction.objectStore(STORE_NAME);
         const request = store.getAll();
 
@@ -3631,30 +3741,57 @@
             const tasks = request.result;
             const habits = tasks.filter(task => task.resetDaily);
 
+            // Update expired streaks in database
+            habits.forEach(habit => {
+                const currentStreak = checkExpiredStreak(habit);
+                if (currentStreak !== habit.currentStreak) {
+                    const updatedHabit = {...habit, currentStreak};
+                    store.put(updatedHabit);
+                }
+            });
+
             if (habits.length === 0) {
                 habitsList.innerHTML = '<div class="no-habits">No daily habits created yet. Add a task with [daily] to create one.</div>';
+                chartContainer.style.display = 'none';
                 return;
             }
+
+            chartContainer.style.display = 'block';
 
             // Sort habits based on current criteria
             const sortField = sortSelect.value;
             const isAscending = sortDirection.textContent === '↑';
 
             habits.sort((a, b) => {
-                if (sortField === 'streak') {
-                    const streakA = a.currentStreak || 0;
-                    const streakB = b.currentStreak || 0;
-                    return isAscending ? streakA - streakB : streakB - streakA;
-                } else {
-                    return isAscending ?
-                        a.text.localeCompare(b.text) :
-                        b.text.localeCompare(a.text);
+                let valA, valB;
+                switch(sortField) {
+                    case 'streak':
+                        // Use checked streaks for sorting
+                        valA = checkExpiredStreak(a);
+                        valB = checkExpiredStreak(b);
+                        break;
+                    case 'bestStreak':
+                        valA = a.bestStreak || a.currentStreak || 0;
+                        valB = b.bestStreak || b.currentStreak || 0;
+                        break;
+                    default: // 'name'
+                        valA = a.text.toLowerCase();
+                        valB = b.text.toLowerCase();
+                        return isAscending ?
+                            valA.localeCompare(valB) :
+                            valB.localeCompare(valA);
                 }
+                return isAscending ? valA - valB : valB - valA;
             });
 
-            // Render habits
+            // Update chart
+            updateStreakChart(habits);
+
+            // Render habits list
             habitsList.innerHTML = habits.map(habit => {
-                const streak = habit.currentStreak || 0;
+                // Check streak here for display
+                const streak = checkExpiredStreak(habit);
+                const bestStreak = habit.bestStreak || streak;
                 const lastUpdate = habit.lastStreakUpdate ?
                     new Date(habit.lastStreakUpdate).toLocaleDateString() :
                     'Not started';
@@ -3668,9 +3805,17 @@
                     ''}
                         <div class="habit-last-update">Last completed: ${lastUpdate}</div>
                     </div>
-                    <div class="habit-streak">
-                        <span class="habit-streak-icon">🔥</span>
-                        ${streak}
+                    <div class="habit-stats">
+                        <div class="streak-badge current-streak">
+                            <span>🔥</span>
+                            <span>${streak}</span>
+                            <span class="streak-label">Current</span>
+                        </div>
+                        <div class="streak-badge best-streak">
+                            <span>🏆</span>
+                            <span>${bestStreak}</span>
+                            <span class="streak-label">Best</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -3678,6 +3823,77 @@
         };
     }
 
+    function updateStreakChart(habits) {
+        const canvas = document.getElementById('streakChart');
+        const ctx = canvas.getContext('2d');
+
+        // Destroy existing chart if it exists
+        if (habitChart) {
+            habitChart.destroy();
+        }
+
+        // Take top 5 habits for the chart, using checked streaks
+        const topHabits = habits
+            .map(habit => ({
+                ...habit,
+                currentStreak: checkExpiredStreak(habit) // Use checked streak for chart
+            }))
+            .sort((a, b) => (b.bestStreak || 0) - (a.bestStreak || 0))
+            .slice(0, 5);
+
+        habitChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: topHabits.map(habit => habit.text),
+                datasets: [
+                    {
+                        label: 'Current Streak',
+                        data: topHabits.map(habit => habit.currentStreak || 0),
+                        backgroundColor: '#2196F3',
+                        borderColor: '#1976D2',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Best Streak',
+                        data: topHabits.map(habit => habit.bestStreak || habit.currentStreak || 0),
+                        backgroundColor: '#4CAF50',
+                        borderColor: '#388E3C',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Days'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            callback: function(value) {
+                                const label = this.getLabelForValue(value);
+                                return label.length > 15 ? label.substr(0, 15) + '...' : label;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Top 5 Habit Streaks'
+                    }
+                }
+            }
+        });
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
         setupTabs();
@@ -3689,9 +3905,11 @@
         setupAutoReset();
         updateContextsList();
 
-        document.getElementById('habitSort')?.addEventListener('change', loadHabits);
+        const habitSort = document.getElementById('habitSort');
+        const sortDirection = document.getElementById('sortDirection');
 
-        document.getElementById('sortDirection')?.addEventListener('click', (e) => {
+        habitSort?.addEventListener('change', loadHabits);
+        sortDirection?.addEventListener('click', (e) => {
             e.target.textContent = e.target.textContent === '↓' ? '↑' : '↓';
             loadHabits();
         });
