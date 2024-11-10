@@ -3,4 +3,6 @@ node_modules
 .idea
 .DS_Store
 cypress/downloads
+cypress/screenshotsvideos
 cypress/screenshots
+cypress/videos
