@@ -16,6 +16,7 @@ export default class JournalItem extends CypressWidget {
     }
 
     get description() {
+        console.log('XXXXXXX check description')
         return new CypressWidget('.journal-description', this);
     }
 }
