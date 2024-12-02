@@ -18,4 +18,14 @@ export default class CanvasWidget extends VisualWidget {
             .trigger('mousemove', {offsetX: x2, offsetY: y2})
             .trigger('mouseup')
     }
+
+    drawWithStylus(x1: Number, y1: Number, x2: Number, y2: Number, pressure: Number = 0.5) {
+        this.getChainer()
+            .trigger('mousedown', {button: 0, offsetX: x1, offsetY: y1, pointerType: 'pen', pressure})
+            .trigger('pointerdown', {button: 0, offsetX: x1, offsetY: y1, pointerType: 'pen', pressure})
+            .trigger('mousemove', {offsetX: x2, offsetY: y2, pointerType: 'pen', pressure})
+            .trigger('pointermove', {offsetX: x2, offsetY: y2, pointerType: 'pen', pressure})
+            .trigger('mouseup')
+            .trigger('pointerup')
+    }
 }

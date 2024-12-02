@@ -77,4 +77,18 @@ describe('Stylus functionality', () => {
 
         multiboardPage.canvas.matches('cypress/expectedimages/even_width_line.png');
     });
+
+    it.only('should keep the brush width when switching between stylus and mouse', () => {
+        multiboardPage.body.type('3')
+
+        multiboardPage.canvas.draw(150, 150, 300, 380)
+
+        multiboardPage.canvas.drawWithStylus(350, 150, 500, 380, 0.2)
+
+        multiboardPage.canvas.draw(550, 150, 700, 380)
+
+        multiboardPage.canvas.drawWithStylus(750, 150, 900, 380, 0.2)
+
+        multiboardPage.canvas.matches('cypress/expectedimages/brush_width_preserved.png');
+    });
 });
