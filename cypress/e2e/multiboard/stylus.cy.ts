@@ -78,7 +78,7 @@ describe('Stylus functionality', () => {
         multiboardPage.canvas.matches('cypress/expectedimages/even_width_line.png');
     });
 
-    it.only('should keep the brush width when switching between stylus and mouse', () => {
+    it('should keep the brush width when switching between stylus and mouse', () => {
         multiboardPage.body.type('3')
 
         multiboardPage.canvas.draw(150, 150, 300, 380)
