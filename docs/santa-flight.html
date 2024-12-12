@@ -98,7 +98,7 @@
 
         // Game constants
         const SPAWN_DISTANCE = -200;
-        const INITIAL_RING_SPACING = 50;
+        const INITIAL_RING_SPACING = 150;
         const MINIMUM_RING_SPACING = 15;
         let currentRingSpacing = INITIAL_RING_SPACING;
 
@@ -212,7 +212,7 @@
             const elapsedMinutes = survivedTime / 60;
             const spacingReduction = Math.min(
                 INITIAL_RING_SPACING - MINIMUM_RING_SPACING,
-                elapsedMinutes * 5
+                elapsedMinutes * 15
             );
             currentRingSpacing = INITIAL_RING_SPACING - spacingReduction;
         }
