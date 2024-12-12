@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Santa's Ring Flight</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; }
+        #score, #timer {
+            position: absolute;
+            color: white;
+            font-family: Arial;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #score { top: 20px; left: 20px; }
+        #timer { top: 20px; right: 20px; }
+        #startScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: Arial;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            z-index: 1000;
+        }
+        #startScreen h1 {
+            font-size: 36px;
+            margin: 0 0 20px 0;
+            color: #FFD700;
+        }
+        #startScreen p {
+            font-size: 20px;
+            line-height: 1.5;
+            margin: 0 0 20px 0;
+        }
+        #startScreen .press-start {
+            font-size: 24px;
+            color: #FFD700;
+            margin-top: 40px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: Arial;
+            font-size: 48px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="startScreen">
+        <h1>Santa's Ring Flight</h1>
+        <p>Everyone's ordering 5 gold rings for Christmas! Santa needs to fly through the gold ring mines in Ursa Major and collect rings as quickly as possible!</p>
+        <p>Don't miss any or you'll have to start again...</p>
+        <p>Move the sleigh with the cursor keys.</p>
+        <div class="press-start">Press SPACE to start</div>
+    </div>
+    <div id="timer">Time: 0:00</div>
+    <div id="gameOver">
+        Game Over!<br>
+        <span id="finalScore"></span><br>
+        Press Space to Restart
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let camera, scene, renderer, sleigh;
+        let rings = [];
+        let stars = [];
+        let gameActive = false;  // Start inactive
+        let gameStarted = false; // Track if game has started
+        let ringsPassed = new Set();
+        let worldSpeed = 0.5;
+        let sleighOffset = { x: 0, y: 0 };
+        let nextRingId = 0;
+        let survivedTime = 0;
+        let startTime = Date.now();
+
+        // Sleigh rotation variables
+        let targetRotation = { x: 0, y: 0, z: 0 };
+        const MAX_ROTATION = 0.5;
+        const ROTATION_SPEED = 0.1;
+
+        // Game constants
+        const SPAWN_DISTANCE = -200;
+        const INITIAL_RING_SPACING = 50;
+        const MINIMUM_RING_SPACING = 15;
+        let currentRingSpacing = INITIAL_RING_SPACING;
+
+        function createRing(zPosition) {
+            const ringGeometry = new THREE.TorusGeometry(5, 0.3, 16, 32);
+            const ringMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xFFD700,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            ring.position.set(
+                Math.random() * 40 - 20,
+                Math.random() * 30 - 15,
+                zPosition || SPAWN_DISTANCE
+            );
+            ring.userData = { id: nextRingId++, passed: false };
+            rings.push(ring);
+            scene.add(ring);
+            return ring;
+        }
+
+        function createInitialRings() {
+            currentRingSpacing = INITIAL_RING_SPACING;
+            for(let i = 0; i < 10; i++) {
+                createRing(SPAWN_DISTANCE - (i * INITIAL_RING_SPACING));
+            }
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Create star field
+            const starsGeometry = new THREE.BufferGeometry();
+            const starPositions = [];
+            for(let i = 0; i < 1000; i++) {
+                const star = {
+                    x: Math.random() * 2000 - 1000,
+                    y: Math.random() * 2000 - 1000,
+                    z: Math.random() * -2000
+                };
+                starPositions.push(star.x, star.y, star.z);
+                stars.push(star);
+            }
+            starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+            const starsMaterial = new THREE.PointsMaterial({ color: 0xFFFFFF, size: 2 });
+            const starField = new THREE.Points(starsGeometry, starsMaterial);
+            scene.add(starField);
+
+            // Create sleigh
+            sleigh = new THREE.Group();
+            
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 1, 3),
+                new THREE.MeshBasicMaterial({ color: 0xff0000 })
+            );
+            sleigh.add(body);
+
+            const runnerLeft = new THREE.Mesh(
+                new THREE.BoxGeometry(0.2, 0.2, 4),
+                new THREE.MeshBasicMaterial({ color: 0x8b4513 })
+            );
+            runnerLeft.position.set(-0.8, -0.5, 0);
+            sleigh.add(runnerLeft);
+
+            const runnerRight = runnerLeft.clone();
+            runnerRight.position.set(0.8, -0.5, 0);
+            sleigh.add(runnerRight);
+
+            sleigh.position.set(0, 0, -5);
+            scene.add(sleigh);
+
+            camera.position.set(0, 2, 0);
+            camera.lookAt(0, 0, -10);
+
+            createInitialRings();
+        }
+
+        const keys = {};
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            
+            // Handle start screen
+            if (e.code === 'Space' && !gameStarted) {
+                gameStarted = true;
+                gameActive = true;
+                document.getElementById('startScreen').style.display = 'none';
+                startTime = Date.now();
+                updateTimer();
+            }
+        });
+        document.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        function updateTimer() {
+            if (gameActive) {
+                survivedTime = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(survivedTime / 60);
+                const seconds = survivedTime % 60;
+                document.getElementById('timer').textContent = 
+                    `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                setTimeout(updateTimer, 1000);
+            }
+        }
+
+        function updateDifficulty() {
+            const elapsedMinutes = survivedTime / 60;
+            const spacingReduction = Math.min(
+                INITIAL_RING_SPACING - MINIMUM_RING_SPACING,
+                elapsedMinutes * 5
+            );
+            currentRingSpacing = INITIAL_RING_SPACING - spacingReduction;
+        }
+
+        function gameOver() {
+            gameActive = false;
+            document.getElementById('gameOver').style.display = 'block';
+            document.getElementById('finalScore').textContent = 
+                `Survived: ${Math.floor(survivedTime / 60)}:${(survivedTime % 60).toString().padStart(2, '0')}`;
+        }
+
+        function resetGame() {
+            gameActive = true;
+            ringsPassed.clear();
+            sleighOffset = { x: 0, y: 0 };
+            nextRingId = 0;
+            currentRingSpacing = INITIAL_RING_SPACING;
+            survivedTime = 0;
+            startTime = Date.now();
+            document.getElementById('gameOver').style.display = 'none';
+            
+            sleigh.rotation.set(0, 0, 0);
+            targetRotation = { x: 0, y: 0, z: 0 };
+            
+            rings.forEach(ring => scene.remove(ring));
+            rings = [];
+            createInitialRings();
+            updateTimer();
+        }
+
+        function updateStars() {
+            stars.forEach((star, i) => {
+                star.z += worldSpeed;
+                if (star.z > 0) {
+                    star.z = -2000;
+                    star.x = Math.random() * 2000 - 1000;
+                    star.y = Math.random() * 2000 - 1000;
+                }
+                const positions = scene.children[0].geometry.attributes.position.array;
+                positions[i * 3] = star.x;
+                positions[i * 3 + 1] = star.y;
+                positions[i * 3 + 2] = star.z;
+            });
+            scene.children[0].geometry.attributes.position.needsUpdate = true;
+        }
+
+        function updateSleighRotation() {
+            if (keys['ArrowLeft']) {
+                targetRotation.z = MAX_ROTATION;
+            } else if (keys['ArrowRight']) {
+                targetRotation.z = -MAX_ROTATION;
+            } else {
+                targetRotation.z = 0;
+            }
+
+            if (keys['ArrowUp']) {
+                targetRotation.x = -MAX_ROTATION;
+            } else if (keys['ArrowDown']) {
+                targetRotation.x = MAX_ROTATION;
+            } else {
+                targetRotation.x = 0;
+            }
+
+            sleigh.rotation.x += (targetRotation.x - sleigh.rotation.x) * ROTATION_SPEED;
+            sleigh.rotation.z += (targetRotation.z - sleigh.rotation.z) * ROTATION_SPEED;
+        }
+
+        function checkRingCollision(ring) {
+            if (ring.userData.passed) return;
+            
+            const dx = Math.abs(ring.position.x);
+            const dy = Math.abs(ring.position.y);
+            const dz = Math.abs(-5 - ring.position.z);
+            
+            if (ring.position.z > -4 && !ring.userData.passed) {
+                gameOver();
+                return;
+            }
+            
+            if (dx < 5 && dy < 5 && dz < 1) {
+                if (!ringsPassed.has(ring.userData.id)) {
+                    ringsPassed.add(ring.userData.id);
+                    ring.userData.passed = true;
+                    ring.material.color.setHex(0x00ff00);
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameActive) {
+                if (keys['ArrowLeft']) sleighOffset.x = Math.max(-25, sleighOffset.x - 0.5);
+                if (keys['ArrowRight']) sleighOffset.x = Math.min(25, sleighOffset.x + 0.5);
+                if (keys['ArrowUp']) sleighOffset.y = Math.max(-20, sleighOffset.y - 0.5);
+                if (keys['ArrowDown']) sleighOffset.y = Math.min(20, sleighOffset.y + 0.5);
+
+                updateSleighRotation();
+                updateStars();
+                updateDifficulty();
+
+                rings.forEach(ring => {
+                    ring.position.z += worldSpeed;
+                    
+                    if (keys['ArrowLeft']) ring.position.x += 0.5;
+                    if (keys['ArrowRight']) ring.position.x -= 0.5;
+                    if (keys['ArrowUp']) ring.position.y += 0.5;
+                    if (keys['ArrowDown']) ring.position.y -= 0.5;
+
+                    checkRingCollision(ring);
+
+                    if (ring.position.z > 10) {
+                        let furthestZ = SPAWN_DISTANCE;
+                        rings.forEach(r => {
+                            if (r !== ring && r.position.z < furthestZ) {
+                                furthestZ = r.position.z;
+                            }
+                        });
+                        
+                        ring.position.set(
+                            Math.random() * 40 - 20,
+                            Math.random() * 30 - 15,
+                            furthestZ - currentRingSpacing
+                        );
+                        ring.material.color.setHex(0xFFD700);
+                        ring.userData = { id: nextRingId++, passed: false };
+                        ringsPassed.delete(ring.userData.id);
+                    }
+                });
+            }
+
+            if (!gameActive && keys['Space']) {
+                resetGame();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
