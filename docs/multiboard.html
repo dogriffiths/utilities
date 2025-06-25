@@ -66,6 +66,24 @@
             right: 36px;
         }
 
+        /* Digital Clock */
+        #digitalClock {
+            position: fixed;
+            bottom: 20px;
+            left: 840px; /* Position it next to the navigation panel */
+            z-index: 1000;
+            background-color: rgba(28, 28, 28, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
+            min-width: 70px;
+            text-align: center;
+        }
+
         #navigation {
             left: 36px;
         }
@@ -842,6 +860,7 @@
             <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
     </button>
+    <div id="digitalClock"></div>
 </div>
 <div id="errorDialog" class="dialog">
     <h1>Error</h1>
@@ -2727,6 +2746,20 @@
     boardTitleInput.addEventListener('focus', function () {
         this.select();
     });
+
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+
+        const digitalClock = document.getElementById('digitalClock');
+        digitalClock.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    // Update clock immediately and then every second
+    updateClock();
+    setInterval(updateClock, 1000);
 
 
     // Initial setup
