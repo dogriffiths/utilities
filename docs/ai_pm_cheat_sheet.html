@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AI Powered Project Management</title>
+        <style>
+         * {
+             margin: 0;
+             padding: 0;
+             box-sizing: border-box;
+         }
+
+         a {
+             text-decoration: none;
+         }
+
+         #logo {
+             position: absolute;
+             top: 12px;
+             right: 12px;
+         }
+
+         body {
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             background-color: #f8f9fa;
+             padding: 20px;
+         }
+
+         .header {
+             margin-bottom: 40px;
+             display: flex;
+             flex-direction: column;
+             justify-content: center; /* horizontal centering */
+             align-items: center;
+         }
+
+         .header h1 {
+             text-align: center;
+             font-size: 2.5rem;
+             color: #2c3e50;
+             margin-bottom: 20px;
+             font-weight: 700;
+         }
+
+         .header h2 {
+             font-size: 2.0rem;
+             margin-bottom: 20px;
+         }
+
+         .principles {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+             color: white;
+             padding: 30px;
+             border-radius: 16px;
+             margin-bottom: 30px;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             max-width: 1400px;
+         }
+
+         .principles h2 {
+             font-size: 1.8rem;
+             margin-bottom: 20px;
+         }
+
+         .principles strong {
+             color: #ffd700;
+             font-weight: 700;
+         }
+
+         .principles ul {
+             display: flex;
+             flex-wrap: wrap;
+             list-style: none;
+             padding: 0;
+         }
+
+         .principles li {
+             width: calc(50% - 10px);
+             margin-right: 20px;
+             margin-bottom: 10px;
+             content: "•";
+             color: white; /* Customize bullet color */
+         }
+
+         .principles li:nth-child(even) {
+             margin-right: 0;
+         }
+
+         .principles li {
+             break-inside: avoid; /* Prevents list items from breaking across columns */
+             margin-bottom: 10px;
+         }
+
+         .container {
+             max-width: 1400px;
+             margin: 0 auto;
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+             gap: 25px;
+             padding: 20px 0;
+         }
+
+         .card {
+             border-radius: 16px;
+             padding: 0;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             transition: transform 0.3s ease, box-shadow 0.3s ease;
+             overflow: hidden;
+             backdrop-filter: blur(10px);
+         }
+
+         .card-header {
+             padding: 28px 28px 20px 28px;
+             background-color: rgba(0, 0, 0, 0.15);
+         }
+
+         .card-body {
+             background-color1: rgba(255, 255, 255, 0.15);
+             padding: 32px 40px 40px 40px;
+             margin: 0 0px 0px 0px;
+         }
+
+         .card:hover {
+             transform: translateY(-4px);
+             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+         }
+
+         .card-title {
+             font-size: 1.6rem;
+             font-weight: 700;
+             margin-bottom: 12px;
+             color: white;
+         }
+
+         .card-subtitle {
+             font-size: 1.1rem;
+             font-weight: 500;
+             margin-bottom: 8px;
+             color: rgba(255, 255, 255, 0.9);
+         }
+
+         .card-description {
+             font-size: 1rem;
+             line-height: 1.6;
+             color: white;
+         }
+
+         .card-list {
+             list-style: none;
+             margin: 15px 0;
+         }
+
+         .card-list li {
+             padding: 8px 0;
+             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+             font-size: 0.95rem;
+         }
+
+         .card-list li:last-child {
+             border-bottom: none;
+         }
+
+         .card-list strong {
+             color: #fff;
+             font-weight: 600;
+         }
+
+         .card-list li {
+             color1: #fff;
+         }
+
+         .highlight {
+             background: rgba(255, 255, 255, 0.2);
+             padding: 3px 8px;
+             border-radius: 4px;
+             font-weight: 600;
+         }
+
+         .formula {
+             background: rgba(255, 255, 255, 0.25);
+             padding: 15px;
+             border-radius: 8px;
+             margin: 15px 0;
+             font-family: 'Courier New', monospace;
+             font-weight: 600;
+             text-align: center;
+             font-size: 1.1rem;
+         }
+
+         .steps {
+             counter-reset: step-counter;
+         }
+
+         .steps li {
+             counter-increment: step-counter;
+             position: relative;
+             padding-left: 40px;
+         }
+
+         .steps li::before {
+             content: counter(step-counter);
+             position: absolute;
+             left: 0;
+             top: 0;
+             background: rgba(255, 255, 255, 0.3);
+             color: white;
+             width: 24px;
+             height: 24px;
+             border-radius: 50%;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-weight: 700;
+             font-size: 0.9rem;
+         }
+
+         /* Color schemes */
+         .blue {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .blue li {
+             color: #fff;
+         }
+
+         .purple {
+             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+             color: #2c3e50;
+         }
+
+         .purple .card-title,
+         .purple .card-subtitle,
+         .purple .card-description {
+             color: #2c3e50;
+         }
+
+         .purple .card-list strong {
+             color: #5d4e75;
+         }
+
+         .orange {
+             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+             color: #2c3e50;
+         }
+
+         .orange .card-title,
+         .orange .card-subtitle,
+         .orange .card-description {
+             color: #2c3e50;
+         }
+
+         .orange .card-list strong {
+             color: #d35400;
+         }
+
+         .green {
+             background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+             color: #2c3e50;
+         }
+
+         .green .card-title,
+         .green .card-subtitle,
+         .green .card-description {
+             color: #2c3e50;
+         }
+
+         .green .card-list strong {
+             color: #27ae60;
+         }
+
+         .pink {
+             background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%);
+             color: #2c3e50;
+         }
+
+         .pink .card-title,
+         .pink .card-subtitle,
+         .pink .card-description {
+             color: #2c3e50;
+         }
+
+         .pink .card-list strong {
+             color: #e91e63;
+         }
+
+         .teal {
+             background: linear-gradient(135deg, #96deda 0%, #50c9c3 100%);
+             color: #2c3e50;
+         }
+
+         .teal .card-title,
+         .teal .card-subtitle,
+         .teal .card-description {
+             color: #2c3e50;
+         }
+
+         .teal .card-list strong {
+             color: #008080;
+         }
+
+         .coral {
+             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+             color: #2c3e50;
+         }
+
+         .coral .card-title,
+         .coral .card-subtitle,
+         .coral .card-description, .coral li, .coral strong {
+             color1: black;
+             color: #2c3e50;
+         }
+
+         .indigo {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .indigo li {
+             color: #fff;
+         }
+
+         .mint {
+             background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+             color: #2c3e50;
+         }
+
+         .mint .card-title,
+         .mint .card-subtitle,
+         .mint .card-description {
+             color: #2c3e50;
+         }
+
+         .mint .card-description, .mint li, .mint strong {
+             color: #2c3e50;
+         }
+
+         .mint .steps li::before, .green .steps li::before, .purple .steps li::before, .orange .steps li::before {
+             color: black;
+         }
+
+
+         @media (max-width: 768px) {
+             .container {
+                 grid-template-columns: 1fr;
+                 gap: 20px;
+             }
+             
+             .principles ul {
+                 grid-template-columns: 1fr;
+             }
+             
+             .header h1 {
+                 font-size: 2rem;
+             }
+             
+             .card-title {
+                 font-size: 1.4rem;
+             }
+         }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>AI Powered Project Management</h1>
+            <span style="display: flex; align-items: center;">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" id="video">
+                <!-- Video screen/monitor -->
+                <rect x="20" y="25" width="60" height="40" rx="4" fill="#222" stroke="#333" stroke-width="2"/>
+                
+                <!-- Screen content area -->
+                <rect x="25" y="30" width="50" height="30" fill="#1a1a1a"/>
+                
+                <!-- Play button in center -->
+                <polygon points="42,38 42,52 54,45" fill="#fff" opacity="0.8"/>
+                
+                <!-- Recording dot -->
+                <circle cx="30" cy="35" r="2.5" fill="#ff4444">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+                </circle>
+                
+                <!-- Progress bar at bottom -->
+                <rect x="25" y="57" width="50" height="2" fill="#333"/>
+                <rect x="25" y="57" width="20" height="2" fill="#ff4444">
+                    <animate attributeName="width" values="0;50;0" dur="3s" repeatCount="indefinite"/>
+                </rect>
+                
+                <!-- Video stand/base -->
+                <rect x="45" y="65" width="10" height="8" fill="#444"/>
+                <rect x="35" y="73" width="30" height="4" rx="2" fill="#555"/>
+            </svg>
+
+            <h2>Cheat Sheet</h2>
+            </span>
+
+            <p>Click panels below for refresher videos on each topic</p>
+            <p>&nbsp;</p>
+            
+            <div class="principles">
+                <h2>Core Principles</h2>
+                <ul>
+                    <li>Chatbots are <strong>NOT</strong> deities; they are <strong>INTERNS</strong></li>
+                    <li>No prompt/response will be <strong>PERFECT</strong></li>
+                    <li>Ask for <strong>OPTIONS</strong></li>
+                    <li>Chatbots are good at <strong>QUANTITY</strong>; humans are good at <strong>QUALITY</strong></li>
+                    <li><strong>CONVERSATIONS</strong> are more powerful than prompts</li>
+                    <li>Use <strong>TRANSCRIPTIONS</strong></li>
+                    <li>Look for useful <strong>FILE FORMATS</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="card purple">
+                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372000/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">The Chatbot Reality Check</h2>
+                        <p class="card-subtitle">Think of a chatbot as a really smart intern</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>Vanilla by default:</strong> Produces generic content without guidance</li>
+                            <li><strong>Requires oversight:</strong> Can't be left to do all your work</li>
+                            <li><strong>Needs verification:</strong> Always requires checking and validation</li>
+                            <li><strong>Structured guidance:</strong> Needs proper prompts to be effective</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card blue">
+                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372004/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">The PROMPT Framework</h2>
+                        <p class="card-subtitle">7 aspects of a prompt</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>ROLE:</strong> Point-of-view from which to respond (expert chef, consultant, etc.)</li>
+                            <li><strong>TASK:</strong> Clearly state what you want done</li>
+                            <li><strong>FORMAT:</strong> Specify how you want the output structured</li>
+                            <li><strong>TONE:</strong> Set the communication style (formal, informal, enthusiastic)</li>
+                            <li><strong>AUDIENCE:</strong> Define who this is written for</li>
+                            <li><strong>SCOPE:</strong> Set boundaries and constraints</li>
+                            <li><strong>STEPS-TO-INCLUDE:</strong> Specify what should be included</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card orange">
+                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372016/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Repeat-and-Refine Technique</h2>
+                        <p class="card-subtitle">Start simple, then iterate</p>
+                    </div>
+                    <div class="card-body">
+                        <ol class="card-list steps">
+                            <li>Begin with a basic request</li>
+                            <li>Ask for variations or more options</li>
+                            <li>Refine based on results</li>
+                            <li>Add specific constraints or modifications</li>
+                            <li>Continue until you get exactly what you need</li>
+                        </ol>
+                        <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                            Example: "Generate a cat name" → "Give me 10 names" → "Include puns" → "10 variants of Furry Potter"
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card green">
+                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372028/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Project Scope Definition</h2>
+                        <p class="card-subtitle">Use a chatbot as a questioning consultant</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li>Ask it to take you through discovery questions</li>
+                            <li>Provide your answers to refine the scope</li>
+                            <li>Request a summary of the defined scope</li>
+                            <li>Use this as a foundation for story creation</li>
+                        </ul>
+                        <p class="card-description" style="margin-top: 15px;">
+                            <strong>Key benefit:</strong> Systematic approach to capturing requirements you might miss
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card pink">
+                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372044/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Check Stories with INVEST</h2>
+                        <p class="card-subtitle">Help check the quality of a user story</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>Independent:</strong> Stories can be developed separately</li>
+                            <li><strong>Negotiable:</strong> Details can be discussed and refined</li>
+                            <li><strong>Valuable:</strong> Each story delivers user value</li>
+                            <li><strong>Estimable:</strong> Development effort can be assessed</li>
+                            <li><strong>Small:</strong> Manageable size for development</li>
+                            <li><strong>Testable:</strong> Clear success criteria can be defined</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card teal">
+                <a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372060" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Acceptance Criteria</h2>
+                        <p class="card-subtitle">Transform stories into testable statements</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li>Generate example true/false statements for each story</li>
+                            <li>When all statements are true, the story is complete</li>
+                            <li>Can generate example <span class="highlight">BDD</span> scenarios from ACs</li>
+                            <li>Scenarios can be used with tools like NotebookLM to build a <span class="highlight">knowledge base</span></li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card coral">
+                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372080/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Dependency Analysis</h2>
+                        <p class="card-subtitle">Useful when exporting stories to MS Project</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li>Analyze logical dependencies between user stories</li>
+                            <li>Output in project management formats (like "1FS" for Finish-to-Start)</li>
+                            <li>Create CSV files for import into project tools</li>
+                            <li><strong>Warning:</strong> Results will need manual review and correction</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card indigo">
+                <a href="https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391897/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Meeting Workflow</h2>
+                        <p class="card-subtitle">Transform recordings into actionable insights</p>
+                    </div>
+                    <div class="card-body">
+                        <ol class="card-list steps">
+                            <li><strong>Record</strong> meetings (using tools like Whisper for transcription)</li>
+                            <li><strong>Create outline</strong> of discussion topics</li>
+                            <li><strong>Extract action items</strong> with owners and deadlines</li>
+                            <li><strong>Identify key questions</strong> that were raised</li>
+                            <li><strong>Summarize decisions</strong> made during the meeting</li>
+                        </ol>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card mint">
+                <a href="https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391978/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Email Composition Strategy</h2>
+                        <p class="card-subtitle">Use tent-pole sentences</p>
+                    </div>
+                    <div class="card-body">
+                        <ol class="card-list steps">
+                            <li>Write key thoughts in order in a text file</li>
+                            <li>Ask the chatbot to convert to email format</li>
+                            <li>Specify tone (celebratory, formal, urgent)</li>
+                            <li>Set word limits for conciseness</li>
+                            <li>Include all necessary context points</li>
+                        </ol>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card purple">
+                <div class="card-header">
+                    <h2 class="card-title">Writing Presentations</h2>
+                    <p class="card-subtitle">From idea to slides</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li><strong>Identify purpose</strong> (reference, tutorial, pitch, story)</li>
+                        <li><strong>Generate ideas</strong> using Aristotle's modes: Logic (data), Emotion (feelings), Behavior (actions)</li>
+                        <li><strong>Create mindmap</strong> of key concepts</li>
+                        <li><strong>Record yourself</strong> explaining the mindmap</li>
+                        <li><strong>Transcribe and outline</strong> the recording</li>
+                        <li><strong>Convert to Marp/Markdown</strong> format</li>
+                        <li><strong>Transform to PPTX</strong> using tools like Pandoc</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372088" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Feedback Analysis Tools</h2>
+                        <p class="card-subtitle">Turn qualitative feedback into quantitative insights</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>Sentiment Analysis:</strong> Convert text reviews to 0-10 scores</li>
+                            <li><strong>Categorization:</strong> Group feedback by themes (functionality, performance, etc.)</li>
+                            <li><strong>Net Promoter Score:</strong> Calculate from 0-10 ratings (Promoters: 9-10, Passives: 7-8, Detractors: 0-6)</li>
+                            <li><strong>Survey Design:</strong> Mix multiple choice, free text, and rating questions</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card green">
+                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372116/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Risk Management Framework</h2>
+                        <p class="card-subtitle">Systematic risk assessment</p>
+                    </div>
+                    <div class="card-body">
+                        <ol class="card-list steps">
+                            <li><strong>Identify risks</strong> with likelihood and impact ratings</li>
+                            <li><strong>Calculate risk scores</strong> (Likelihood × Impact)</li>
+                            <li><strong>Sort by priority</strong> (highest scores first)</li>
+                            <li><strong>Develop mitigation strategies</strong> for top risks</li>
+                            <li><strong>Use 1-5 scales</strong> for consistent comparison</li>
+                        </ol>
+                        <div class="formula">Risk Score = Likelihood × Impact</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card pink">
+                <a href=" https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391981/target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Content Processing Shortcuts</h2>
+                        <p class="card-subtitle">Quick content analysis</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>Outline creation:</strong> Summarize lengthy documents</li>
+                            <li><strong>Top points extraction:</strong> Get key takeaways</li>
+                            <li><strong>Box-outs:</strong> Quick summary panels (like this!)</li>
+                            <li><strong>Style transformation:</strong> Rewrite in different tones</li>
+                            <li><strong>Grammar correction:</strong> Fix errors and improve clarity</li>
+                            <li><strong>Translation:</strong> Convert to Plain English or other languages</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card teal">
+                <div class="card-header">
+                    <h2 class="card-title">General Tips</h2>
+                    <p class="card-subtitle">Practices for AI-powered project management</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Always verify outputs:</strong> Chatbots make mistakes</li>
+                        <li><strong>Start broad, then narrow:</strong> Use the repeat-and-refine technique</li>
+                        <li><strong>Be specific about format:</strong> Request tables, bullets, or paragraphs as needed</li>
+                        <li><strong>Check for bias:</strong> Review suggestions critically</li>
+                        <li><strong>Protect confidential info:</strong> Don't use online tools for sensitive data</li>
+                        <li><strong>Combine with human judgment:</strong> Use AI as a starting point, not the final answer</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+             width="105px" height="23px" viewBox="0 0 211.000000 46.000000"
+             preserveAspectRatio="xMidYMid meet" id="logo">
+            <g transform="translate(0.000000,46.000000) scale(0.100000,-0.100000)"
+               fill="#d30000" stroke="none">
+                <path d="M191 380 c-48 -11 -83 -40 -108 -90 -28 -53 -29 -92 -4 -146 27 -59
+                         72 -87 146 -92 50 -3 65 0 94 20 46 31 70 66 77 110 21 125 -83 225 -205 198z
+                         m118 -76 c53 -44 54 -123 1 -175 -74 -74 -215 4 -194 108 17 86 126 124 193
+                         67z"/>
+                <path d="M428 383 c-22 -5 -33 -40 -18 -58 27 -32 78 -5 65 34 -7 21 -22 29
+                         -47 24z"/>
+                <path d="M520 215 l0 -165 25 0 c24 0 25 2 25 70 l0 70 43 0 c41 0 43 -1 83
+                         -67 32 -54 46 -69 67 -71 15 -2 27 0 27 5 0 4 -16 34 -35 66 -19 32 -35 60
+                         -35 63 0 4 14 19 30 34 41 39 42 90 1 131 -29 28 -32 29 -130 29 l-101 0 0
+                         -165z m194 99 c20 -20 20 -38 0 -59 -12 -12 -32 -15 -78 -13 l-61 3 -3 43 -3
+                         42 65 0 c45 0 69 -5 80 -16z"/>
+                <path d="M840 215 l0 -165 115 0 115 0 0 25 c0 24 -2 24 -87 27 l-88 3 -3 43
+                         -3 42 85 0 c85 0 86 0 86 25 0 25 -1 25 -85 25 l-85 0 0 45 0 45 90 0 c89 0
+                         90 0 90 25 l0 25 -115 0 -115 0 0 -165z"/>
+                <path d="M1130 215 l0 -165 25 0 25 0 0 165 0 165 -25 0 -25 0 0 -165z"/>
+                <path d="M1240 215 l0 -165 105 0 c105 0 105 0 105 25 0 23 -3 24 -77 27 l-78
+                         3 -3 138 -3 137 -24 0 -25 0 0 -165z"/>
+                <path d="M1500 215 l0 -165 105 0 c105 0 105 0 105 25 0 23 -3 24 -77 27 l-78
+                         3 -3 138 -3 137 -24 0 -25 0 0 -165z"/>
+                <path d="M1719 293 l61 -86 0 -79 c0 -77 0 -78 25 -78 24 0 25 2 25 73 l0 74
+                         60 86 c33 48 60 89 60 92 0 3 -13 5 -28 5 -23 0 -36 -11 -71 -61 l-43 -61 -39
+                         54 c-21 29 -39 56 -39 61 0 4 -16 7 -36 7 l-35 0 60 -87z"/>
+            </g>
+        </svg>
+    </body>
+</html>
