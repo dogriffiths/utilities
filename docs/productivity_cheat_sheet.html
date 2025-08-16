@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AI Powered Personal Productivity</title>
+        <style>
+         * {
+             margin: 0;
+             padding: 0;
+             box-sizing: border-box;
+         }
+
+         a {
+             text-decoration: none;
+             color: inherit;
+         }
+
+         .me a {
+             text-decoration: underline;
+             color: blue;
+         }
+
+         .me {
+             margin-top: 16px;
+             margin-bottom: 50px;
+         }
+
+         #logo {
+             position: absolute;
+             top: 12px;
+             right: 12px;
+         }
+
+         body {
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             background-color: #f8f9fa;
+             padding: 20px;
+         }
+
+         .header {
+             margin-bottom: 40px;
+             display: flex;
+             flex-direction: column;
+             justify-content: center;
+             align-items: center;
+         }
+
+         .header h1 {
+             text-align: center;
+             font-size: 2.5rem;
+             color: #2c3e50;
+             margin-bottom: 20px;
+             font-weight: 700;
+         }
+
+         .header h2 {
+             font-size: 2.0rem;
+             margin-bottom: 20px;
+         }
+
+         .principles {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+             color: white;
+             padding: 30px;
+             border-radius: 16px;
+             margin-bottom: 30px;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             max-width: 1400px;
+         }
+
+         .principles h2 {
+             font-size: 1.8rem;
+             margin-bottom: 20px;
+         }
+
+         .principles strong {
+             color: #ffd700;
+             font-weight: 700;
+         }
+
+         .principles ul {
+             display: flex;
+             flex-wrap: wrap;
+             list-style: none;
+             padding: 0;
+         }
+
+         .principles li {
+             width: calc(50% - 10px);
+             margin-right: 20px;
+             margin-bottom: 10px;
+             color: white;
+         }
+
+         .principles li:nth-child(even) {
+             margin-right: 0;
+         }
+
+         .principles li {
+             break-inside: avoid;
+             margin-bottom: 10px;
+         }
+
+         .container {
+             max-width: 1400px;
+             margin: 0 auto;
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+             gap: 25px;
+             padding: 20px 0;
+         }
+
+         .me {
+             text-align: center;
+         }
+
+         .card {
+             border-radius: 16px;
+             padding: 0;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             transition: transform 0.3s ease, box-shadow 0.3s ease;
+             overflow: hidden;
+             backdrop-filter: blur(10px);
+         }
+
+         .card-header {
+             padding: 28px 28px 20px 28px;
+             background-color: rgba(0, 0, 0, 0.15);
+         }
+
+         .card-body {
+             padding: 32px 40px 40px 40px;
+             margin: 0 0px 0px 0px;
+         }
+
+         .card:hover {
+             transform: translateY(-4px);
+             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+         }
+
+         .card-title {
+             font-size: 1.6rem;
+             font-weight: 700;
+             margin-bottom: 12px;
+             color: white;
+         }
+
+         .card-subtitle {
+             font-size: 1.1rem;
+             font-weight: 500;
+             margin-bottom: 8px;
+             color: rgba(255, 255, 255, 0.9);
+         }
+
+         .card-description {
+             font-size: 1rem;
+             line-height: 1.6;
+             color: white;
+         }
+
+         .card-list {
+             list-style: none;
+             margin: 15px 0;
+         }
+
+         .card-list li {
+             padding: 8px 0;
+             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+             font-size: 0.95rem;
+         }
+
+         .card-list li:last-child {
+             border-bottom: none;
+         }
+
+         .card-list strong {
+             color: #fff;
+             font-weight: 600;
+         }
+
+         .highlight {
+             background: rgba(255, 255, 255, 0.2);
+             padding: 3px 8px;
+             border-radius: 4px;
+             font-weight: 600;
+         }
+
+         .formula {
+             background: rgba(255, 255, 255, 0.25);
+             padding: 15px;
+             border-radius: 8px;
+             margin: 15px 0;
+             font-family: 'Courier New', monospace;
+             font-weight: 600;
+             text-align: center;
+             font-size: 1.1rem;
+         }
+
+         .steps {
+             counter-reset: step-counter;
+         }
+
+         .steps li {
+             counter-increment: step-counter;
+             position: relative;
+             padding-left: 40px;
+         }
+
+         .steps li::before {
+             content: counter(step-counter);
+             position: absolute;
+             left: 0;
+             top: 4px;
+             background: rgba(255, 255, 255, 0.3);
+             color: white;
+             width: 24px;
+             height: 24px;
+             border-radius: 50%;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-weight: 700;
+             font-size: 0.9rem;
+         }
+
+         /* Color schemes */
+         .blue {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .blue li, .blue .card-subtitle {
+             color: #fff;
+         }
+
+         .purple {
+             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+             color: #2c3e50;
+         }
+
+         .purple .card-title,
+         .purple .card-subtitle,
+         .purple .card-description {
+             color: #2c3e50;
+         }
+
+         .purple .card-list strong {
+             color: #5d4e75;
+         }
+
+         .orange {
+             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+             color: #2c3e50;
+         }
+
+         .orange .card-title,
+         .orange .card-subtitle,
+         .orange .card-description {
+             color: #2c3e50;
+         }
+
+         .orange .card-list strong {
+             color: #d35400;
+         }
+
+         .green {
+             background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+             color: #2c3e50;
+         }
+
+         .green .card-title,
+         .green .card-subtitle,
+         .green .card-description {
+             color: #2c3e50;
+         }
+
+         .green .card-list strong {
+             color: #27ae60;
+         }
+
+         .pink {
+             background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%);
+             color: #2c3e50;
+         }
+
+         .pink .card-title,
+         .pink .card-subtitle,
+         .pink .card-description {
+             color: #2c3e50;
+         }
+
+         .pink .card-list strong {
+             color: #e91e63;
+         }
+
+         .teal {
+             background: linear-gradient(135deg, #96deda 0%, #50c9c3 100%);
+             color: #2c3e50;
+         }
+
+         .teal .card-title,
+         .teal .card-subtitle,
+         .teal .card-description {
+             color: #2c3e50;
+         }
+
+         .teal .card-list strong {
+             color: #008080;
+         }
+
+         .coral {
+             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+             color: #2c3e50;
+         }
+
+         .coral .card-title,
+         .coral .card-subtitle,
+         .coral .card-description, .coral li, .coral strong {
+             color: #2c3e50;
+         }
+
+         .indigo {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .indigo li, .indigo .card-subtitle {
+             color: #fff;
+         }
+
+         .mint {
+             background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+             color: #2c3e50;
+         }
+
+         .mint .card-title,
+         .mint .card-subtitle,
+         .mint .card-description {
+             color: #2c3e50;
+         }
+
+         .mint .card-description, .mint li, .mint strong {
+             color: #2c3e50;
+         }
+
+         .mint .steps li::before, .green .steps li::before, .purple .steps li::before, .orange .steps li::before {
+             color: black;
+         }
+
+         @media (max-width: 768px) {
+             .container {
+                 grid-template-columns: 1fr;
+                 gap: 20px;
+             }
+             
+             .principles ul {
+                 grid-template-columns: 1fr;
+             }
+             
+             .header h1 {
+                 font-size: 2rem;
+             }
+             
+             .card-title {
+                 font-size: 1.4rem;
+             }
+         }
+         
+         @media(max-width: 1000px) {
+             #logo {
+                 position: static;
+                 top: auto;
+                 right: auto;
+             }
+
+             .principles ul {
+                 display: block;
+             }
+
+             .principles li {
+                 width: auto;
+             }
+
+             .principles li {
+                 break-inside: auto;
+             }
+
+             .card {
+                 margin-left: 16px;
+                 margin-right: 16px;
+                 margin-bottom: 16px;
+             }
+
+             .container {
+                 max-width: auto;
+                 margin: 0 auto;
+                 display: block;
+             }
+         }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+                 width="105px" height="23px" viewBox="0 0 211.000000 46.000000"
+                 preserveAspectRatio="xMidYMid meet" id="logo">
+                <g transform="translate(0.000000,46.000000) scale(0.100000,-0.100000)"
+                   fill="#d30000" stroke="none">
+                    <path d="M191 380 c-48 -11 -83 -40 -108 -90 -28 -53 -29 -92 -4 -146 27 -59
+                             72 -87 146 -92 50 -3 65 0 94 20 46 31 70 66 77 110 21 125 -83 225 -205 198z
+                             m118 -76 c53 -44 54 -123 1 -175 -74 -74 -215 4 -194 108 17 86 126 124 193
+                             67z"/>
+                    <path d="M428 383 c-22 -5 -33 -40 -18 -58 27 -32 78 -5 65 34 -7 21 -22 29
+                             -47 24z"/>
+                    <path d="M520 215 l0 -165 25 0 c24 0 25 2 25 70 l0 70 43 0 c41 0 43 -1 83
+                             -67 32 -54 46 -69 67 -71 15 -2 27 0 27 5 0 4 -16 34 -35 66 -19 32 -35 60
+                             -35 63 0 4 14 19 30 34 41 39 42 90 1 131 -29 28 -32 29 -130 29 l-101 0 0
+                             -165z m194 99 c20 -20 20 -38 0 -59 -12 -12 -32 -15 -78 -13 l-61 3 -3 43 -3
+                             42 65 0 c45 0 69 -5 80 -16z"/>
+                    <path d="M840 215 l0 -165 115 0 115 0 0 25 c0 24 -2 24 -87 27 l-88 3 -3 43
+                             -3 42 85 0 c85 0 86 0 86 25 0 25 -1 25 -85 25 l-85 0 0 45 0 45 90 0 c89 0
+                             90 0 90 25 l0 25 -115 0 -115 0 0 -165z"/>
+                    <path d="M1130 215 l0 -165 25 0 25 0 0 165 0 165 -25 0 -25 0 0 -165z"/>
+                    <path d="M1240 215 l0 -165 105 0 c105 0 105 0 105 25 0 23 -3 24 -77 27 l-78
+                             3 -3 138 -3 137 -24 0 -25 0 0 -165z"/>
+                    <path d="M1500 215 l0 -165 105 0 c105 0 105 0 105 25 0 23 -3 24 -77 27 l-78
+                             3 -3 138 -3 137 -24 0 -25 0 0 -165z"/>
+                    <path d="M1719 293 l61 -86 0 -79 c0 -77 0 -78 25 -78 24 0 25 2 25 73 l0 74
+                             60 86 c33 48 60 89 60 92 0 3 -13 5 -28 5 -23 0 -36 -11 -71 -61 l-43 -61 -39
+                             54 c-21 29 -39 56 -39 61 0 4 -16 7 -36 7 l-35 0 60 -87z"/>
+                </g>
+            </svg>
+            <h1>AI Powered Personal Productivity</h1>
+            <span style="display: flex; align-items: center;">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" id="video">
+                    <!-- Video screen/monitor -->
+                    <rect x="20" y="25" width="60" height="40" rx="4" fill="#222" stroke="#333" stroke-width="2"/>
+                    
+                    <!-- Screen content area -->
+                    <rect x="25" y="30" width="50" height="30" fill="#1a1a1a"/>
+                    
+                    <!-- Play button in center -->
+                    <polygon points="42,38 42,52 54,45" fill="#fff" opacity="0.8"/>
+                    
+                    <!-- Recording dot -->
+                    <circle cx="30" cy="35" r="2.5" fill="#ff4444">
+                        <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <!-- Progress bar at bottom -->
+                    <rect x="25" y="57" width="50" height="2" fill="#333"/>
+                    <rect x="25" y="57" width="20" height="2" fill="#ff4444">
+                        <animate attributeName="width" values="0;50;0" dur="3s" repeatCount="indefinite"/>
+                    </rect>
+                    
+                    <!-- Video stand/base -->
+                    <rect x="45" y="65" width="10" height="8" fill="#444"/>
+                    <rect x="35" y="73" width="30" height="4" rx="2" fill="#555"/>
+                </svg>
+
+                <h2>Cheat Sheet</h2>
+            </span>
+
+            <p style="max-width: 480px"><em>Some</em> of the panels below have explainer videos to remind you what we covered on the course. <strong>Tap the panels to see!</strong></p>
+            <p>&nbsp;</p>
+            
+            <div class="principles">
+                <h2>Core Principles</h2>
+                <ul>
+                    <li>Chatbots are <strong>INTERNS</strong>, not deities</li>
+                    <li>No prompt/response will be <strong>PERFECT</strong></li>
+                    <li>Ask for <strong>OPTIONS</strong> then select the best ones</li>
+                    <li>Chatbots are good at <strong>QUANTITY</strong>; humans are good at <strong>QUALITY</strong></li>
+                    <li><strong>CONVERSATIONS</strong> are more powerful than single prompts</li>
+                    <li>Use <strong>TRANSCRIPTIONS</strong> to capture spoken content</li>
+                    <li>Look for useful <strong>FILE FORMATS</strong> for data export</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="card purple">
+                <a href="https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391882/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">The PROMPT Framework</h2>
+                        <p class="card-subtitle">7 aspects for better prompts</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>ROLE:</strong> Point-of-view to respond from (expert chef, consultant, etc.)</li>
+                            <li><strong>TASK:</strong> Clearly state what you want done</li>
+                            <li><strong>FORMAT:</strong> Specify output structure (table, bullets, paragraphs)</li>
+                            <li><strong>TONE:</strong> Set communication style (formal, casual, enthusiastic)</li>
+                            <li><strong>AUDIENCE:</strong> Define who this is for (5-year-old, CEO, etc.)</li>
+                            <li><strong>SCOPE:</strong> Set boundaries and constraints</li>
+                            <li><strong>STEPS-TO-INCLUDE:</strong> Specify what should be included</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card blue">
+                <a href="https://learning.oreilly.com/videos/-/0642572079505/0642572079505-video391897" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Meeting Workflow</h2>
+                        <p class="card-subtitle">From recordings to actionable insights</p>
+                    </div>
+                    <div class="card-body">
+                        <ol class="card-list steps">
+                            <li><strong>Record:</strong> Use phone recorder, Live Transcribe, or Whisper</li>
+                            <li><strong>Transcribe:</strong> Convert audio/video to text</li>
+                            <li><strong>Extract outline:</strong> Get discussion topics structure</li>
+                            <li><strong>Identify actions:</strong> Find action items with owners</li>
+                            <li><strong>Note questions:</strong> Capture key questions raised</li>
+                            <li><strong>Summarize decisions:</strong> Record what was decided</li>
+                        </ol>
+                        <p class="card-description" style="margin-top: 15px;">
+                            <strong>Security note:</strong> Be mindful of confidential information and get consent before recording
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card orange">
+                <a href="https://learning.oreilly.com/videos/-/0642572079505/0642572079505-video391909" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Learning with AI</h2>
+                        <p class="card-subtitle">Systematic knowledge acquisition</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>Five Levels Approach:</strong> Ask for explanations at different complexity levels</li>
+                            <li><strong>Ask for 10 most important things:</strong> Get prioritized knowledge chunks</li>
+                            <li><strong>Compare and contrast:</strong> Learn differences between related topics</li>
+                            <li><strong>Generate tests:</strong> Create multiple choice questions for self-assessment</li>
+                            <li><strong>Double-check responses:</strong> Use Gemini's verification feature when available</li>
+                            <li><strong>Research with references:</strong> Use Perplexity.ai for sourced information</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card green">
+                <a href="https://learning.oreilly.com/videos/-/0642572079505/0642572079505-video391933" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Six Thinking Hats for Decisions</h2>
+                        <p class="card-subtitle">Structured decision support</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>White Hat:</strong> Facts and information (no judgment)</li>
+                            <li><strong>Red Hat:</strong> Emotions and feelings (raw responses)</li>
+                            <li><strong>Yellow Hat:</strong> Optimism and upsides</li>
+                            <li><strong>Black Hat:</strong> Risks and cautions</li>
+                            <li><strong>Green Hat:</strong> Creative solutions (avoid downsides, get upsides)</li>
+                            <li><strong>Blue Hat:</strong> Final decision (human makes this)</li>
+                        </ul>
+                        <p class="card-description" style="margin-top: 15px;">
+                            <strong>Remember:</strong> Use AI for decision support, not decision making
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card pink">
+                <a href="https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391939/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Task Management</h2>
+                        <p class="card-subtitle">Breaking down and organizing work</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>Break Down:</strong> Turn big tasks into manageable chunks</li>
+                            <li><strong>Eisenhower Matrix:</strong> Prioritize by importance and urgency</li>
+                            <li><strong>GTD Contexts:</strong> Group tasks by location or tool needed</li>
+                            <li><strong>Export formats:</strong> Use OPML, CSV, or .tasks for import</li>
+                            <li><strong>Always edit:</strong> AI suggestions need human review</li>
+                        </ul>
+                        <div class="formula">Do Now | Schedule | Delegate | Skip</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card teal">
+                <a href="https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391963/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Writing Process</h2>
+                        <p class="card-subtitle">Four-stage approach</p>
+                    </div>
+                    <div class="card-body">
+                        <ol class="card-list steps">
+                            <li><strong>Ideas (Skeleton):</strong> Use Aristotle's approach - head (facts), heart (emotions), behavior (actions)</li>
+                            <li><strong>Motivated Outline:</strong> Create bullet points where each section solves a reader problem</li>
+                            <li><strong>Trim Fat:</strong> Remove weaker sections (human task)</li>
+                            <li><strong>Write Up:</strong> Use tent-pole sentences, then expand to paragraphs</li>
+                        </ol>
+                        <p class="card-description" style="margin-top: 15px;">
+                            <strong>Tent-pole technique:</strong> Write key thoughts in order, then let AI expand each into paragraphs
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card coral">
+                <div class="card-header">
+                    <h2 class="card-title">Visual Prompting</h2>
+                    <p class="card-subtitle">Working with images</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Capture information:</strong> Photo menus, whiteboards, documents</li>
+                        <li><strong>Extract text:</strong> Convert images to structured data (Excel, CSV)</li>
+                        <li><strong>Translate and interpret:</strong> Multi-language menu reading</li>
+                        <li><strong>Geolocate photos:</strong> Use GPT-4o mini for location identification</li>
+                        <li><strong>Meeting notes:</strong> Extract topics, actions, questions from whiteboard photos</li>
+                        <li><strong>Food analysis:</strong> Estimate calories, suggest recipes from fridge photos</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card indigo">
+                <div class="card-header">
+                    <h2 class="card-title">Claude AI Artifacts</h2>
+                    <p class="card-subtitle">Create simple utilities</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Single-page apps:</strong> Create HTML/JavaScript utilities quickly</li>
+                        <li><strong>Interactive tools:</strong> Calculators, timers, simple dashboards</li>
+                        <li><strong>Iterative improvement:</strong> Have conversations to refine the tool</li>
+                        <li><strong>No installation:</strong> Runs directly in browser</li>
+                        <li><strong>Examples:</strong> Meeting cost calculator, task management apps</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px;">
+                        <strong>Best for:</strong> Quick prototypes and simple productivity tools
+                    </p>
+                </div>
+            </div>
+
+            <div class="card mint">
+                <a href="https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391984/" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                        <h2 class="card-title">Creating Diagrams</h2>
+                        <p class="card-subtitle">Better than image generation</p>
+                    </div>
+                    <div class="card-body">
+                        <ul class="card-list">
+                            <li><strong>Use Mermaid format:</strong> Text-based diagram descriptions</li>
+                            <li><strong>Claude AI artifacts:</strong> Generate and display diagrams immediately</li>
+                            <li><strong>Conversational editing:</strong> "Turn sideways", "add colors", "higher contrast"</li>
+                            <li><strong>More reliable:</strong> Text generation more accurate than image generation</li>
+                            <li><strong>Export options:</strong> Save as files or convert to other formats</li>
+                        </ul>
+                        <p class="card-description" style="margin-top: 15px;">
+                            <strong>Tip:</strong> Say "create a mermaid chart" instead of "create an image"
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card purple">
+                <div class="card-header">
+                    <h2 class="card-title">Image Enhancement</h2>
+                    <p class="card-subtitle">Upscaling and improving quality</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>upscayl.org:</strong> AI-powered image enlargement</li>
+                        <li><strong>Real-ESRGAN:</strong> Best for photographs</li>
+                        <li><strong>Ultra-Sharp:</strong> Better for diagrams and icons</li>
+                        <li><strong>10x scaling:</strong> Dramatically improve resolution</li>
+                        <li><strong>Local processing:</strong> No cloud upload required</li>
+                        <li><strong>Smart enhancement:</strong> AI adds missing detail based on context</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <a href="https://learning.oreilly.com/videos/-/0642572079505/0642572079505-video391978" target="_blank" title="Open video about this">
+                    <div class="card-header">
+                    <h2 class="card-title">International Writing</h2>
+                    <p class="card-subtitle">Clear communication tips</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Basic Global English:</strong> Simpler vocabulary and syntax</li>
+                        <li><strong>Rewrite command:</strong> "Rewrite this in Basic Global English"</li>
+                        <li><strong>Better readability:</strong> Easier for non-native speakers</li>
+                        <li><strong>Shorter sentences:</strong> Clearer communication</li>
+                        <li><strong>Bonus effect:</strong> Often bypasses AI detection tools</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px;">
+                        <strong>Result:</strong> More accessible content that reads better for everyone
+                    </p>
+                </div>
+                </a>
+            </div>
+
+            <div class="card green">
+                <div class="card-header">
+                    <h2 class="card-title">Security & Best Practices</h2>
+                    <p class="card-subtitle">Safe AI usage</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Disable training:</strong> Turn off "improve the model for everyone"</li>
+                        <li><strong>Treat like email:</strong> Don't share sensitive information</li>
+                        <li><strong>Always verify:</strong> Check important information independently</li>
+                        <li><strong>Get consent:</strong> For recording meetings or using others' data</li>
+                        <li><strong>Choose tools wisely:</strong> Consider where your data goes</li>
+                        <li><strong>Local alternatives:</strong> Use offline tools when possible</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card teal">
+                <div class="card-header">
+                    <h2 class="card-title">Useful Tools & Formats</h2>
+                    <p class="card-subtitle">Extending AI capabilities</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Whisper:</strong> Audio/video transcription (command line)</li>
+                        <li><strong>Live Transcribe:</strong> Real-time speech to text app</li>
+                        <li><strong>Perplexity.ai:</strong> Research with web sources</li>
+                        <li><strong>NotebookLM:</strong> Document-based learning and testing</li>
+                        <li><strong>OPML, CSV, .tasks:</strong> Export formats for task apps</li>
+                        <li><strong>Mermaid:</strong> Text-based diagram format</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <p class="me" title="Clicky-click">
+            Lovingly crafted in Glorious Stereophonic HTML by <a href="https://linktr.ee/dogriffiths" target="_blank">David Griffiths</a>.
+            <a href="https://linktr.ee/dogriffiths" target="_blank"><img src="data:image/png;base64,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" style="margin-bottom: -24px;" /></a>
+        </p>
+    </body>
+</html>
