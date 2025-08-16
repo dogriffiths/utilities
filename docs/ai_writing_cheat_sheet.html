@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AI Powered Project Management</title>
+        <title>Generative AI for Writing</title>
         <style>
          * {
              margin: 0;
@@ -42,7 +42,7 @@
              margin-bottom: 40px;
              display: flex;
              flex-direction: column;
-             justify-content: center; /* horizontal centering */
+             justify-content: center;
              align-items: center;
          }
 
@@ -91,7 +91,7 @@
              margin-right: 20px;
              margin-bottom: 10px;
              content: "•";
-             color: white; /* Customize bullet color */
+             color: white;
          }
 
          .principles li:nth-child(even) {
@@ -99,7 +99,7 @@
          }
 
          .principles li {
-             break-inside: avoid; /* Prevents list items from breaking across columns */
+             break-inside: avoid;
              margin-bottom: 10px;
          }
 
@@ -145,7 +145,7 @@
              font-weight: 700;
              margin-bottom: 12px;
              color: white;
-         }medi
+         }
 
          .card-subtitle {
              font-size: 1.1rem;
@@ -181,7 +181,7 @@
          }
 
          .card-list li {
-             color1: #fff;
+             color: #fff;
          }
 
          .highlight {
@@ -253,6 +253,10 @@
              color: #5d4e75;
          }
 
+         .purple .card-list li {
+             color: #2c3e50;
+         }
+
          .orange {
              background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
              color: #2c3e50;
@@ -266,6 +270,10 @@
 
          .orange .card-list strong {
              color: #d35400;
+         }
+
+         .orange .card-list li {
+             color: #2c3e50;
          }
 
          .green {
@@ -283,6 +291,10 @@
              color: #27ae60;
          }
 
+         .green .card-list li {
+             color: #2c3e50;
+         }
+
          .pink {
              background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%);
              color: #2c3e50;
@@ -296,6 +308,10 @@
 
          .pink .card-list strong {
              color: #e91e63;
+         }
+
+         .pink .card-list li {
+             color: #2c3e50;
          }
 
          .teal {
@@ -313,6 +329,10 @@
              color: #008080;
          }
 
+         .teal .card-list li {
+             color: #2c3e50;
+         }
+
          .coral {
              background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
              color: #2c3e50;
@@ -321,7 +341,6 @@
          .coral .card-title,
          .coral .card-subtitle,
          .coral .card-description, .coral li, .coral strong {
-             color1: black;
              color: #2c3e50;
          }
 
@@ -348,10 +367,36 @@
              color: #2c3e50;
          }
 
-         .mint .steps li::before, .green .steps li::before, .purple .steps li::before, .orange .steps li::before {
+         .mint .steps li::before, .green .steps li::before, .purple .steps li::before, .orange .steps li::before, .teal .steps li::before {
              color: black;
          }
 
+         .lavender {
+             background: linear-gradient(135deg, #e8cbc0 0%, #636fa4 100%);
+         }
+
+         .lavender li, .lavender .card-subtitle {
+             color: #fff;
+         }
+
+         .peach {
+             background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+             color: #2c3e50;
+         }
+
+         .peach .card-title,
+         .peach .card-subtitle,
+         .peach .card-description {
+             color: #2c3e50;
+         }
+
+         .peach .card-list strong {
+             color: #8b4513;
+         }
+
+         .peach .card-list li {
+             color: #2c3e50;
+         }
 
          @media (max-width: 768px) {
              .container {
@@ -377,7 +422,6 @@
                  top: auto;
                  right: auto;
              }
-
 
              .principles ul {
                  display: block;
@@ -436,7 +480,7 @@
                              54 c-21 29 -39 56 -39 61 0 4 -16 7 -36 7 l-35 0 60 -87z"/>
                 </g>
             </svg>
-            <h1>AI Powered Project Management</h1>
+            <h1>Generative AI for Writing</h1>
             <span style="display: flex; align-items: center;">
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" id="video">
                     <!-- Video screen/monitor -->
@@ -473,275 +517,308 @@
             <div class="principles">
                 <h2>Core Principles</h2>
                 <ul>
-                    <li>Chatbots are <strong>NOT</strong> deities; they are <strong>INTERNS</strong></li>
+                    <li>Chatbots are <strong>INTERNS</strong>, not deities</li>
                     <li>No prompt/response will be <strong>PERFECT</strong></li>
-                    <li>Ask for <strong>OPTIONS</strong></li>
-                    <li>Chatbots are good at <strong>QUANTITY</strong>; humans are good at <strong>QUALITY</strong></li>
+                    <li>Ask for <strong>OPTIONS</strong> - use repeat and refine</li>
                     <li><strong>CONVERSATIONS</strong> are more powerful than prompts</li>
-                    <li>Use <strong>TRANSCRIPTIONS</strong></li>
-                    <li>Look for useful <strong>FILE FORMATS</strong></li>
+                    <li>Chatbots are good at <strong>QUANTITY</strong>, humans at <strong>QUALITY</strong></li>
+                    <li>Use <strong>TRANSCRIPTIONS</strong> to capture ideas</li>
+                    <li>Look for useful <strong>FILE FORMATS</strong> to export</li>
                 </ul>
             </div>
         </div>
 
         <div class="container">
             <div class="card purple">
-                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372000/" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">The Chatbot Reality Check</h2>
-                        <p class="card-subtitle">Think of a chatbot as a really smart intern</p>
-                    </div>
-                    <div class="card-body">
-                        <ul class="card-list">
-                            <li><strong>Vanilla by default:</strong> Produces generic content without guidance</li>
-                            <li><strong>Requires oversight:</strong> Can't be left to do all your work</li>
-                            <li><strong>Needs verification:</strong> Always requires checking and validation</li>
-                            <li><strong>Structured guidance:</strong> Needs proper prompts to be effective</li>
-                        </ul>
-                    </div>
-                </a>
+                <div class="card-header">
+                    <h2 class="card-title">The PROMPT Framework</h2>
+                    <p class="card-subtitle">Seven aspects of effective prompts</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>ROLE:</strong> Point-of-view to respond from (expert chef, consultant, etc.)</li>
+                        <li><strong>TASK:</strong> Clearly state what you want done</li>
+                        <li><strong>FORMAT:</strong> Specify output structure (bullets, table, paragraphs)</li>
+                        <li><strong>TONE:</strong> Set communication style (formal, enthusiastic, professional)</li>
+                        <li><strong>AUDIENCE:</strong> Define who this is written for</li>
+                        <li><strong>SCOPE:</strong> Set boundaries and constraints</li>
+                        <li><strong>STEPS-TO-INCLUDE:</strong> Specify what should be included</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="card blue">
-                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372004/" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">The PROMPT Framework</h2>
-                        <p class="card-subtitle">7 aspects of a prompt</p>
-                    </div>
-                    <div class="card-body">
-                        <ul class="card-list">
-                            <li><strong>ROLE:</strong> Point-of-view from which to respond (expert chef, consultant, etc.)</li>
-                            <li><strong>TASK:</strong> Clearly state what you want done</li>
-                            <li><strong>FORMAT:</strong> Specify how you want the output structured</li>
-                            <li><strong>TONE:</strong> Set the communication style (formal, informal, enthusiastic)</li>
-                            <li><strong>AUDIENCE:</strong> Define who this is written for</li>
-                            <li><strong>SCOPE:</strong> Set boundaries and constraints</li>
-                            <li><strong>STEPS-TO-INCLUDE:</strong> Specify what should be included</li>
-                        </ul>
-                    </div>
-                </a>
-            </div>
-
-            <div class="card orange">
-                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372016/" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Repeat-and-Refine Technique</h2>
-                        <p class="card-subtitle">Start simple, then iterate</p>
-                    </div>
-                    <div class="card-body">
-                        <ol class="card-list steps">
-                            <li>Begin with a basic request</li>
-                            <li>Ask for variations or more options</li>
-                            <li>Refine based on results</li>
-                            <li>Add specific constraints or modifications</li>
-                            <li>Continue until you get exactly what you need</li>
-                        </ol>
-                        <p class="card-description" style="margin-top: 15px; font-style: italic;">
-                            Example: "Generate a cat name" → "Give me 10 names" → "Include puns" → "10 variants of Furry Potter"
-                        </p>
-                    </div>
-                </a>
-            </div>
-
-            <div class="card green">
-                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372028/" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Define Project Scope</h2>
-                        <p class="card-subtitle">Use a chatbot as a questioning consultant</p>
-                    </div>
-                    <div class="card-body">
-                        <ul class="card-list">
-                            <li>Ask it to take you through discovery questions</li>
-                            <li>Provide your answers to refine the scope</li>
-                            <li>Request a summary of the defined scope</li>
-                            <li>Use this as a foundation for story creation</li>
-                        </ul>
-                        <p class="card-description" style="margin-top: 15px;">
-                            <strong>Key benefit:</strong> Systematic approach to capturing requirements you might miss
-                        </p>
-                    </div>
-                </a>
-            </div>
-
-            <div class="card pink">
-                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372044/" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Check Stories with INVEST</h2>
-                        <p class="card-subtitle">Help check the quality of a user story</p>
-                    </div>
-                    <div class="card-body">
-                        <ul class="card-list">
-                            <li><strong>Independent:</strong> Stories can be developed separately</li>
-                            <li><strong>Negotiable:</strong> Details can be discussed and refined</li>
-                            <li><strong>Valuable:</strong> Each story delivers user value</li>
-                            <li><strong>Estimable:</strong> Development effort can be assessed</li>
-                            <li><strong>Small:</strong> Manageable size for development</li>
-                            <li><strong>Testable:</strong> Clear success criteria can be defined</li>
-                        </ul>
-                    </div>
-                </a>
-            </div>
-
-            <div class="card teal">
-                <a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372060" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Acceptance Criteria</h2>
-                        <p class="card-subtitle">Transform stories into testable statements</p>
-                    </div>
-                    <div class="card-body">
-                        <ul class="card-list">
-                            <li>Generate example true/false statements for each story</li>
-                            <li>When all statements are true, the story is complete</li>
-                            <li>Can generate example <span class="highlight">BDD</span> scenarios from ACs</li>
-                            <li>Scenarios can be used with tools like NotebookLM to build a <span class="highlight">knowledge base</span></li>
-                        </ul>
-                    </div>
-                </a>
-            </div>
-
-            <div class="card coral">
-                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372080/" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Export to MS Project</h2>
-                        <p class="card-subtitle">Convert your stories to a CSV file</p>
-                    </div>
-                    <div class="card-body">
-                        <ul class="card-list">
-                            <li>Analyze logical dependencies between user stories</li>
-                            <li>Output in project management formats (like "1FS" for Finish-to-Start)</li>
-                            <li>Create CSV files for import into project tools</li>
-                            <li><strong>Warning:</strong> Results will need manual review and correction</li>
-                        </ul>
-                    </div>
-                </a>
-            </div>
-
-            <div class="card indigo">
-                <a href="https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391897/" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Meeting Workflow</h2>
-                        <p class="card-subtitle">Transform recordings into actionable insights</p>
-                    </div>
-                    <div class="card-body">
-                        <ol class="card-list steps">
-                            <li><strong>Record</strong> meetings (using tools like Whisper for transcription)</li>
-                            <li><strong>Create outline</strong> of discussion topics</li>
-                            <li><strong>Extract action items</strong> with owners and deadlines</li>
-                            <li><strong>Identify key questions</strong> that were raised</li>
-                            <li><strong>Summarize decisions</strong> made during the meeting</li>
-                        </ol>
-                    </div>
-                </a>
-            </div>
-
-            <div class="card mint">
-                <a href="https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391978/" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Writing Email</h2>
-                        <p class="card-subtitle">Use tent-pole sentences</p>
-                    </div>
-                    <div class="card-body">
-                        <ol class="card-list steps">
-                            <li>Write key thoughts in order in a text file</li>
-                            <li>Ask the chatbot to convert to email format</li>
-                            <li>Specify tone (celebratory, formal, urgent)</li>
-                            <li>Set word limits for conciseness</li>
-                            <li>Include all necessary context points</li>
-                        </ol>
-                    </div>
-                </a>
-            </div>
-
-            <div class="card purple">
                 <div class="card-header">
-                    <h2 class="card-title">Writing Presentations</h2>
-                    <p class="card-subtitle">From idea to slides</p>
+                    <h2 class="card-title">Repeat-and-Refine Technique</h2>
+                    <p class="card-subtitle">Start broad, then narrow down</p>
                 </div>
                 <div class="card-body">
                     <ol class="card-list steps">
-                        <li><strong>Identify purpose</strong> (reference, tutorial, pitch, story)</li>
-                        <li><strong>Generate ideas</strong> using Aristotle's modes: Logic (data), Emotion (feelings), Behavior (actions)</li>
-                        <li><strong>Create mindmap</strong> of key concepts</li>
-                        <li><strong>Record yourself</strong> explaining the mindmap</li>
-                        <li><strong>Transcribe and outline</strong> the recording</li>
-                        <li><strong>Convert to Marp/Markdown</strong> format</li>
-                        <li><strong>Transform to PPTX</strong> using tools like Pandoc</li>
+                        <li>Ask for multiple options (e.g., "Give me 10 names")</li>
+                        <li>Use chatbot as an idea search engine</li>
+                        <li>Refine based on results you like</li>
+                        <li>Ask for variants of promising ideas</li>
+                        <li>Continue until you find what you need</li>
+                    </ol>
+                    <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                        Example: "Generate a cat name" → "Give me 10 names" → "Include puns" → "10 variants of Furry Potter"
+                    </p>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <div class="card-header">
+                    <h2 class="card-title">The Writing Stages</h2>
+                    <p class="card-subtitle">Go from a blank page, to finished writing</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li><strong>Bones (Ideas):</strong> Build the skeleton using Aristotle's three modes</li>
+                        <li><strong>Muscles (Motivated Outline):</strong> Create bullet points where each section solves a problem</li>
+                        <li><strong>Trim the Fat:</strong> Edit outline - no section >10 minutes, triage content</li>
+                        <li><strong>Skin (Write-up):</strong> Expand to full document or presentation</li>
                     </ol>
                 </div>
             </div>
 
-            <div class="card orange">
-                <a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372088" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Feedback Analysis</h2>
-                        <p class="card-subtitle">Turn qualitative feedback into quantitative insights</p>
-                    </div>
-                    <div class="card-body">
-                        <ul class="card-list">
-                            <li><strong>Sentiment Analysis:</strong> Convert text reviews to 0-10 scores</li>
-                            <li><strong>Categorization:</strong> Group feedback by themes (functionality, performance, etc.)</li>
-                            <li><strong>Net Promoter Score:</strong> Calculate from 0-10 ratings (Promoters: 9-10, Passives: 7-8, Detractors: 0-6)</li>
-                            <li><strong>Survey Design:</strong> Mix multiple choice, free text, and rating questions</li>
-                        </ul>
-                    </div>
-                </a>
-            </div>
-
             <div class="card green">
-                <a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/0642572079673-video372116/" target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Risk Management</h2>
-                        <p class="card-subtitle">Systematic risk assessment</p>
+                <div class="card-header">
+                    <h2 class="card-title">The Three Sources of Ideas</h2>
+                    <p class="card-subtitle">Aristotle&apos;s <em>Modes of Persuasion</em></p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Head Ideas (Logos):</strong> Data, facts, logic - what people know</li>
+                        <li><strong>Heart Ideas (Pathos):</strong> Emotions, feelings - what people feel</li>
+                        <li><strong>Behavior Ideas (Ethos):</strong> Actions, ethics - what people do</li>
+                    </ul>
+                    <div class="formula">
+                        Prompt: "Give me 10 [factual/emotional/behavioral] things to consider when [your topic]"
                     </div>
-                    <div class="card-body">
-                        <ol class="card-list steps">
-                            <li><strong>Identify risks</strong> with likelihood and impact ratings</li>
-                            <li><strong>Calculate risk scores</strong> (Likelihood × Impact)</li>
-                            <li><strong>Sort by priority</strong> (highest scores first)</li>
-                            <li><strong>Develop mitigation strategies</strong> for top risks</li>
-                            <li><strong>Use 1-5 scales</strong> for consistent comparison</li>
-                        </ol>
-                        <div class="formula">Risk Score = Likelihood × Impact</div>
-                    </div>
-                </a>
+                </div>
             </div>
 
             <div class="card pink">
-                <a href=" https://learning.oreilly.com/videos/generative-ai-to/0642572079505/0642572079505-video391981/target="_blank" title="Open video about this">
-                    <div class="card-header">
-                        <h2 class="card-title">Writing and Reading</h2>
-                        <p class="card-subtitle">Tips for dealing with text</p>
-                    </div>
-                    <div class="card-body">
-                        <ul class="card-list">
-                            <li><strong>Outline creation:</strong> Summarize lengthy documents</li>
-                            <li><strong>Top points extraction:</strong> Get key takeaways</li>
-                            <li><strong>Box-outs:</strong> Quick summary panels (like this!)</li>
-                            <li><strong>Style transformation:</strong> Rewrite in different tones</li>
-                            <li><strong>Grammar correction:</strong> Fix errors and improve clarity</li>
-                            <li><strong>Make more readable:</strong> Rewrite in Basic Global English</li>
-                        </ul>
-                    </div>
-                </a>
+                <div class="card-header">
+                    <h2 class="card-title">Mind Mapping for Ideas</h2>
+                    <p class="card-subtitle">Capture and organize thoughts visually</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Why paper over software:</strong> Avoids zoom/scale issues, allows doodling</li>
+                        <li><strong>Structure:</strong> Topic in center, three branches for Head/Heart/Behavior ideas</li>
+                        <li><strong>Magic happens:</strong> You'll start having your own ideas and connections</li>
+                        <li><strong>Focus finding:</strong> Discover themes and the point of your writing</li>
+                        <li><strong>Reduce words:</strong> Aim for one word per branch maximum</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="card teal">
                 <div class="card-header">
-                    <h2 class="card-title">General Tips</h2>
-                    <p class="card-subtitle">Practices for AI-powered project management</p>
+                    <h2 class="card-title">The Amanuensis Technique</h2>
+                    <p class="card-subtitle">Turn recordings into structured outlines</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li>Look at your mind map and stare into middle distance</li>
+                        <li>Record yourself explaining your ideas (use OneNote dictate)</li>
+                        <li>Upload transcription to chatbot</li>
+                        <li>Ask: "Create an outline of the following"</li>
+                        <li>Edit and refine the generated structure</li>
+                    </ol>
+                    <p class="card-description" style="margin-top: 15px;">
+                        <strong>Historical note:</strong> Dame Barbara Cartland used this method to write 650 books!
+                    </p>
+                </div>
+            </div>
+
+            <div class="card coral">
+                <div class="card-header">
+                    <h2 class="card-title">Creating Motivation</h2>
+                    <p class="card-subtitle">Make your writing engaging with problems</p>
                 </div>
                 <div class="card-body">
                     <ul class="card-list">
-                        <li><strong>Always verify outputs:</strong> Chatbots make mistakes</li>
-                        <li><strong>Start broad, then narrow:</strong> Use the repeat-and-refine technique</li>
-                        <li><strong>Be specific about format:</strong> Request tables, bullets, or paragraphs as needed</li>
-                        <li><strong>Check for bias:</strong> Review suggestions critically</li>
-                        <li><strong>Protect confidential info:</strong> Don't use online tools for sensitive data</li>
-                        <li><strong>Combine with human judgment:</strong> Use AI as a starting point, not the final answer</li>
+                        <li><strong>The Brain's Gatekeeper:</strong> Globus pallidus filters out "irrelevant" information</li>
+                        <li><strong>Problems = Survival:</strong> Brain lets problem-solving information through</li>
+                        <li><strong>OODA Loop Structure:</strong> Observe (objective) → Orient (problem) → Decide → Act</li>
+                        <li><strong>10-Minute Rule:</strong> Most people's attention span for one problem</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px;">
+                        Ask chatbot: "In each section, highlight a problem. If you need to invent one, make it specific."
+                    </p>
+                </div>
+            </div>
+
+            <div class="card indigo">
+                <div class="card-header">
+                    <h2 class="card-title">Trimming the Fat</h2>
+                    <p class="card-subtitle">Edit your motivated outline</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li><strong>Length Check:</strong> No section >4-5 pages (10 minutes speaking)</li>
+                        <li><strong>Split Long Sections:</strong> Break into smaller problems</li>
+                        <li><strong>Triage Content:</strong> Keep, Remove, or Demote</li>
+                        <li><strong>Demoted Sections:</strong> Move to appendix/notes - valuable for some, not all</li>
+                    </ol>
+                    <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                        This stage is purely about quality - stay human, don't use chatbots here.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card lavender">
+                <div class="card-header">
+                    <h2 class="card-title">Tent-Pole Sentences</h2>
+                    <p class="card-subtitle">Expand outlines without losing quality control</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li>Write key thoughts in order (your tent-poles)</li>
+                        <li>Ask chatbot: "Expand each sentence into paragraphs"</li>
+                        <li>Edit everything the chatbot produces</li>
+                        <li>Consider "basic global English" for international audiences</li>
+                    </ol>
+                    <p class="card-description" style="margin-top: 15px;">
+                        <strong>Remember:</strong> Easier to edit existing paragraphs than write from scratch
+                    </p>
+                </div>
+            </div>
+
+            <div class="card mint">
+                <div class="card-header">
+                    <h2 class="card-title">Creating Presentations</h2>
+                    <p class="card-subtitle">From outline to slides</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Simplify First:</strong> "Rewrite each bullet point as no more than 3 words"</li>
+                        <li><strong>Export Options:</strong> "Give me this as a PowerPoint file" or use Marp format</li>
+                        <li><strong>Rich Presentations:</strong> Use tools like Slidespeak.co for enhanced visuals</li>
+                        <li><strong>Pandoc Conversion:</strong> Convert markdown to PPTX via command line or web</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card peach">
+                <div class="card-header">
+                    <h2 class="card-title">Making Text Skimmable</h2>
+                    <p class="card-subtitle">Box-outs and readable formatting</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Tabloid Style:</strong> Break large text into separate, digestible panels</li>
+                        <li><strong>Box-outs:</strong> "Find sections that can be removed and put into box-outs"</li>
+                        <li><strong>HTML Layout:</strong> "Give me HTML with text and box-outs in separate panels"</li>
+                        <li><strong>Multiple Reading:</strong> People skim different sections on different passes</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <div class="card-header">
+                    <h2 class="card-title">Style Transfer</h2>
+                    <p class="card-subtitle">Change tone and voice effectively</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li>Upload example text in desired style</li>
+                        <li>Ask: "Describe the style of this writing"</li>
+                        <li>Say: "Rewrite the following in that style"</li>
+                        <li>Use "tone it down" to moderate extreme styles</li>
+                    </ol>
+                    <p class="card-description" style="margin-top: 15px;">
+                        <strong>Advanced:</strong> Use trending vs non-trending examples to create clickbait-style titles
+                    </p>
+                </div>
+            </div>
+
+            <div class="card blue">
+                <div class="card-header">
+                    <h2 class="card-title">Image Generation</h2>
+                    <p class="card-subtitle">Six aspects of image prompts</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Subject:</strong> Main focus (person, object, animal)</li>
+                        <li><strong>Pose:</strong> Position or action of living subjects</li>
+                        <li><strong>Setting/Era:</strong> Background, time period, location</li>
+                        <li><strong>Artistic Style:</strong> Hand-drawn, cubist, photograph, etc.</li>
+                        <li><strong>Perspective:</strong> Camera angle, wide shot, close-up</li>
+                        <li><strong>Dimensions:</strong> Width x height specifications</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                        Use sparingly - AI images can look cheap and are easily identified
+                    </p>
+                </div>
+            </div>
+
+            <div class="card green">
+                <div class="card-header">
+                    <h2 class="card-title">Better Diagrams</h2>
+                    <p class="card-subtitle">Use Mermaid charts instead of image generation</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Why Mermaid:</strong> Text-based, more accurate than AI image generation</li>
+                        <li><strong>Claude AI Advantage:</strong> Shows diagram + allows conversation to refine</li>
+                        <li><strong>Iterative Improvement:</strong> "Turn it sideways", "Add vivid colors"</li>
+                        <li><strong>From Sketches:</strong> Upload hand-drawn diagrams for conversion</li>
+                        <li><strong>Export Options:</strong> SVG, PNG, or use in presentations</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card teal">
+                <div class="card-header">
+                    <h2 class="card-title">Word Processor Integration</h2>
+                    <p class="card-subtitle">AI features in Word and Google Docs</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Microsoft Word:</strong> Ctrl+L for Copilot, basic expansion features</li>
+                        <li><strong>Google Docs (Better):</strong> Web search, email integration, fact-checking</li>
+                        <li><strong>Fact Check:</strong> Google Docs can verify information against web sources</li>
+                        <li><strong>Refine Options:</strong> Expand, contract, rewrite, simplify text</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card coral">
+                <div class="card-header">
+                    <h2 class="card-title">Security & Local Options</h2>
+                    <p class="card-subtitle">Ollama for private AI usage</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Privacy Concerns:</strong> Online chatbots may use your data for training</li>
+                        <li><strong>Ollama Solution:</strong> Run chatbots completely locally on your machine</li>
+                        <li><strong>Installation:</strong> Download from ollama.com, simple setup</li>
+                        <li><strong>Usage:</strong> "ollama run deepseek-r1" in command line</li>
+                        <li><strong>Offline Capable:</strong> Works without internet after initial model download</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card pink">
+                <div class="card-header">
+                    <h2 class="card-title">Final Reminders</h2>
+                    <p class="card-subtitle">Essential guidelines for AI writing</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Always Verify Facts:</strong> Check any information you'll rely on</li>
+                        <li><strong>Quality Control:</strong> Edit everything chatbots produce</li>
+                        <li><strong>Try Multiple Chatbots:</strong> ChatGPT, Claude, Gemini, etc. have different strengths</li>
+                        <li><strong>Subscription Worth It:</strong> Only if you hit limits or need premium features</li>
+                        <li><strong>Hallucination is Forever:</strong> Not a bug to be fixed - it's how generative AI works</li>
                     </ul>
                 </div>
             </div>
         </div>
+
         <p class="me" title="Clicky-click">
             Lovingly crafted in Glorious Stereophonic HTML by <a href="https://linktr.ee/dogriffiths" target="_blank">David Griffiths</a>.
             <a href="https://linktr.ee/dogriffiths" target="_blank"><img src="data:image/png;base64,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" style="margin-bottom: -24px;" /></a>
