@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Fundamentals of Technical Writing</title>
+        <style>
+         * {
+             margin: 0;
+             padding: 0;
+             box-sizing: border-box;
+         }
+
+         a {
+             text-decoration: none;
+             color: inherit;
+         }
+
+         .me a {
+             text-decoration: underline;
+             color: blue;
+         }
+
+         .me {
+             margin-top: 16px;
+             margin-bottom: 50px;
+         }
+
+         #logo {
+             position: absolute;
+             top: 12px;
+             right: 12px;
+         }
+
+         body {
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             background-color: #f8f9fa;
+             padding: 20px;
+         }
+
+         .header {
+             margin-bottom: 40px;
+             display: flex;
+             flex-direction: column;
+             justify-content: center;
+             align-items: center;
+         }
+
+         .header h1 {
+             text-align: center;
+             font-size: 2.5rem;
+             color: #2c3e50;
+             margin-bottom: 20px;
+             font-weight: 700;
+         }
+
+         .header h2 {
+             font-size: 2.0rem;
+             margin-bottom: 20px;
+         }
+
+         .principles {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+             color: white;
+             padding: 30px;
+             border-radius: 16px;
+             margin-bottom: 30px;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             max-width: 1400px;
+         }
+
+         .principles h2 {
+             font-size: 1.8rem;
+             margin-bottom: 20px;
+         }
+
+         .principles strong {
+             color: #ffd700;
+             font-weight: 700;
+         }
+
+         .principles ul {
+             display: flex;
+             flex-wrap: wrap;
+             list-style: none;
+             padding: 0;
+         }
+
+         .principles li {
+             width: calc(50% - 10px);
+             margin-right: 20px;
+             margin-bottom: 10px;
+         }
+
+         .principles li:nth-child(even) {
+             margin-right: 0;
+         }
+
+         .principles li {
+             break-inside: avoid;
+             margin-bottom: 10px;
+         }
+
+         .container {
+             max-width: 1400px;
+             margin: 0 auto;
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+             gap: 25px;
+             padding: 20px 0;
+         }
+
+         .me {
+             text-align: center;
+         }
+
+         .card {
+             border-radius: 16px;
+             padding: 0;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             transition: transform 0.3s ease, box-shadow 0.3s ease;
+             overflow: hidden;
+             backdrop-filter: blur(10px);
+         }
+
+         .card-header {
+             padding: 28px 28px 20px 28px;
+             background-color: rgba(0, 0, 0, 0.15);
+         }
+
+         .card-body {
+             padding: 32px 40px 40px 40px;
+             margin: 0 0px 0px 0px;
+         }
+
+         .card:hover {
+             transform: translateY(-4px);
+             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+         }
+
+         .card-title {
+             font-size: 1.6rem;
+             font-weight: 700;
+             margin-bottom: 12px;
+             color: white;
+         }
+
+         .card-subtitle {
+             font-size: 1.1rem;
+             font-weight: 500;
+             margin-bottom: 8px;
+             color: rgba(255, 255, 255, 0.9);
+         }
+
+         .card-description {
+             font-size: 1rem;
+             line-height: 1.6;
+             color: white;
+         }
+
+         .card-list {
+             list-style: none;
+             margin: 15px 0;
+         }
+
+         .card-list li {
+             padding: 8px 0;
+             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+             font-size: 0.95rem;
+         }
+
+         .card-list li:last-child {
+             border-bottom: none;
+         }
+
+         .card-list strong {
+             color: #fff;
+             font-weight: 600;
+         }
+
+         .card-list li {
+             color: #fff;
+         }
+
+         .highlight {
+             background: rgba(255, 255, 255, 0.2);
+             padding: 3px 8px;
+             border-radius: 4px;
+             font-weight: 600;
+         }
+
+         .formula {
+             background: rgba(255, 255, 255, 0.25);
+             padding: 15px;
+             border-radius: 8px;
+             margin: 15px 0;
+             font-family: 'Courier New', monospace;
+             font-weight: 600;
+             text-align: center;
+             font-size: 1.1rem;
+         }
+
+         .steps {
+             counter-reset: step-counter;
+         }
+
+         .steps li {
+             counter-increment: step-counter;
+             position: relative;
+             padding-left: 40px;
+         }
+
+         .steps li::before {
+             content: counter(step-counter);
+             position: absolute;
+             left: 0;
+             top: 4px;
+             background: rgba(255, 255, 255, 0.3);
+             color: white;
+             width: 24px;
+             height: 24px;
+             border-radius: 50%;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-weight: 700;
+             font-size: 0.9rem;
+         }
+
+         /* Color schemes */
+         .blue {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .blue li, .blue .card-subtitle {
+             color: #fff;
+         }
+
+         .purple {
+             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+             color: #2c3e50;
+         }
+
+         .purple .card-title,
+         .purple .card-subtitle,
+         .purple .card-description {
+             color: #2c3e50;
+         }
+
+         .purple .card-list strong {
+             color: #5d4e75;
+         }
+
+         .purple .card-list li {
+             color: #2c3e50;
+         }
+
+         .orange {
+             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+             color: #2c3e50;
+         }
+
+         .orange .card-title,
+         .orange .card-subtitle,
+         .orange .card-description {
+             color: #2c3e50;
+         }
+
+         .orange .card-list strong {
+             color: #d35400;
+         }
+
+         .orange .card-list li {
+             color: #2c3e50;
+         }
+
+         .green {
+             background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+             color: #2c3e50;
+         }
+
+         .green .card-title,
+         .green .card-subtitle,
+         .green .card-description {
+             color: #2c3e50;
+         }
+
+         .green .card-list strong {
+             color: #27ae60;
+         }
+
+         .green .card-list li {
+             color: #2c3e50;
+         }
+
+         .pink {
+             background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%);
+             color: #2c3e50;
+         }
+
+         .pink .card-title,
+         .pink .card-subtitle,
+         .pink .card-description {
+             color: #2c3e50;
+         }
+
+         .pink .card-list strong {
+             color: #e91e63;
+         }
+
+         .pink .card-list li {
+             color: #2c3e50;
+         }
+
+         .teal {
+             background: linear-gradient(135deg, #96deda 0%, #50c9c3 100%);
+             color: #2c3e50;
+         }
+
+         .teal .card-title,
+         .teal .card-subtitle,
+         .teal .card-description {
+             color: #2c3e50;
+         }
+
+         .teal .card-list strong {
+             color: #008080;
+         }
+
+         .teal .card-list li {
+             color: #2c3e50;
+         }
+
+         .coral {
+             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+             color: #2c3e50;
+         }
+
+         .coral .card-title,
+         .coral .card-subtitle,
+         .coral .card-description, .coral li, .coral strong {
+             color: #2c3e50;
+         }
+
+         .indigo {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .indigo li, .indigo .card-subtitle {
+             color: #fff;
+         }
+
+         .mint {
+             background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+             color: #2c3e50;
+         }
+
+         .mint .card-title,
+         .mint .card-subtitle,
+         .mint .card-description {
+             color: #2c3e50;
+         }
+
+         .mint .card-description, .mint li, .mint strong {
+             color: #2c3e50;
+         }
+
+         .mint .steps li::before, .green .steps li::before, .purple .steps li::before, .orange .steps li::before, .teal .steps li::before, .coral .steps li::before {
+             color: black;
+         }
+
+         @media (max-width: 768px) {
+             .container {
+                 grid-template-columns: 1fr;
+                 gap: 20px;
+             }
+             
+             .principles ul {
+                 grid-template-columns: 1fr;
+             }
+             
+             .header h1 {
+                 font-size: 2rem;
+             }
+             
+             .card-title {
+                 font-size: 1.4rem;
+             }
+         }
+         @media(max-width: 1000px) {
+             #logo {
+                 position: static;
+                 top: auto;
+                 right: auto;
+             }
+
+             .principles ul {
+                 display: block;
+             }
+
+             .principles li {
+                 width: auto;
+             }
+
+             .principles li {
+                 break-inside: auto;
+             }
+
+             .card {
+                 margin-left: 16px;
+                 margin-right: 16px;
+                 margin-bottom: 16px;
+             }
+
+             .container {
+                 max-width: auto;
+                 margin: 0 auto;
+                 display: block;
+             }
+         }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+                 width="105px" height="23px" viewBox="0 0 211.000000 46.000000"
+                 preserveAspectRatio="xMidYMid meet" id="logo">
+                <g transform="translate(0.000000,46.000000) scale(0.100000,-0.100000)"
+                   fill="#d30000" stroke="none">
+                    <path d="M191 380 c-48 -11 -83 -40 -108 -90 -28 -53 -29 -92 -4 -146 27 -59
+                             72 -87 146 -92 50 -3 65 0 94 20 46 31 70 66 77 110 21 125 -83 225 -205 198z
+                             m118 -76 c53 -44 54 -123 1 -175 -74 -74 -215 4 -194 108 17 86 126 124 193
+                             67z"/>
+                    <path d="M428 383 c-22 -5 -33 -40 -18 -58 27 -32 78 -5 65 34 -7 21 -22 29
+                             -47 24z"/>
+                    <path d="M520 215 l0 -165 25 0 c24 0 25 2 25 70 l0 70 43 0 c41 0 43 -1 83
+                             -67 32 -54 46 -69 67 -71 15 -2 27 0 27 5 0 4 -16 34 -35 66 -19 32 -35 60
+                             -35 63 0 4 14 19 30 34 41 39 42 90 1 131 -29 28 -32 29 -130 29 l-101 0 0
+                             -165z m194 99 c20 -20 20 -38 0 -59 -12 -12 -32 -15 -78 -13 l-61 3 -3 43 -3
+                             42 65 0 c45 0 69 -5 80 -16z"/>
+                    <path d="M840 215 l0 -165 115 0 115 0 0 25 c0 24 -2 24 -87 27 l-88 3 -3 43
+                             -3 42 85 0 c85 0 86 0 86 25 0 25 -1 25 -85 25 l-85 0 0 45 0 45 90 0 c89 0
+                             90 0 90 25 l0 25 -115 0 -115 0 0 -165z"/>
+                    <path d="M1130 215 l0 -165 25 0 25 0 0 165 0 165 -25 0 -25 0 0 -165z"/>
+                    <path d="M1240 215 l0 -165 105 0 c105 0 105 0 105 25 0 23 -3 24 -77 27 l-78
+                             3 -3 138 -3 137 -24 0 -25 0 0 -165z"/>
+                    <path d="M1500 215 l0 -165 105 0 c105 0 105 0 105 25 0 23 -3 24 -77 27 l-78
+                             3 -3 138 -3 137 -24 0 -25 0 0 -165z"/>
+                    <path d="M1719 293 l61 -86 0 -79 c0 -77 0 -78 25 -78 24 0 25 2 25 73 l0 74
+                             60 86 c33 48 60 89 60 92 0 3 -13 5 -28 5 -23 0 -36 -11 -71 -61 l-43 -61 -39
+                             54 c-21 29 -39 56 -39 61 0 4 -16 7 -36 7 l-35 0 60 -87z"/>
+                </g>
+            </svg>
+            <h1>Technical Writing Fundamentals</h1>
+            <span style="display: flex; align-items: center;">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" id="video">
+                    <!-- Video screen/monitor -->
+                    <rect x="20" y="25" width="60" height="40" rx="4" fill="#222" stroke="#333" stroke-width="2"/>
+                    
+                    <!-- Screen content area -->
+                    <rect x="25" y="30" width="50" height="30" fill="#1a1a1a"/>
+                    
+                    <!-- Play button in center -->
+                    <polygon points="42,38 42,52 54,45" fill="#fff" opacity="0.8"/>
+                    
+                    <!-- Recording dot -->
+                    <circle cx="30" cy="35" r="2.5" fill="#ff4444">
+                        <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <!-- Progress bar at bottom -->
+                    <rect x="25" y="57" width="50" height="2" fill="#333"/>
+                    <rect x="25" y="57" width="20" height="2" fill="#ff4444">
+                        <animate attributeName="width" values="0;50;0" dur="3s" repeatCount="indefinite"/>
+                    </rect>
+                    
+                    <!-- Video stand/base -->
+                    <rect x="45" y="65" width="10" height="8" fill="#444"/>
+                    <rect x="35" y="73" width="30" height="4" rx="2" fill="#555"/>
+                </svg>
+
+                <h2>Cheat Sheet</h2>
+            </span>
+
+            <p style="max-width: 480px"><em>Some</em> of the panels below have explainer videos to remind you what we covered on the course. <strong>Tap the panels to see!</strong></p>
+            <p>&nbsp;</p>
+            
+            <div class="principles">
+                <h2>Core Principles</h2>
+                <ul>
+                    <li>Writing is like <strong>BUILDING A BODY</strong> - bones (ideas), muscles (motivation), then refinement</li>
+                    <li>Structure writing around <strong>PROBLEMS</strong> being solved</li>
+                    <li>Use the <strong>10-MINUTE RULE</strong> - concentration spans are limited</li>
+                    <li>People <strong>SKIM</strong> first, then read</li>
+                    <li><strong>SHOW, DON'T TELL</strong> - reveal details in stages</li>
+                    <li>When stuck, step back and find the <strong>UNDERLYING PROBLEM</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="card purple">
+                <div class="card-header">
+                    <h2 class="card-title">Four Writing Types</h2>
+                    <p class="card-subtitle">Match your purpose to the right type</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Reference:</strong> Transfer information (installation manuals, API docs) - doesn't need to be interesting</li>
+                        <li><strong>Tutorial:</strong> Transfer skills through examples - judged on what readers can do afterwards</li>
+                        <li><strong>Pitch:</strong> Cause action (sales, job applications) - about one thing, focused on audience benefit</li>
+                        <li><strong>Story:</strong> Transfer experience through narrative - project post-mortems, incident reports</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card blue">
+                <div class="card-header">
+                    <h2 class="card-title">Aristotle's Idea Machine</h2>
+                    <p class="card-subtitle">Three sources of ideas for any topic</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>HEAD (Logos):</strong> Facts, data, logic - use the 7 W's: Who, What, When, Where, Why, How, How Much</li>
+                        <li><strong>HEART (Pathos):</strong> Emotions - 6 basic emotions: anger, disgust, fear, joy, sadness, surprise</li>
+                        <li><strong>BEHAVIOR (Ethos):</strong> Character, ethics, actions - what people do, not just what they feel</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                        Capture ideas on a mind map using paper and pen - unordered thinking tool that reveals connections and focus areas.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <div class="card-header">
+                    <h2 class="card-title">Adding Motivation</h2>
+                    <p class="card-subtitle">The Globus Pallidus problem</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>The Brain's Filter:</strong> Globus Pallidus blocks non-survival information</li>
+                        <li><strong>Problems = Survival Info:</strong> Associate writing with problems to bypass the filter</li>
+                        <li><strong>Find Problems:</strong> Sift through your ideas to identify problems being caused or solved</li>
+                        <li><strong>One Problem Per Section:</strong> Each section should solve exactly one problem</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px;">
+                        <strong>Key insight:</strong> Without problems, writing feels "crashingly dull" - the brain actively blocks it as unimportant.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card green">
+                <div class="card-header">
+                    <h2 class="card-title">The OODA Loop</h2>
+                    <p class="card-subtitle">From fighter pilot tactics to writing structure</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li><strong>Observe:</strong> The objective - what someone wants to achieve (seems reasonable/self-evident)</li>
+                        <li><strong>Orient:</strong> The problems that prevent achieving the objective</li>
+                        <li><strong>Decide:</strong> The solution/plan to overcome those problems (usually one sentence)</li>
+                        <li><strong>Act:</strong> The detailed implementation - where most of your content lives</li>
+                    </ol>
+                    <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                        Write backwards: start with what you want to explain (Act), then build the motivation around it.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card pink">
+                <div class="card-header">
+                    <h2 class="card-title">The 10-Minute Rule</h2>
+                    <p class="card-subtitle">Concentration spans and section length</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Attention Limit:</strong> Most people can concentrate for about 10 minutes on one problem</li>
+                        <li><strong>Written Equivalent:</strong> About 4-5 pages of text per section/arc</li>
+                        <li><strong>Break Long Sections:</strong> If longer, find additional sub-problems to create new sections</li>
+                        <li><strong>Regular Refreshing:</strong> Change topics/approach every 10 minutes to maintain engagement</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card teal">
+                <div class="card-header">
+                    <h2 class="card-title">Refining Your Outline</h2>
+                    <p class="card-subtitle">Triage your sections</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>OK:</strong> Section stays in main content - core to your message</li>
+                        <li><strong>Remove:</strong> Section gets cut entirely - not essential or off-topic</li>
+                        <li><strong>Demote:</strong> Move to appendix, GitHub, or supplementary material - useful but not critical</li>
+                        <li><strong>Apply 10-Minute Rule:</strong> Break overly long sections into smaller problems</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card coral">
+                <div class="card-header">
+                    <h2 class="card-title">Tent Pole Sentences</h2>
+                    <p class="card-subtitle">From outline to body text</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li>Take each bullet point from your outline</li>
+                        <li>Write key thoughts as short sentences in order</li>
+                        <li>Don't worry about grammar or style yet</li>
+                        <li>Expand each tent pole sentence into one or more paragraphs</li>
+                        <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                            This is the "watching daytime TV while typing" stage
+                        </p>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card indigo">
+                <div class="card-header">
+                    <h2 class="card-title">Making Text Skimmable</h2>
+                    <p class="card-subtitle">People navigate before they read</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Headings First:</strong> People read headings to navigate - make them meaningful on their own</li>
+                        <li><strong>Visual Elements:</strong> Diagrams, code samples, and images get attention before body text</li>
+                        <li><strong>Structure Text:</strong> Use bullet points, sidebars, pull quotes, and box-outs</li>
+                        <li><strong>Thumbnail Test:</strong> If all pages look the same when shrunk, add more visual structure</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mint">
+                <div class="card-header">
+                    <h2 class="card-title">Show, Don't Tell</h2>
+                    <p class="card-subtitle">Reveal your "car chase" in stages</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Find Your Car Chase:</strong> The code, diagrams, or processes people came to see</li>
+                        <li><strong>Start Simple:</strong> Show basic version first, then add complexity</li>
+                        <li><strong>Repeat and Expand:</strong> Don't worry about length - people want to see the details</li>
+                        <li><strong>Visual Metaphors:</strong> Use consistent imagery (like padlocks for security)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card purple">
+                <div class="card-header">
+                    <h2 class="card-title">Mind Mapping Tips</h2>
+                    <p class="card-subtitle">Better thinking tools</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Use Paper:</strong> Physical mind maps work better than software</li>
+                        <li><strong>Four-Color Pen:</strong> Different colors for different types of ideas</li>
+                        <li><strong>Reserve Red for Problems:</strong> Highlight the golden ideas that create motivation</li>
+                        <li><strong>Unordered Thinking:</strong> Avoid the psychological bias of lists</li>
+                        <li><strong>Look for Connections:</strong> Mind maps reveal relationships between ideas</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                        Mind maps focus your ideas; they help you find what your writing is about.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <div class="card-header">
+                    <h2 class="card-title">Beating Writer's Block</h2>
+                    <p class="card-subtitle">Common causes and fixes</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Apathy:</strong> Topic feels dull → You haven't found the underlying problem being solved</li>
+                        <li><strong>Fear of Failure:</strong> Afraid to start → Write a deliberately bad version first</li>
+                        <li><strong>Can't Start:</strong> First sentence paralysis → Write the introduction last</li>
+                        <li><strong>Get Distance:</strong> Pretend you're editing someone else's bad draft</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card green">
+                <div class="card-header">
+                    <h2 class="card-title">The Writing Process</h2>
+                    <p class="card-subtitle">Four stages from blank page to finished piece</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li><strong>Skeleton (Ideas):</strong> Use Aristotle's three sources to generate ideas on mind map</li>
+                        <li><strong>Muscles (Motivation):</strong> Find problems, create OODA sequences for each section</li>
+                        <li><strong>Trim Fat (Edit):</strong> Apply 10-minute rule, triage sections (OK/Remove/Demote)</li>
+                        <li><strong>Skin (Write-up):</strong> Use tent pole sentences, make it skimmable, show don't tell</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <p class="me" title="Clicky-click">
+            Lovingly crafted in Glorious Stereophonic HTML by <a href="https://linktr.ee/dogriffiths" target="_blank">David Griffiths</a>.
+            <a href="https://linktr.ee/dogriffiths" target="_blank"><img src="data:image/png;base64,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" style="margin-bottom: -24px;" /></a>
+        </p>
+    </body>
+</html>
