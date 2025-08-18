@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vardy v Rooney: Case Summary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header h2 {
+            font-size: 1.5rem;
+            color: #7f8c8d;
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            padding: 20px 0;
+        }
+
+        .card {
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            padding: 28px 28px 20px 28px;
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .card-body {
+            padding: 32px 40px 40px 40px;
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .card-subtitle {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .card-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: white;
+        }
+
+        .card-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .card-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.95rem;
+        }
+
+        .card-list li:last-child {
+            border-bottom: none;
+        }
+
+        .card-list strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .highlight {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .legal-quote {
+            background: rgba(255, 255, 255, 0.25);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-style: italic;
+            border-left: 4px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Color schemes */
+        .blue {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .purple {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2c3e50;
+        }
+
+        .purple .card-title,
+        .purple .card-subtitle,
+        .purple .card-description {
+            color: #2c3e50;
+        }
+
+        .purple .card-list strong {
+            color: #5d4e75;
+        }
+
+        .orange {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #2c3e50;
+        }
+
+        .orange .card-title,
+        .orange .card-subtitle,
+        .orange .card-description {
+            color: #2c3e50;
+        }
+
+        .orange .card-list strong {
+            color: #d35400;
+        }
+
+        .green {
+            background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+            color: #2c3e50;
+        }
+
+        .green .card-title,
+        .green .card-subtitle,
+        .green .card-description {
+            color: #2c3e50;
+        }
+
+        .green .card-list strong {
+            color: #27ae60;
+        }
+
+        .teal {
+            background: linear-gradient(135deg, #96deda 0%, #50c9c3 100%);
+            color: #2c3e50;
+        }
+
+        .teal .card-title,
+        .teal .card-subtitle,
+        .teal .card-description {
+            color: #2c3e50;
+        }
+
+        .teal .card-list strong {
+            color: #008080;
+        }
+
+        .coral {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #2c3e50;
+        }
+
+        .coral .card-title,
+        .coral .card-subtitle,
+        .coral .card-description {
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Vardy v Rooney</h1>
+        <h2>[2020] EWHC 3156 (QB) - High Court Summary</h2>
+    </div>
+
+    <div class="container">
+        <div class="card blue">
+            <div class="card-header">
+                <h2 class="card-title">The Case Overview</h2>
+                <p class="card-subtitle">What this libel case was about</p>
+            </div>
+            <div class="card-body">
+                <ul class="card-list">
+                    <li><strong>Claimant:</strong> Rebekah Vardy (wife of Jamie Vardy)</li>
+                    <li><strong>Defendant:</strong> Coleen Rooney (wife of Wayne Rooney)</li>
+                    <li><strong>Issue:</strong> Trial of meaning as preliminary issue in libel claim</li>
+                    <li><strong>Background:</strong> Rooney accused Vardy's Instagram account of leaking private stories to The Sun</li>
+                    <li><strong>Date:</strong> November 2020 judgment by Mr Justice Warby</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card purple">
+            <div class="card-header">
+                <h2 class="card-title">The Infamous Post</h2>
+                <p class="card-subtitle">What Coleen Rooney actually wrote</p>
+            </div>
+            <div class="card-body">
+                <p class="card-description">On 9 October 2019, Rooney posted on Instagram and Twitter describing how she had:</p>
+                <ul class="card-list">
+                    <li><strong>Suspected a leak:</strong> Someone was informing The Sun of her private posts</li>
+                    <li><strong>Set a trap:</strong> Blocked everyone except one account from viewing her stories</li>
+                    <li><strong>Posted false stories:</strong> About gender selection, TV return, basement flooding</li>
+                    <li><strong>Caught the culprit:</strong> Stories appeared in The Sun newspaper</li>
+                </ul>
+                <div class="legal-quote">
+                    "It's ……………. Rebekah Vardy's account"
+                </div>
+            </div>
+        </div>
+
+        <div class="card orange">
+            <div class="card-header">
+                <h2 class="card-title">The Legal Battle</h2>
+                <p class="card-subtitle">What each side claimed the post meant</p>
+            </div>
+            <div class="card-body">
+                <p class="card-description"><strong>Vardy's interpretation (Chase Level 1):</strong></p>
+                <p class="card-description">The post accused her of "consistently and repeatedly" betraying Rooney's trust by leaking private information to The Sun.</p>
+                
+                <p class="card-description" style="margin-top: 20px;"><strong>Rooney's interpretation (Chase Level 2):</strong></p>
+                <p class="card-description">The post only suggested there were "reasonable grounds to suspect" Vardy was responsible.</p>
+            </div>
+        </div>
+
+        <div class="card green">
+            <div class="card-header">
+                <h2 class="card-title">Key Legal Principles</h2>
+                <p class="card-subtitle">How courts determine meaning in defamation</p>
+            </div>
+            <div class="card-body">
+                <ul class="card-list">
+                    <li><strong>Ordinary reasonable reader test:</strong> What would a typical reader understand?</li>
+                    <li><strong>No elaborate analysis:</strong> Courts avoid over-thinking social media posts</li>
+                    <li><strong>Read as a whole:</strong> Context matters, including the full publication</li>
+                    <li><strong>Author's intent irrelevant:</strong> Only the meaning conveyed matters</li>
+                    <li><strong>Social media speed:</strong> Twitter/Instagram readers scan quickly and impressionistically</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card teal">
+            <div class="card-header">
+                <h2 class="card-title">The Court's Decision</h2>
+                <p class="card-subtitle">Judge ruled in favor of Vardy's interpretation</p>
+            </div>
+            <div class="card-body">
+                <p class="card-description">The court found the post bore a <span class="highlight">Chase Level 1 meaning</span> - that Vardy was guilty of the wrongdoing, not merely suspected.</p>
+                <div class="legal-quote">
+                    "Over a period of years Ms Vardy had regularly and frequently abused her status as a trusted follower... by secretly informing The Sun newspaper"
+                </div>
+                <ul class="card-list">
+                    <li><strong>Structured narrative:</strong> Post told a story building to a revelation</li>
+                    <li><strong>"I know for certain":</strong> Rooney claimed definitive proof</li>
+                    <li><strong>Clear identification:</strong> Vardy was specifically named as the wrongdoer</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card coral">
+            <div class="card-header">
+                <h2 class="card-title">The "Account" Defense</h2>
+                <p class="card-subtitle">Why Rooney's argument failed</p>
+            </div>
+            <div class="card-body">
+                <p class="card-description">Rooney argued using "Rebekah Vardy's account" suggested uncertainty about who actually operated it.</p>
+                <ul class="card-list">
+                    <li><strong>Judge disagreed:</strong> Ordinary readers wouldn't focus on this technicality</li>
+                    <li><strong>No common knowledge:</strong> Can't assume readers know celebrities use PR teams</li>
+                    <li><strong>Context matters:</strong> Nothing else suggested someone else was responsible</li>
+                    <li><strong>Consistent wrongdoing:</strong> Alleged behavior over years pointed to account holder</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card blue">
+            <div class="card-header">
+                <h2 class="card-title">Social Media Implications</h2>
+                <p class="card-subtitle">What this means for defamation law</p>
+            </div>
+            <div class="card-body">
+                <ul class="card-list">
+                    <li><strong>Careful wording matters:</strong> Even social media posts can be legally significant</li>
+                    <li><strong>Context is key:</strong> Courts look at the whole narrative, not isolated words</li>
+                    <li><strong>Celebrity assumptions:</strong> Can't rely on "common knowledge" about PR teams</li>
+                    <li><strong>Technical distinctions fail:</strong> Ordinary readers don't parse legal technicalities</li>
+                    <li><strong>Serious allegations:</strong> Even on social media, accusations can have real legal consequences</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card purple">
+            <div class="card-header">
+                <h2 class="card-title">The Bigger Picture</h2>
+                <p class="card-subtitle">Why this case mattered</p>
+            </div>
+            <div class="card-body">
+                <p class="card-description">This was just the preliminary "meaning" trial. The case would continue to determine whether the allegations were actually true and what damages (if any) should be awarded.</p>
+                <ul class="card-list">
+                    <li><strong>High-profile precedent:</strong> Celebrity social media disputes in court</li>
+                    <li><strong>Public interest:</strong> Massive media coverage of "Wagatha Christie" case</li>
+                    <li><strong>Legal clarity:</strong> How courts interpret social media accusations</li>
+                    <li><strong>Defamation evolution:</strong> Traditional libel law meeting modern platforms</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

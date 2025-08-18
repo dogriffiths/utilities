@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Meeting Summary - Key Discussion Points</title>
+        <style>
+         * {
+             margin: 0;
+             padding: 0;
+             box-sizing: border-box;
+         }
+
+         a {
+             text-decoration: none;
+             color: inherit;
+         }
+
+         .me a {
+             text-decoration: underline;
+             color: blue;
+         }
+
+         .me {
+             margin-top: 16px;
+             margin-bottom: 50px;
+         }
+
+         #logo {
+             position: absolute;
+             top: 12px;
+             right: 12px;
+         }
+
+         body {
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             background-color: #f8f9fa;
+             padding: 20px;
+         }
+
+         .header {
+             margin-bottom: 40px;
+             display: flex;
+             flex-direction: column;
+             justify-content: center;
+             align-items: center;
+         }
+
+         .header h1 {
+             text-align: center;
+             font-size: 2.5rem;
+             color: #2c3e50;
+             margin-bottom: 20px;
+             font-weight: 700;
+         }
+
+         .header h2 {
+             font-size: 2.0rem;
+             margin-bottom: 20px;
+         }
+
+         .meeting-info {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+             color: white;
+             padding: 30px;
+             border-radius: 16px;
+             margin-bottom: 30px;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             max-width: 1400px;
+         }
+
+         .meeting-info h2 {
+             font-size: 1.8rem;
+             margin-bottom: 20px;
+         }
+
+         .meeting-info strong {
+             color: #ffd700;
+             font-weight: 700;
+         }
+
+         .container {
+             max-width: 1400px;
+             margin: 0 auto;
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+             gap: 25px;
+             padding: 20px 0;
+         }
+
+         .me {
+             text-align: center;
+         }
+
+         .card {
+             border-radius: 16px;
+             padding: 0;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             transition: transform 0.3s ease, box-shadow 0.3s ease;
+             overflow: hidden;
+             backdrop-filter: blur(10px);
+         }
+
+         .card-header {
+             padding: 28px 28px 20px 28px;
+             background-color: rgba(0, 0, 0, 0.15);
+         }
+
+         .card-body {
+             padding: 32px 40px 40px 40px;
+             margin: 0 0px 0px 0px;
+         }
+
+         .card:hover {
+             transform: translateY(-4px);
+             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+         }
+
+         .card-title {
+             font-size: 1.6rem;
+             font-weight: 700;
+             margin-bottom: 12px;
+             color: white;
+         }
+
+         .card-subtitle {
+             font-size: 1.1rem;
+             font-weight: 500;
+             margin-bottom: 8px;
+             color: rgba(255, 255, 255, 0.9);
+         }
+
+         .card-description {
+             font-size: 1rem;
+             line-height: 1.6;
+             color: white;
+         }
+
+         .card-list {
+             list-style: none;
+             margin: 15px 0;
+         }
+
+         .card-list li {
+             padding: 8px 0;
+             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+             font-size: 0.95rem;
+         }
+
+         .card-list li:last-child {
+             border-bottom: none;
+         }
+
+         .card-list strong {
+             color: #fff;
+             font-weight: 600;
+         }
+
+         .card-list li {
+             color: #fff;
+         }
+
+         .highlight {
+             background: rgba(255, 255, 255, 0.2);
+             padding: 3px 8px;
+             border-radius: 4px;
+             font-weight: 600;
+         }
+
+         .action-item {
+             background: rgba(255, 255, 255, 0.25);
+             padding: 15px;
+             border-radius: 8px;
+             margin: 15px 0;
+             font-weight: 600;
+             text-align: left;
+             font-size: 1rem;
+         }
+
+         .steps {
+             counter-reset: step-counter;
+         }
+
+         .steps li {
+             counter-increment: step-counter;
+             position: relative;
+             padding-left: 40px;
+         }
+
+         .steps li::before {
+             content: counter(step-counter);
+             position: absolute;
+             left: 0;
+             top: 4px;
+             background: rgba(255, 255, 255, 0.3);
+             color: white;
+             width: 24px;
+             height: 24px;
+             border-radius: 50%;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-weight: 700;
+             font-size: 0.9rem;
+         }
+
+         /* Color schemes */
+         .blue {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .blue li, .blue .card-subtitle {
+             color: #fff;
+         }
+
+         .purple {
+             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+             color: #2c3e50;
+         }
+
+         .purple .card-title,
+         .purple .card-subtitle,
+         .purple .card-description {
+             color: #2c3e50;
+         }
+
+         .purple .card-list strong {
+             color: #5d4e75;
+         }
+
+         .orange {
+             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+             color: #2c3e50;
+         }
+
+         .orange .card-title,
+         .orange .card-subtitle,
+         .orange .card-description {
+             color: #2c3e50;
+         }
+
+         .orange .card-list strong {
+             color: #d35400;
+         }
+
+         .green {
+             background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+             color: #2c3e50;
+         }
+
+         .green .card-title,
+         .green .card-subtitle,
+         .green .card-description {
+             color: #2c3e50;
+         }
+
+         .green .card-list strong {
+             color: #27ae60;
+         }
+
+         .pink {
+             background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%);
+             color: #2c3e50;
+         }
+
+         .pink .card-title,
+         .pink .card-subtitle,
+         .pink .card-description {
+             color: #2c3e50;
+         }
+
+         .pink .card-list strong {
+             color: #e91e63;
+         }
+
+         .teal {
+             background: linear-gradient(135deg, #96deda 0%, #50c9c3 100%);
+             color: #2c3e50;
+         }
+
+         .teal .card-title,
+         .teal .card-subtitle,
+         .teal .card-description {
+             color: #2c3e50;
+         }
+
+         .teal .card-list strong {
+             color: #008080;
+         }
+
+         .coral {
+             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+             color: #2c3e50;
+         }
+
+         .coral .card-title,
+         .coral .card-subtitle,
+         .coral .card-description, .coral li, .coral strong {
+             color: #2c3e50;
+         }
+
+         .indigo {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .indigo li, .indigo .card-subtitle {
+             color: #fff;
+         }
+
+         .mint {
+             background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+             color: #2c3e50;
+         }
+
+         .mint .card-title,
+         .mint .card-subtitle,
+         .mint .card-description {
+             color: #2c3e50;
+         }
+
+         .mint .card-description, .mint li, .mint strong {
+             color: #2c3e50;
+         }
+
+         .mint .steps li::before, .green .steps li::before, .purple .steps li::before, .orange .steps li::before {
+             color: black;
+         }
+
+         @media (max-width: 768px) {
+             .container {
+                 grid-template-columns: 1fr;
+                 gap: 20px;
+             }
+             
+             .header h1 {
+                 font-size: 2rem;
+             }
+             
+             .card-title {
+                 font-size: 1.4rem;
+             }
+         }
+         @media(max-width: 1000px) {
+             #logo {
+                 position: static;
+                 top: auto;
+                 right: auto;
+             }
+
+             .card {
+                 margin-left: 16px;
+                 margin-right: 16px;
+                 margin-bottom: 16px;
+             }
+
+             .container {
+                 max-width: auto;
+                 margin: 0 auto;
+                 display: block;
+             }
+         }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Meeting Summary</h1>
+            <span style="display: flex; align-items: center;">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100">
+                    <!-- Meeting icon -->
+                    <rect x="20" y="30" width="60" height="40" rx="4" fill="#667eea" stroke="#764ba2" stroke-width="2"/>
+                    <circle cx="35" cy="45" r="8" fill="#fff" opacity="0.9"/>
+                    <circle cx="50" cy="45" r="8" fill="#fff" opacity="0.9"/>
+                    <circle cx="65" cy="45" r="8" fill="#fff" opacity="0.9"/>
+                    <rect x="25" y="75" width="50" height="3" rx="1" fill="#667eea"/>
+                    <rect x="30" y="80" width="40" height="2" rx="1" fill="#764ba2"/>
+                </svg>
+                <h2 style="margin-left: 15px;">Key Discussion Points</h2>
+            </span>
+
+            <p style="max-width: 680px; text-align: center; margin-top: 20px;">
+                <em>Summary of main topics, decisions, and action items from the team meeting.</em> 
+                Generated from meeting transcription using AI-powered analysis.
+            </p>
+            <p>&nbsp;</p>
+            
+            <div class="meeting-info">
+                <h2>Meeting Overview</h2>
+                <p>Team discussion covering <strong>corporate events coordination</strong>, <strong>product announcements</strong> for the upcoming Commit conference, <strong>competitive analysis</strong> updates, and <strong>messaging framework</strong> refinements. Key decisions made on event sponsorship assignments and product highlight prioritization.</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="card purple">
+                <div class="card-header">
+                    <h2 class="card-title">Corporate Events Support</h2>
+                    <p class="card-subtitle">GTM team sponsorship coordination</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Platform team:</strong> Re:Invent conference</li>
+                        <li><strong>CI/CD team:</strong> Google Next event</li>
+                        <li><strong>GitOps team:</strong> KubeCon conference</li>
+                        <li><strong>Action needed:</strong> Campaign managers must commit on GitHub issues</li>
+                        <li><strong>Support model:</strong> GTM teams sign up as sponsors for their respective events</li>
+                    </ul>
+                    <div class="action-item">
+                        <strong>Next Step:</strong> Get specific commitments from campaign managers and GTM teams for each assigned event
+                    </div>
+                </div>
+            </div>
+
+            <div class="card blue">
+                <div class="card-header">
+                    <h2 class="card-title">Product Announcements for Commit</h2>
+                    <p class="card-subtitle">Highlighting year-long feature improvements</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Strategy:</strong> Focus on features that started as MVPs but are now mature</li>
+                        <li><strong>Vulnerability management:</strong> Key example of bundled improvements</li>
+                        <li><strong>Target:</strong> Three announcement items per product stage</li>
+                        <li><strong>Approach:</strong> Group incremental updates into compelling narratives</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                        <strong>Due:</strong> Tuesday - Need to finalize top 5 overall announcements from 20-30 candidates
+                    </p>
+                </div>
+            </div>
+
+            <div class="card green">
+                <div class="card-header">
+                    <h2 class="card-title">Competitive Analysis Updates</h2>
+                    <p class="card-subtitle">Tier 1 competitor focus</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Scope:</strong> Only comparing against tier 1 competitors initially</li>
+                        <li><strong>Relevance:</strong> Skip competitors not applicable to specific stages</li>
+                        <li><strong>Honesty:</strong> Add GitLab column for balanced comparison</li>
+                        <li><strong>Platform gaps:</strong> Show zeros where platform players lack stage capabilities</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px;">
+                        Goal is creating a <span class="highlight">trustworthy market assessment</span> rather than pure marketing material
+                    </p>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <div class="card-header">
+                    <h2 class="card-title">Top 5 Product Highlights</h2>
+                    <p class="card-subtitle">Stack-ranked announcement priorities</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li><strong>UX improvements:</strong> Research-based user experience across multiple stages</li>
+                        <li><strong>Vulnerability management:</strong> Comprehensive security scanning evolution</li>
+                        <li><strong>GitOps capabilities:</strong> Kubernetes agent plus key integrations</li>
+                        <li><strong>Plan stage feature:</strong> To be determined (Epic boards candidate)</li>
+                        <li><strong>CI/CD enhancement:</strong> To be determined from recent releases</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card teal">
+                <div class="card-header">
+                    <h2 class="card-title">New Infographic Design</h2>
+                    <p class="card-subtitle">Data-driven comparison visualization</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Color scheme:</strong> Green gradients (avoiding negative red indicators)</li>
+                        <li><strong>Architecture:</strong> Separates presentation layer from data model</li>
+                        <li><strong>Expansion:</strong> Will include detailed feature breakdowns on click</li>
+                        <li><strong>Purpose:</strong> Helpful industry comparison tool, not competitive attack</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px;">
+                        Design promotes <span class="highlight">comparison over competition</span> - showing relative capabilities rather than win/lose scenarios
+                    </p>
+                </div>
+            </div>
+
+            <div class="card pink">
+                <div class="card-header">
+                    <h2 class="card-title">Messaging Framework</h2>
+                    <p class="card-subtitle">Three core value propositions</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Transparency:</strong> "Single source of truth, countless possibilities"</li>
+                        <li><strong>Control:</strong> "End to end control over your software factory"</li>
+                        <li><strong>Velocity:</strong> "More speed, less risk" (final decision)</li>
+                        <li><strong>Approach:</strong> Maintain parity in tone and phrasing structure</li>
+                    </ul>
+                    <div class="action-item">
+                        <strong>Decision:</strong> "More speed, less risk" chosen for its punchiness and parallel structure with other messages
+                    </div>
+                </div>
+            </div>
+
+            <div class="card indigo">
+                <div class="card-header">
+                    <h2 class="card-title">Action Items & Next Steps</h2>
+                    <p class="card-subtitle">Key deliverables and deadlines</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Corporate events:</strong> Get GTM team commitments on GitHub issues</li>
+                        <li><strong>Product announcements:</strong> Finalize top 5 list by Tuesday</li>
+                        <li><strong>Competitive analysis:</strong> Continue with tier 1 focus, add GitLab column</li>
+                        <li><strong>Plan stage:</strong> Cormac to add top 5 plan features</li>
+                        <li><strong>Messaging:</strong> Implement "More speed, less risk" in framework</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mint">
+                <div class="card-header">
+                    <h2 class="card-title">Key Decisions Made</h2>
+                    <p class="card-subtitle">Consensus reached during discussion</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Event assignments:</strong> Platform/Re:Invent, CI/CD/Google Next, GitOps/KubeCon confirmed</li>
+                        <li><strong>Announcement strategy:</strong> Bundle incremental features into compelling themes</li>
+                        <li><strong>Competitive approach:</strong> Focus on tier 1 competitors with honest assessment</li>
+                        <li><strong>Infographic colors:</strong> Stick with green gradient scheme</li>
+                        <li><strong>Core messaging:</strong> Three parallel value propositions finalized</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+        
+        <p class="me">
+            Meeting summary generated using AI analysis of transcription • 
+            <em>Key points extracted and organized into actionable boxouts</em>
+        </p>
+    </body>
+</html>
