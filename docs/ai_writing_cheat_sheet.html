@@ -447,6 +447,14 @@
                  display: block;
              }
          }
+         @media (min-width: 1000px) {
+             .container .card:nth-child(15n+4),
+             .container .card:nth-child(15n+7),
+             .container .card:nth-child(15n+12),
+             .container .card:nth-child(15n+13) {
+                 grid-column: span 2;
+             }
+         }
         </style>
     </head>
     <body>
