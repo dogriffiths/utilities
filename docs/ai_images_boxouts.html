@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Images & Video Course - Key Concepts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .boxout {
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .boxout:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+        }
+
+        .boxout-header {
+            padding: 24px 24px 16px 24px;
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .boxout-body {
+            padding: 24px 28px 28px 28px;
+        }
+
+        .boxout-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .boxout-subtitle {
+            font-size: 1rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .boxout-list {
+            list-style: none;
+            margin: 0;
+        }
+
+        .boxout-list li {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.95rem;
+            color: #fff;
+        }
+
+        .boxout-list li:last-child {
+            border-bottom: none;
+        }
+
+        .boxout-list strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .highlight {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            border-left: 4px solid #ffc107;
+            font-weight: 500;
+        }
+
+        .steps {
+            counter-reset: step-counter;
+        }
+
+        .steps li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 35px;
+        }
+
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        /* Color schemes */
+        .blue {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .purple {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2c3e50;
+        }
+
+        .purple .boxout-title,
+        .purple .boxout-subtitle,
+        .purple .boxout-list li {
+            color: #2c3e50;
+        }
+
+        .purple .steps li::before {
+            color: black;
+        }
+
+        .orange {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #2c3e50;
+        }
+
+        .orange .boxout-title,
+        .orange .boxout-subtitle,
+        .orange .boxout-list li {
+            color: #2c3e50;
+        }
+
+        .orange .steps li::before {
+            color: black;
+        }
+
+        .green {
+            background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+            color: #2c3e50;
+        }
+
+        .green .boxout-title,
+        .green .boxout-subtitle,
+        .green .boxout-list li {
+            color: #2c3e50;
+        }
+
+        .green .steps li::before {
+            color: black;
+        }
+
+        .pink {
+            background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%);
+            color: #2c3e50;
+        }
+
+        .pink .boxout-title,
+        .pink .boxout-subtitle,
+        .pink .boxout-list li {
+            color: #2c3e50;
+        }
+
+        .pink .steps li::before {
+            color: black;
+        }
+
+        .teal {
+            background: linear-gradient(135deg, #96deda 0%, #50c9c3 100%);
+            color: #2c3e50;
+        }
+
+        .teal .boxout-title,
+        .teal .boxout-subtitle,
+        .teal .boxout-list li {
+            color: #2c3e50;
+        }
+
+        .teal .steps li::before {
+            color: black;
+        }
+
+        .coral {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #2c3e50;
+        }
+
+        .coral .boxout-title,
+        .coral .boxout-subtitle,
+        .coral .boxout-list li {
+            color: #2c3e50;
+        }
+
+        .coral .steps li::before {
+            color: black;
+        }
+
+        .indigo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AI Images & Video Course</h1>
+        <p>Key concepts and techniques for working with AI-generated visual content</p>
+    </div>
+
+    <div class="container">
+        <div class="boxout blue">
+            <div class="boxout-header">
+                <h2 class="boxout-title">AI Image Reality Check</h2>
+                <p class="boxout-subtitle">The sunny, shiny, suspicious problem</p>
+            </div>
+            <div class="boxout-body">
+                <ul class="boxout-list">
+                    <li><strong>Generic by default:</strong> AI images all have a similar look</li>
+                    <li><strong>Quality paradox:</strong> More work = better results, but diminishing returns</li>
+                    <li><strong>Overuse warning:</strong> Too many AI images will cheapen your work</li>
+                    <li><strong>Better alternatives:</strong> Properly sourced clip art + modifications</li>
+                    <li><strong>Best practice:</strong> Use AI images sparingly for maximum impact</li>
+                </ul>
+                <div class="warning">
+                    ⚠️ The internet is currently flooded with AI images - stand out by using them strategically
+                </div>
+            </div>
+        </div>
+
+        <div class="boxout orange">
+            <div class="boxout-header">
+                <h2 class="boxout-title">Image Generation Fundamentals</h2>
+                <p class="boxout-subtitle">Think like a photographer</p>
+            </div>
+            <div class="boxout-body">
+                <ul class="boxout-list">
+                    <li><strong>Subject:</strong> The main thing you're photographing (person, object, chicken on skateboard)</li>
+                    <li><strong>Pose:</strong> Position, emotion, gesture of the subject</li>
+                    <li><strong>Setting & Area:</strong> Surroundings, historical time, place, lighting, mood</li>
+                    <li><strong>Style:</strong> Artistic approach (cubist, hand-drawn, photograph, monochrome)</li>
+                    <li><strong>Camera Position:</strong> Wide shot, close-up, isometric, looking up/down</li>
+                    <li><strong>Dimensions:</strong> Portrait vs landscape (chatbots may ignore this)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="boxout purple">
+            <div class="boxout-header">
+                <h2 class="boxout-title">ChatGPT Image Editing</h2>
+                <p class="boxout-subtitle">The painting tool workflow</p>
+            </div>
+            <div class="boxout-body">
+                <ol class="boxout-list steps">
+                    <li>Generate your initial image</li>
+                    <li>Click on the image to access painting tool</li>
+                    <li>Select the area you want to modify</li>
+                    <li>Send a prompt to that specific area</li>
+                    <li>Wait for complete image regeneration (not just the selected area)</li>
+                </ol>
+                <div class="warning">
+                    Note: ChatGPT recreates the entire image, which is slow but handles reflections and lighting consistency
+                </div>
+            </div>
+        </div>
+
+        <div class="boxout green">
+            <div class="boxout-header">
+                <h2 class="boxout-title">Diagrams vs AI Images</h2>
+                <p class="boxout-subtitle">Why precision matters</p>
+            </div>
+            <div class="boxout-body">
+                <ul class="boxout-list">
+                    <li><strong>Problem:</strong> Diagrams need precise meaning, AI images are artistic</li>
+                    <li><strong>Text quality:</strong> Older AI (MetaAI) produces noticeably awful text</li>
+                    <li><strong>Newer AI trap:</strong> ChatGPT images look good but contain subtle errors</li>
+                    <li><strong>Solution:</strong> Use <span class="highlight">Mermaid charts</span> instead</li>
+                    <li><strong>Why Mermaid works:</strong> Text-based, formal language, less complex than images</li>
+                    <li><strong>Conversion:</strong> Use mermaid.live or Claude AI artifacts</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="boxout teal">
+            <div class="boxout-header">
+                <h2 class="boxout-title">Claude AI for Diagrams</h2>
+                <p class="boxout-subtitle">Conversations > prompts</p>
+            </div>
+            <div class="boxout-body">
+                <ul class="boxout-list">
+                    <li><strong>Artifacts feature:</strong> Shows Mermaid chart and visual simultaneously</li>
+                    <li><strong>Conversational editing:</strong> "Turn it sideways", "Give it vivid colors"</li>
+                    <li><strong>Iterative improvement:</strong> Refine through dialogue with your AI intern</li>
+                    <li><strong>Most useful skill:</strong> Nearly eliminates manual diagram creation</li>
+                </ul>
+                <div class="warning">
+                    💡 If you remember nothing else: Claude AI for diagrams is one of the most useful AI applications
+                </div>
+            </div>
+        </div>
+
+        <div class="boxout pink">
+            <div class="boxout-header">
+                <h2 class="boxout-title">Photoshop AI Features</h2>
+                <p class="boxout-subtitle">Extending and extracting</p>
+            </div>
+            <div class="boxout-body">
+                <ul class="boxout-list">
+                    <li><strong>Reverse crop:</strong> Use crop tool to extend image area, then generative fill</li>
+                    <li><strong>Select subject:</strong> Automatically isolate main subject from background</li>
+                    <li><strong>Layer separation:</strong> Copy subject to new layer for text behind effects</li>
+                    <li><strong>Generative fill:</strong> Fill gaps and missing areas intelligently</li>
+                    <li><strong>Requirement:</strong> Flatten layers before using AI features</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="boxout coral">
+            <div class="boxout-header">
+                <h2 class="boxout-title">Visual Thinking Process</h2>
+                <p class="boxout-subtitle">From features to synthesis</p>
+            </div>
+            <div class="boxout-body">
+                <ol class="boxout-list steps">
+                    <li>Extract features from images (text, architectural style, codes)</li>
+                    <li>Perform targeted web searches based on features</li>
+                    <li>Iterate between image analysis and web research</li>
+                    <li>Collect disparate pieces of evidence</li>
+                    <li>Synthesize information together for final answer</li>
+                </ol>
+                <div class="warning">
+                    🔍 This is the same process AI uses for research - interns with a plan, not sudden PhD intelligence
+                </div>
+            </div>
+        </div>
+
+        <div class="boxout indigo">
+            <div class="boxout-header">
+                <h2 class="boxout-title">Practical Visual Applications</h2>
+                <p class="boxout-subtitle">Real-world image analysis</p>
+            </div>
+            <div class="boxout-body">
+                <ul class="boxout-list">
+                    <li><strong>Airport boards:</strong> Capture departure info, ask "What flights to Shanghai?"</li>
+                    <li><strong>Foreign menus:</strong> "What are the vegetarian options?"</li>
+                    <li><strong>Whiteboard capture:</strong> Extract meeting actions, principles, decisions</li>
+                    <li><strong>Database diagrams:</strong> Convert hand-drawn ERDs to Mermaid charts</li>
+                    <li><strong>Visual to code:</strong> Generate database creation scripts from diagrams</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="boxout green">
+            <div class="boxout-header">
+                <h2 class="boxout-title">Video Generation Framework</h2>
+                <p class="boxout-subtitle">Think like a cinematographer</p>
+            </div>
+            <div class="boxout-body">
+                <ul class="boxout-list">
+                    <li><strong>Subject:</strong> Person, building, or object in the scene</li>
+                    <li><strong>Setting & Era:</strong> Wild West, 1960s office, modern city</li>
+                    <li><strong>Shot:</strong> Wide, medium, close-up (same as photography)</li>
+                    <li><strong>Camera Movement:</strong> Static, tracking, panning, drone, handheld</li>
+                    <li><strong>Timing:</strong> Duration, pacing (fast/slow), time of day</li>
+                    <li><strong>Performance:</strong> Movement, gestures, expressions, inner world</li>
+                    <li><strong>Narrative:</strong> Basic story, even for 3-4 second clips</li>
+                    <li><strong>Audio:</strong> Usually generated separately and integrated</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="boxout orange">
+            <div class="boxout-header">
+                <h2 class="boxout-title">Video Workflow Strategy</h2>
+                <p class="boxout-subtitle">No response will be perfect</p>
+            </div>
+            <div class="boxout-body">
+                <ol class="boxout-list steps">
+                    <li>Source basic images (stills of people/objects)</li>
+                    <li>Create fundamental clips (filmed, library, or AI-generated)</li>
+                    <li>Generate audio separately (speech, music, effects)</li>
+                    <li>Create join clips using tools like VO3</li>
+                    <li>Combine all elements in video editing software</li>
+                </ol>
+                <div class="warning">
+                    🚀 NASA lesson: Test components individually before assembly - same applies to video creation
+                </div>
+            </div>
+        </div>
+
+        <div class="boxout teal">
+            <div class="boxout-header">
+                <h2 class="boxout-title">VO3 and Advanced Techniques</h2>
+                <p class="boxout-subtitle">Start frame + end frame workflow</p>
+            </div>
+            <div class="boxout-body">
+                <ul class="boxout-list">
+                    <li><strong>Join clips:</strong> Connect separate scenes with generated transitions</li>
+                    <li><strong>Frame continuity:</strong> Use end frame of one clip as start of next</li>
+                    <li><strong>Theoretical possibility:</strong> Generate entire films 30 seconds at a time</li>
+                    <li><strong>Built-in AI:</strong> Voice isolation, object tracking in Final Cut Pro</li>
+                    <li><strong>Text effects:</strong> Put text behind subjects (same as Photoshop technique)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="boxout purple">
+            <div class="boxout-header">
+                <h2 class="boxout-title">Image Upscaling</h2>
+                <p class="boxout-subtitle">AI vs traditional scaling</p>
+            </div>
+            <div class="boxout-body">
+                <ul class="boxout-list">
+                    <li><strong>Tool:</strong> Upscale.org for high-resolution images</li>
+                    <li><strong>AI advantage:</strong> Understands concepts (hair, skin) vs simple pixel averaging</li>
+                    <li><strong>Applications:</strong> Old photos, diagrams, screenshots</li>
+                    <li><strong>Batch processing:</strong> Entire directories of images</li>
+                    <li><strong>Limitations:</strong> Very large scaling can create artifacts (furry skin)</li>
+                </ul>
+                <div class="warning">
+                    📹 Those 1898 film-to-4K YouTube videos? They probably used upscaling tools like this
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
