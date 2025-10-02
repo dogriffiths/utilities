@@ -67,6 +67,41 @@ describe('Whiteboard Application', () => {
         multiboardPage.matches("2");
     });
 
+    it('should create 3 whiteboards and move between them', () => {
+        // Create 2 additional whiteboards (total of 3)
+        multiboardPage.navigation.new()
+        multiboardPage.navigation.matches('Whiteboard 2 / 2')
+
+        multiboardPage.navigation.new()
+        multiboardPage.navigation.matches('Whiteboard 3 / 3')
+
+        // Navigate backwards through all boards
+        multiboardPage.navigation.previous()
+        multiboardPage.navigation.matches('Whiteboard 2 / 3')
+
+        multiboardPage.navigation.previous()
+        multiboardPage.navigation.matches('Whiteboard 1 / 3')
+
+        // Navigate forwards through all boards
+        multiboardPage.navigation.next()
+        multiboardPage.navigation.matches('Whiteboard 2 / 3')
+
+        multiboardPage.navigation.next()
+        multiboardPage.navigation.matches('Whiteboard 3 / 3')
+
+        // Test that we can't go beyond the last board
+        multiboardPage.navigation.next()
+        multiboardPage.navigation.matches('Whiteboard 3 / 3')
+
+        // Go back to first board
+        multiboardPage.navigation.previous()
+        multiboardPage.navigation.matches('Whiteboard 1 / 3')
+
+        // Test that we can't go before the first board
+        multiboardPage.navigation.previous()
+        multiboardPage.navigation.matches('Whiteboard 1 / 3')
+    });
+
     it('should be able to draw a simple line', () => {
         multiboardPage.canvas.draw(150, 150, 200, 200)
         multiboardPage.canvas.matches('cypress/expectedimages/simple_line.png');
