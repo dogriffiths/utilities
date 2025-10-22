@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AI Agents: Think Like A Programmer</title>
+        <style>
+         * {
+             margin: 0;
+             padding: 0;
+             box-sizing: border-box;
+         }
+
+         a {
+             text-decoration: none;
+             color: inherit;
+         }
+
+         .me {
+             margin-top: 16px;
+             margin-bottom: 50px;
+         }
+
+         body {
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             background-color: #f8f9fa;
+             padding: 20px;
+         }
+
+         .header {
+             margin-bottom: 40px;
+             display: flex;
+             flex-direction: column;
+             justify-content: center;
+             align-items: center;
+         }
+
+         .header h1 {
+             text-align: center;
+             font-size: 2.5rem;
+             color: #2c3e50;
+             margin-bottom: 20px;
+             font-weight: 700;
+         }
+
+         .header h2 {
+             font-size: 2.0rem;
+             margin-bottom: 20px;
+         }
+
+         .principles {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+             color: white;
+             padding: 30px;
+             border-radius: 16px;
+             margin-bottom: 30px;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             max-width: 1400px;
+         }
+
+         .principles h2 {
+             font-size: 1.8rem;
+             margin-bottom: 20px;
+         }
+
+         .principles strong {
+             color: #ffd700;
+             font-weight: 700;
+         }
+
+         .principles ul {
+             display: flex;
+             flex-wrap: wrap;
+             list-style: none;
+             padding: 0;
+         }
+
+         .principles li {
+             width: calc(50% - 10px);
+             margin-right: 20px;
+             margin-bottom: 10px;
+             content: "•";
+             color: white;
+         }
+
+         .principles li:nth-child(even) {
+             margin-right: 0;
+         }
+
+         .principles li {
+             break-inside: avoid;
+             margin-bottom: 10px;
+         }
+
+         .container {
+             max-width: 1400px;
+             margin: 0 auto;
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+             gap: 25px;
+             padding: 20px 0;
+         }
+
+         .me {
+             text-align: center;
+         }
+
+         .card {
+             border-radius: 16px;
+             padding: 0;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             transition: transform 0.3s ease, box-shadow 0.3s ease;
+             overflow: hidden;
+             backdrop-filter: blur(10px);
+         }
+
+         .card-header {
+             padding: 28px 28px 20px 28px;
+             background-color: rgba(0, 0, 0, 0.15);
+         }
+
+         .card-body {
+             padding: 32px 40px 40px 40px;
+             margin: 0 0px 0px 0px;
+         }
+
+         .card:hover {
+             transform: translateY(-4px);
+             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+         }
+
+         .card-title {
+             font-size: 1.6rem;
+             font-weight: 700;
+             margin-bottom: 12px;
+             color: white;
+         }
+
+         .card-subtitle {
+             font-size: 1.1rem;
+             font-weight: 500;
+             margin-bottom: 8px;
+             color: rgba(255, 255, 255, 0.9);
+         }
+
+         .card-description {
+             font-size: 1rem;
+             line-height: 1.6;
+             color: white;
+         }
+
+         .card-list {
+             list-style: none;
+             margin: 15px 0;
+         }
+
+         .card-list li {
+             padding: 8px 0;
+             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+             font-size: 0.95rem;
+         }
+
+         .card-list li:last-child {
+             border-bottom: none;
+         }
+
+         .card-list strong {
+             color: #fff;
+             font-weight: 600;
+         }
+
+         .card-list li {
+             color: #fff;
+         }
+
+         .highlight {
+             background: rgba(255, 255, 255, 0.2);
+             padding: 3px 8px;
+             border-radius: 4px;
+             font-weight: 600;
+         }
+
+         .formula {
+             background: rgba(255, 255, 255, 0.25);
+             padding: 15px;
+             border-radius: 8px;
+             margin: 15px 0;
+             font-family: 'Courier New', monospace;
+             font-weight: 600;
+             text-align: center;
+             font-size: 1.1rem;
+         }
+
+         .steps {
+             counter-reset: step-counter;
+         }
+
+         .steps li {
+             counter-increment: step-counter;
+             position: relative;
+             padding-left: 40px;
+         }
+
+         .steps li::before {
+             content: counter(step-counter);
+             position: absolute;
+             left: 0;
+             top: 4px;
+             background: rgba(255, 255, 255, 0.3);
+             color: white;
+             width: 24px;
+             height: 24px;
+             border-radius: 50%;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-weight: 700;
+             font-size: 0.9rem;
+         }
+
+         /* Color schemes */
+         .blue {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .blue li, .blue .card-subtitle {
+             color: #fff;
+         }
+
+         .purple {
+             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+             color: black;
+         }
+
+         .purple .card-title,
+         .purple .card-subtitle,
+         .purple .card-description {
+             color: black;
+         }
+
+         .purple .card-list strong {
+             color: #5d4e75;
+         }
+
+         .orange {
+             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+             color: #2c3e50;
+         }
+
+         .orange .card-title,
+         .orange .card-subtitle,
+         .orange .card-description {
+             color: #2c3e50;
+         }
+
+         .orange .card-list strong {
+             color: #d35400;
+         }
+
+         .green {
+             background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+             color: #2c3e50;
+         }
+
+         .green .card-title,
+         .green .card-subtitle,
+         .green .card-description {
+             color: #2c3e50;
+         }
+
+         .green .card-list strong {
+             color: #27ae60;
+         }
+
+         .pink {
+             background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%);
+             color: #2c3e50;
+         }
+
+         .pink .card-title,
+         .pink .card-subtitle,
+         .pink .card-description {
+             color: #2c3e50;
+         }
+
+         .pink .card-list strong {
+             color: #e91e63;
+         }
+
+         .teal {
+             background: linear-gradient(135deg, #96deda 0%, #50c9c3 100%);
+             color: #2c3e50;
+         }
+
+         .teal .card-title,
+         .teal .card-subtitle,
+         .teal .card-description {
+             color: #2c3e50;
+         }
+
+         .teal .card-list strong {
+             color: #008080;
+         }
+
+         .coral {
+             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+             color: #2c3e50;
+         }
+
+         .coral .card-title,
+         .coral .card-subtitle,
+         .coral .card-description, .coral li, .coral strong {
+             color: #2c3e50;
+         }
+
+         .indigo {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .indigo li, .indigo .card-subtitle {
+             color: #fff;
+         }
+
+         .mint {
+             background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+             color: #2c3e50;
+         }
+
+         .mint .card-title,
+         .mint .card-subtitle,
+         .mint .card-description {
+             color: #2c3e50;
+         }
+
+         .mint .card-description, .mint li, .mint strong {
+             color: #2c3e50;
+         }
+
+         .mint .steps li::before, .green .steps li::before, .purple .steps li::before, .orange .steps li::before {
+             color: black;
+         }
+
+         @media (max-width: 768px) {
+             .container {
+                 grid-template-columns: 1fr;
+                 gap: 20px;
+             }
+             
+             .principles ul {
+                 grid-template-columns: 1fr;
+             }
+             
+             .header h1 {
+                 font-size: 2rem;
+             }
+             
+             .card-title {
+                 font-size: 1.4rem;
+             }
+         }
+
+         @media(max-width: 1000px) {
+             .principles ul {
+                 display: block;
+             }
+
+             .principles li {
+                 width: auto;
+             }
+
+             .principles li {
+                 break-inside: auto;
+             }
+
+             .card {
+                 margin-left: 16px;
+                 margin-right: 16px;
+                 margin-bottom: 16px;
+             }
+
+             .container {
+                 max-width: auto;
+                 margin: 0 auto;
+                 display: block;
+             }
+         }
+
+         .purple .card-list li, .orange .card-list li, .green .card-list li, .pink .card-list li, .teal .card-list li {
+             color: black;
+         }
+         @media (min-width: 1000px) {
+             .container .card:nth-child(15n+11),
+             .container .card:nth-child(15n+12),
+             .container .card:nth-child(15n+13) {
+                 grid-column: span 2;
+             }
+             .container .card.fullwidth {
+                 grid-column: span 3;
+             }
+             .card img, .card svg {
+                 display: block;
+             }
+         }
+
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>AI Agents: Think Like A Programmer</h1>
+            <h2>Lessons from a Defect Tracking System</h2>
+            <p style="max-width: 720px; text-align: center; margin-top: 20px;">
+                <em>Finding principles for building AI agents from the wisdom of famous programmers.</em>
+            </p>
+            <p>&nbsp;</p>
+            
+            <div class="principles">
+                <h2>Core Principles for AI Agents</h2>
+                <ul>
+                    <li><strong>Use agents strategically</strong> - Don't replace entire systems; find key areas to apply them</li>
+                    <li><strong>Treat agents like people</strong> - Give them identities, roles, and proper oversight</li>
+                    <li><strong>Give humans oversight of agents</strong> - Agents excel at quantity; humans excel at quality</li>
+                    <li><strong>Use errors for training</strong> - Build knowledge bases from corrected outputs</li>
+                    <li><strong>Use baby steps</strong> - Start small, track error rates, scale gradually</li>
+                    <li><strong>Give agents an ID</strong> - Register with identity management for tracking and security</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="card purple">
+                <div class="card-header">
+                    <h2 class="card-title">The Real Problem</h2>
+                    <p class="card-subtitle">Why the system actually failed</p>
+                </div>
+                <div class="card-body">
+                    <p class="card-description" style="margin-bottom: 15px;">
+                        A car manufacturer built a defect tracking system that seemed too slow. But the real issue wasn't database performance or lack of tests.
+                    </p>
+                    <ul class="card-list">
+                        <li><strong>The challenge:</strong> Graduate engineers spent significant time analyzing defects manually</li>
+                        <li><strong>The process:</strong> Dealerships, breakdown companies, and car telemetry reported defects</li>
+                        <li><strong>The bottleneck:</strong> Engineers created diagnoses (subsystem, component, severity) for quality dashboards</li>
+                        <li><strong>The insight:</strong> If built now, could have considered AI agents instead of just optimizing the existing system</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card blue">
+                <div class="card-header">
+                    <h2 class="card-title">Agents Are Different</h2>
+                    <p class="card-subtitle">Not recipes, but chefs</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Recipes vs. Chefs:</strong> Traditional software follows exact steps; agents make decisions</li>
+                        <li><strong>Can make mistakes:</strong> Like humans, agents are fallible and need oversight</li>
+                        <li><strong>Still learning:</strong> The industry is still figuring out how to build agents effectively</li>
+                        <li><strong>Risky to go full replacement:</strong> Replacing entire systems with agents is too risky</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                        Key insight: Use agents strategically in specific workflow areas, not as wholesale replacements
+                    </p>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <div class="card-header">
+                    <h2 class="card-title">Postel's Law</h2>
+                    <p class="card-subtitle">The sentence that made the web work</p>
+                </div>
+                <div class="card-body">
+                    <div class="formula">Be conservative in what you do,<br>be liberal in what you accept from others</div>
+                    <ul class="card-list">
+                        <li><strong>For prompts:</strong> Be conservative - create structured, well-defined prompts</li>
+                        <li><strong>For responses:</strong> Be liberal - parse responses flexibly, handle variations</li>
+                        <li><strong>Application:</strong> Defect → Structured Prompt → AI → Flexible Parser → Diagnosis</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card green">
+                <div class="card-header">
+                    <h2 class="card-title">Strategic Agent Placement</h2>
+                    <p class="card-subtitle">Where to integrate agents in your workflow</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Keep simple programs simple:</strong> If it's a basic recipe, leave it as traditional code</li>
+                        <li><strong>Target bottlenecks:</strong> Focus on time-consuming manual analysis tasks</li>
+                        <li><strong>Example solution:</strong> Replace manual engineer diagnosis with an AI agent</li>
+                        <li><strong>Implementation:</strong> Python agent reads defect database, creates diagnoses (subsystem, component, severity)</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px;">
+                        <strong>Remember:</strong> Identify key areas where agents add the most value
+                    </p>
+                </div>
+            </div>
+
+            <div class="card pink">
+                <div class="card-header">
+                    <h2 class="card-title">Security and Identity</h2>
+                    <p class="card-subtitle">Treating agents like employees</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Register agents:</strong> Add them to your identity management system like new users</li>
+                        <li><strong>Identity tokens:</strong> Agents get tokens (like JWTs) to authenticate with tools</li>
+                        <li><strong>Tool restrictions:</strong> Some MCP servers can limit tool access based on agent identity</li>
+                        <li><strong>Controlled actions:</strong> Configure tools to restrict agent capabilities (e.g., email only to specific accounts)</li>
+                        <li><strong>Audit trail:</strong> Log and track agent actions using the same systems as humans</li>
+                        <li><strong>Threat detection:</strong> Security tools like Defender or CrowdStrike can monitor agent behavior</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card teal">
+                <div class="card-header">
+                    <h2 class="card-title">Core Learning Limitations</h2>
+                    <p class="card-subtitle">Why agents aren't experts yet</p>
+                </div>
+                <div class="card-body">
+                    <p class="card-description" style="margin-bottom: 15px;">
+                        <strong>Michael Nygard (Release It):</strong> "Bugs will happen. They cannot be eliminated, so they must be survived instead."
+                    </p>
+                    <ul class="card-list">
+                        <li><strong>General knowledge:</strong> LLMs have impressive general knowledge from internet training</li>
+                        <li><strong>Not specialized:</strong> Can't match specialists with decades of specific domain experience</li>
+                        <li><strong>Will make mistakes:</strong> Agents will produce incorrect diagnoses initially</li>
+                        <li><strong>Need supervision:</strong> Treat agents like interns requiring oversight and training</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card coral">
+                <div class="card-header">
+                    <h2 class="card-title">Human-Agent Hybrid</h2>
+                    <p class="card-subtitle">Combining quantity with quality</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Complementary strengths:</strong> Agents = quantity, Humans = quality</li>
+                        <li><strong>Human oversight:</strong> Humans check subset of agent behavior</li>
+                        <li><strong>Certification process:</strong> Humans verify correct responses or fix incorrect ones</li>
+                        <li><strong>Knowledge base:</strong> Certified responses feed back into the system</li>
+                        <li><strong>Continuous improvement:</strong> Agent gets better as knowledge base grows</li>
+                        <li><strong>Bonus artifact:</strong> Creates a "golden set" for other applications</li>
+                    </ul>
+                    <p class="card-description" style="margin-top: 15px; font-style: italic;">
+                        Example: Build "Professor Piston" chatbot from certified diagnoses for public car troubleshooting
+                    </p>
+                </div>
+            </div>
+
+            <div class="card indigo">
+                <div class="card-header">
+                    <h2 class="card-title">Scaling with Quality</h2>
+                    <p class="card-subtitle">Kent Beck's wisdom applied to agents</p>
+                </div>
+                <div class="card-body">
+                    <div class="formula">Make it work → Make it right → Make it fast</div>
+                    <ol class="card-list steps">
+                        <li><strong>Start tiny:</strong> Begin with a small amount of data on day one</li>
+                        <li><strong>Check heavily:</strong> Audit a large proportion of responses initially</li>
+                        <li><strong>Correct errors:</strong> Keep correcting with small data volumes</li>
+                        <li><strong>Build knowledge:</strong> Let the knowledge base grow until error rate drops</li>
+                        <li><strong>Scale gradually:</strong> Increase volume only when error rate is acceptable</li>
+                        <li><strong>Track metrics:</strong> Continuously monitor error rates as you scale</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card mint">
+                <div class="card-header">
+                    <h2 class="card-title">The Workflow Integration</h2>
+                    <p class="card-subtitle">How it all fits together</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li>Defects arrive from multiple sources (dealerships, telemetry, workshops)</li>
+                        <li>Agent creates diagnosis: subsystem, component, severity level</li>
+                        <li>Human engineers check subset of diagnoses</li>
+                        <li>Correct and incorrect diagnoses both get certified</li>
+                        <li>Certified diagnoses populate knowledge base</li>
+                        <li>Agent improves using knowledge base for future diagnoses</li>
+                        <li>Quality dashboard receives high-quality, high-volume diagnoses</li>
+                        <li>Production line and design team can act on reliable data</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card purple">
+                <div class="card-header">
+                    <h2 class="card-title">Quality Dashboard Impact</h2>
+                    <p class="card-subtitle">What the system enables</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Heat maps:</strong> Identify which car parts have more problems</li>
+                        <li><strong>Production line:</strong> Modify manufacturing to design out defects</li>
+                        <li><strong>Design team:</strong> Fix component issues in next year's models</li>
+                        <li><strong>Financial impact:</strong> Defects are expensive to fix and affect sales</li>
+                        <li><strong>Speed advantage:</strong> Faster diagnosis means quicker response to problems</li>
+                        <li><strong>Volume advantage:</strong> Process more defects than human-only system</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <div class="card-header">
+                    <h2 class="card-title">Key Takeaways</h2>
+                    <p class="card-subtitle">Summary of strategic agent deployment</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Don't replace everything:</strong> Use agents strategically in specific workflow areas</li>
+                        <li><strong>Security matters:</strong> Give agents identities, restrict their capabilities</li>
+                        <li><strong>Expect mistakes:</strong> Plan for errors rather than hoping to eliminate them</li>
+                        <li><strong>Human + AI = Best:</strong> Combine agent quantity with human quality oversight</li>
+                        <li><strong>Learn from errors:</strong> Build knowledge bases from certified corrections</li>
+                        <li><strong>Start small:</strong> Use baby steps to scale while maintaining quality</li>
+                        <li><strong>Track everything:</strong> Monitor error rates and agent performance continuously</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+        <p class="me" title="Clicky-click">
+            Lovingly crafted in Glorious Stereophonic HTML by <a href="https://linktr.ee/dogriffiths" target="_blank">David Griffiths</a>.
+            <a href="https://linktr.ee/dogriffiths" target="_blank"><img src="data:image/png;base64,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" style="margin-bottom: -24px;" /></a>
+        </p>
+    </body>
+</html>
