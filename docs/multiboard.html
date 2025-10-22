@@ -84,6 +84,73 @@
             text-align: center;
         }
 
+        /* Info Panel */
+        #infoPanel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: rgba(28, 28, 28, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.12);
+            min-width: 150px;
+            display: none;
+            transition: opacity 0.2s ease;
+        }
+
+        #infoPanel.visible {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: #aaa;
+            margin-right: 12px;
+        }
+
+        .info-value {
+            font-weight: bold;
+            color: white;
+        }
+
+        .info-tool-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-tool-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: white;
+        }
+
         #navigation {
             left: 36px;
         }
@@ -870,6 +937,18 @@
         </svg>
     </button>
     <div id="digitalClock"></div>
+    
+    <!-- Info Panel -->
+    <div id="infoPanel">
+        <div class="info-row">
+            <span class="info-label">Tool:</span>
+            <span class="info-value info-tool-icon" id="infoTool">Pen</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Width:</span>
+            <span class="info-value" id="infoWidth">2</span>
+        </div>
+    </div>
 </div>
 <div id="errorDialog" class="dialog">
     <h1>Error</h1>
@@ -1037,6 +1116,12 @@
             canvas.style.cursor = 'url("data:image/svg+xml,...") 0 24, auto';
         } else {
             canvas.style.cursor = 'default';
+        }
+        
+        // Update info panel if it's visible
+        const infoPanel = document.getElementById('infoPanel');
+        if (infoPanel && infoPanel.classList.contains('visible')) {
+            updateInfoPanel();
         }
     }
 
@@ -1698,6 +1783,10 @@
             e.preventDefault(); // Prevent the browser's default copy behavior
             copyCurrentWhiteboard();
         }
+        if (e.key === 't' || e.key === 'T') {
+            e.preventDefault();
+            toggleInfoPanel();
+        }
     }
 
     function handlePaste(e) {
@@ -1824,7 +1913,13 @@
 
     function updateBrushSizeDisplay() {
         brushSizeDisplay.value = brushSize.value;
-        lastBrushSize = brushSize.value
+        lastBrushSize = brushSize.value;
+        
+        // Update info panel if it's visible
+        const infoPanel = document.getElementById('infoPanel');
+        if (infoPanel && infoPanel.classList.contains('visible')) {
+            updateInfoPanel();
+        }
     }
 
     function updateBrushSizeSlider() {
@@ -1836,6 +1931,12 @@
         }
         brushSize.value = value;
         brushSizeDisplay.value = value;
+        
+        // Update info panel if it's visible
+        const infoPanel = document.getElementById('infoPanel');
+        if (infoPanel && infoPanel.classList.contains('visible')) {
+            updateInfoPanel();
+        }
     }
 
     function toggleOverview() {
@@ -2764,6 +2865,40 @@
 
         const digitalClock = document.getElementById('digitalClock');
         digitalClock.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    // Info Panel Functions
+    function toggleInfoPanel() {
+        const infoPanel = document.getElementById('infoPanel');
+        if (infoPanel.classList.contains('visible')) {
+            infoPanel.classList.remove('visible');
+        } else {
+            updateInfoPanel();
+            infoPanel.classList.add('visible');
+        }
+    }
+
+    function updateInfoPanel() {
+        const infoTool = document.getElementById('infoTool');
+        const infoWidth = document.getElementById('infoWidth');
+        
+        // Get current tool name and icon
+        let toolName = '';
+        let toolIcon = '';
+        
+        if (currentTool === 'pen') {
+            toolName = 'Pen';
+            toolIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>';
+        } else if (currentTool === 'highlighter') {
+            toolName = 'Highlighter';
+            toolIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l-6 6v3h9l3-3"></path><path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path></svg>';
+        } else if (currentTool === 'eraser') {
+            toolName = 'Eraser';
+            toolIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16C2 15 2 13 3 12L11 4C12 3 14 3 15 4L21 10C22 11 22 13 21 14L13 22"></path></svg>';
+        }
+        
+        infoTool.innerHTML = toolIcon + ' ' + toolName;
+        infoWidth.textContent = brushSize.value;
     }
 
     // Update clock immediately and then every second
