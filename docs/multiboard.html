@@ -2482,6 +2482,17 @@
         }
     }
 
+    // Function to reset keyboard state when visibility changes
+    // This fixes the bug where keyboard states get stuck when switching tabs
+    function resetKeyboardState() {
+        isAltPressed = false;
+        isShiftPressed = false;
+        isCtrlPressed = false;
+        if (!isDrawing) {
+            canvas.style.cursor = 'default';
+        }
+    }
+
     function loadImageToCanvas(blob) {
         const reader = new FileReader();
 
@@ -2855,6 +2866,22 @@
     });
     boardTitleInput.addEventListener('focus', function () {
         this.select();
+    });
+
+    // Add event listeners to reset keyboard state when visibility changes
+    // This prevents the stuck highlighter bug when switching tabs
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            resetKeyboardState();
+        }
+    });
+
+    window.addEventListener('focus', function() {
+        resetKeyboardState();
+    });
+
+    window.addEventListener('blur', function() {
+        resetKeyboardState();
     });
 
     function updateClock() {
