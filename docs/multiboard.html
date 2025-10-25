@@ -855,6 +855,14 @@
                 <circle cx="11" cy="11" r="2"></circle>
             </svg>
         </button>
+        <button id="dashedLineBtn" class="round-button" title="Dashed Line">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" stroke-dasharray="4 4">
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="8" x2="20" y2="8"></line>
+                <line x1="4" y1="16" x2="20" y2="16"></line>
+            </svg>
+        </button>
         <button id="highlighterBtn" class="round-button" title="Highlighter">
             <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"
                  stroke-linejoin="round">
@@ -1007,6 +1015,7 @@
     const brushSizeDisplay = document.getElementById('brushSizeDisplay');
     const gridBtn = document.getElementById('gridBtn');
     const penBtn = document.getElementById('penBtn');
+    const dashedLineBtn = document.getElementById('dashedLineBtn');
     const undoBtn = document.getElementById('undoBtn');
     const resetRotationBtn = document.getElementById('resetRotationBtn');
     const duplicateBtn = document.getElementById('duplicateBtn');
@@ -1045,6 +1054,8 @@
     let isHighlighting = false;
     let isTemporaryHighlighter = false;
     let areStickyNotesVisible = false;
+    let isDashedLine = false;
+    let isTemporaryDashedLine = false;
 
     // Brush properties
     let lastBrushSize = 4;
@@ -1057,6 +1068,7 @@
     let isCtrlPressed = false;
     let isShiftPressed = false;
     let isAltPressed = false;
+    let isMetaPressed = false;
 
     // Shift key constraining
     let shiftConstrainedDirection = null;
@@ -1105,7 +1117,8 @@
         isHighlighting = tool === 'highlighter';
 
         // Update button states
-        penBtn.classList.toggle('active', isPenActive);
+        penBtn.classList.toggle('active', isPenActive && !isDashedLine);
+        dashedLineBtn.classList.toggle('active', isPenActive && isDashedLine);
         eraserBtn.classList.toggle('active', isErasing);
         highlighterBtn.classList.toggle('active', isHighlighting);
 
@@ -1132,6 +1145,7 @@
     }
 
     function togglePen() {
+        isDashedLine = false;
         setActiveTool('pen');
     }
 
@@ -1141,6 +1155,11 @@
 
     function toggleEraser() {
         setActiveTool('eraser');
+    }
+    
+    function toggleDashedLine() {
+        isDashedLine = !isDashedLine;
+        setActiveTool('pen');
     }
 
     function debounce(func, wait) {
@@ -1289,8 +1308,12 @@
         }
         whiteboards[currentBoardIndex].history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
 
-        // Check if Ctrl is pressed and enable highlighting
-        if (isCtrlPressed && currentTool !== 'highlighter') {
+        // Check if Meta (CMD) is pressed
+        if (isMetaPressed && currentTool === 'pen') {
+            // Enable temporary dashed line mode
+            isTemporaryDashedLine = true;
+            isDashedLine = true;
+        } else if (isCtrlPressed && currentTool !== 'highlighter') {
             isTemporaryHighlighter = true;
             setActiveTool('highlighter');
         }
@@ -1339,6 +1362,17 @@
         ctx.lineWidth = newBrushSize;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        
+        // Set line dash if dashed line mode is active
+        if (isDashedLine && currentTool === 'pen') {
+            // Scale the dash pattern with brush size to prevent dashes from joining
+            // Use larger gaps relative to dash length for clear separation
+            const dashLength = Math.max(10, newBrushSize * 2);
+            const gapLength = Math.max(15, newBrushSize * 4);
+            ctx.setLineDash([dashLength, gapLength]);
+        } else {
+            ctx.setLineDash([]); // Solid line
+        }
 
         switch (currentTool) {
             case 'eraser':
@@ -1402,6 +1436,13 @@
             shiftStartY = null;
             saveCurrentBoard();
 
+            // Reset to solid line if it was temporarily set to dashed
+            if (isTemporaryDashedLine) {
+                isTemporaryDashedLine = false;
+                isDashedLine = false;
+                setActiveTool('pen');
+            }
+            
             // Reset to pen if it was temporarily set to highlighter
             if (isTemporaryHighlighter) {
                 isTemporaryHighlighter = false;
@@ -2062,6 +2103,10 @@
         if (event.key === 'Control') {
             isCtrlPressed = true;
         }
+        
+        if (event.key === 'Meta') {
+            isMetaPressed = true;
+        }
 
         if (event.key === 'Shift' && !isShiftPressed) {
             isShiftPressed = true;
@@ -2480,6 +2525,15 @@
         if (event.key === 'Control') {
             isCtrlPressed = false;
         }
+        if (event.key === 'Meta') {
+            isMetaPressed = false;
+            // Reset temporary dashed line if it was enabled
+            if (isTemporaryDashedLine && !isDrawing) {
+                isTemporaryDashedLine = false;
+                isDashedLine = false;
+                setActiveTool('pen');
+            }
+        }
     }
 
     // Function to reset keyboard state when visibility changes
@@ -2488,6 +2542,7 @@
         isAltPressed = false;
         isShiftPressed = false;
         isCtrlPressed = false;
+        isMetaPressed = false;
         if (!isDrawing) {
             canvas.style.cursor = 'default';
         }
@@ -2804,6 +2859,7 @@
     canvas.addEventListener('mouseup', handleMouseUp);
     canvas.addEventListener('mouseout', handleMouseUp);
     penBtn.addEventListener('click', togglePen);
+    dashedLineBtn.addEventListener('click', toggleDashedLine);
     eraserBtn.addEventListener('click', toggleEraser);
     highlighterBtn.addEventListener('click', toggleHighlighter);
     clearBtn.addEventListener('click', () => showConfirmDialog());
@@ -2914,8 +2970,10 @@
         let toolIcon = '';
         
         if (currentTool === 'pen') {
-            toolName = 'Pen';
-            toolIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>';
+            toolName = isDashedLine ? 'Dashed Line' : 'Pen';
+            toolIcon = isDashedLine 
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 4"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line></svg>'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>';
         } else if (currentTool === 'highlighter') {
             toolName = 'Highlighter';
             toolIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l-6 6v3h9l3-3"></path><path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"></path></svg>';
