@@ -1368,7 +1368,12 @@
             // Scale the dash pattern with brush size to prevent dashes from joining
             // Use larger gaps relative to dash length for clear separation
             const dashLength = Math.max(10, newBrushSize * 2);
-            const gapLength = Math.max(15, newBrushSize * 4);
+            // const dashLength = Math.min(Math.max(10, newBrushSize * 2), 20);
+            // var gapLength = Math.max(40, newBrushSize * 8);
+            var gapLength = newBrushSize * 8;
+            if (newBrushSize > 18) {
+                gapLength *= 5;
+            }
             ctx.setLineDash([dashLength, gapLength]);
         } else {
             ctx.setLineDash([]); // Solid line
