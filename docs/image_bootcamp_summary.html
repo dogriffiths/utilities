@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Working with Images Using Generative AI - Summary</title>
+        <style>
+         * {
+             margin: 0;
+             padding: 0;
+             box-sizing: border-box;
+         }
+
+         body {
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             background-color: #f8f9fa;
+             padding: 20px;
+         }
+
+         .header {
+             margin-bottom: 40px;
+             text-align: center;
+         }
+
+         .header h1 {
+             font-size: 2.5rem;
+             color: #2c3e50;
+             margin-bottom: 20px;
+             font-weight: 700;
+         }
+
+         .principles {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+             color: white;
+             padding: 30px;
+             border-radius: 16px;
+             margin-bottom: 30px;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             max-width: 1400px;
+             margin-left: auto;
+             margin-right: auto;
+         }
+
+         .principles h2 {
+             font-size: 1.8rem;
+             margin-bottom: 20px;
+         }
+
+         .principles strong {
+             color: #ffd700;
+             font-weight: 700;
+         }
+
+         .principles ul {
+             display: flex;
+             flex-wrap: wrap;
+             list-style: none;
+             padding: 0;
+         }
+
+         .principles li {
+             width: calc(50% - 10px);
+             margin-right: 20px;
+             margin-bottom: 10px;
+         }
+
+         .principles li:nth-child(even) {
+             margin-right: 0;
+         }
+
+         .container {
+             max-width: 1400px;
+             margin: 0 auto;
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+             gap: 25px;
+             padding: 20px 0;
+         }
+
+         .card {
+             border-radius: 16px;
+             padding: 0;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+             transition: transform 0.3s ease, box-shadow 0.3s ease;
+             overflow: hidden;
+             backdrop-filter: blur(10px);
+         }
+
+         .card-header {
+             padding: 28px 28px 20px 28px;
+             background-color: rgba(0, 0, 0, 0.15);
+         }
+
+         .card-body {
+             padding: 32px 40px 40px 40px;
+             margin: 0 0px 0px 0px;
+         }
+
+         .card:hover {
+             transform: translateY(-4px);
+             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+         }
+
+         .card-title {
+             font-size: 1.6rem;
+             font-weight: 700;
+             margin-bottom: 12px;
+             color: white;
+         }
+
+         .card-subtitle {
+             font-size: 1.1rem;
+             font-weight: 500;
+             margin-bottom: 8px;
+             color: rgba(255, 255, 255, 0.9);
+         }
+
+         .card-description {
+             font-size: 1rem;
+             line-height: 1.6;
+             color: white;
+         }
+
+         .card-list {
+             list-style: none;
+             margin: 15px 0;
+         }
+
+         .card-list li {
+             padding: 8px 0;
+             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+             font-size: 0.95rem;
+         }
+
+         .card-list li:last-child {
+             border-bottom: none;
+         }
+
+         .card-list strong {
+             color: #fff;
+             font-weight: 600;
+         }
+
+         .highlight {
+             background: rgba(255, 255, 255, 0.2);
+             padding: 3px 8px;
+             border-radius: 4px;
+             font-weight: 600;
+         }
+
+         .steps {
+             counter-reset: step-counter;
+         }
+
+         .steps li {
+             counter-increment: step-counter;
+             position: relative;
+             padding-left: 40px;
+         }
+
+         .steps li::before {
+             content: counter(step-counter);
+             position: absolute;
+             left: 0;
+             top: 4px;
+             background: rgba(255, 255, 255, 0.3);
+             color: white;
+             width: 24px;
+             height: 24px;
+             border-radius: 50%;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-weight: 700;
+             font-size: 0.9rem;
+         }
+
+         /* Color schemes */
+         .blue {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .blue li, .blue .card-subtitle {
+             color: #fff;
+         }
+
+         .purple {
+             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+             color: #2c3e50;
+         }
+
+         .purple .card-title,
+         .purple .card-subtitle,
+         .purple .card-description {
+             color: #2c3e50;
+         }
+
+         .purple .card-list strong {
+             color: #5d4e75;
+         }
+
+         .orange {
+             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+             color: #2c3e50;
+         }
+
+         .orange .card-title,
+         .orange .card-subtitle,
+         .orange .card-description {
+             color: #2c3e50;
+         }
+
+         .orange .card-list strong {
+             color: #d35400;
+         }
+
+         .green {
+             background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+             color: #2c3e50;
+         }
+
+         .green .card-title,
+         .green .card-subtitle,
+         .green .card-description {
+             color: #2c3e50;
+         }
+
+         .green .card-list strong {
+             color: #27ae60;
+         }
+
+         .pink {
+             background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%);
+             color: #2c3e50;
+         }
+
+         .pink .card-title,
+         .pink .card-subtitle,
+         .pink .card-description {
+             color: #2c3e50;
+         }
+
+         .pink .card-list strong {
+             color: #e91e63;
+         }
+
+         .teal {
+             background: linear-gradient(135deg, #96deda 0%, #50c9c3 100%);
+             color: #2c3e50;
+         }
+
+         .teal .card-title,
+         .teal .card-subtitle,
+         .teal .card-description {
+             color: #2c3e50;
+         }
+
+         .teal .card-list strong {
+             color: #008080;
+         }
+
+         .coral {
+             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+             color: #2c3e50;
+         }
+
+         .coral .card-title,
+         .coral .card-subtitle,
+         .coral .card-description, .coral li, .coral strong {
+             color: #2c3e50;
+         }
+
+         .indigo {
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         }
+
+         .indigo li, .indigo .card-subtitle {
+             color: #fff;
+         }
+
+         .mint {
+             background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+             color: #2c3e50;
+         }
+
+         .mint .card-title,
+         .mint .card-subtitle,
+         .mint .card-description {
+             color: #2c3e50;
+         }
+
+         .mint .card-description, .mint li, .mint strong {
+             color: #2c3e50;
+         }
+
+         .mint .steps li::before, .green .steps li::before, .purple .steps li::before, .orange .steps li::before {
+             color: black;
+         }
+
+         @media (max-width: 768px) {
+             .container {
+                 grid-template-columns: 1fr;
+                 gap: 20px;
+             }
+             
+             .principles ul {
+                 display: block;
+             }
+
+             .principles li {
+                 width: auto;
+             }
+             
+             .header h1 {
+                 font-size: 2rem;
+             }
+             
+             .card-title {
+                 font-size: 1.4rem;
+             }
+         }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Working with Images Using Generative AI</h1>
+            <p style="max-width: 600px; margin: 0 auto;"><em>Summary from the Image Bootcamp</em></p>
+            <p>&nbsp;</p>
+            
+            <div class="principles">
+                <h2>Key Principles</h2>
+                <ul>
+                    <li>AI images can look <strong>GENERIC</strong> and reduce apparent quality</li>
+                    <li>Network services can be <strong>SLOW</strong> or <strong>UNSTABLE</strong></li>
+                    <li>Chatbots are <strong>NOT DETERMINISTIC</strong> - same input = different outputs</li>
+                    <li>Be careful with <strong>PERSONAL INFORMATION</strong> (apply the "New York Times rule")</li>
+                    <li>There is no <strong>PERFECT SERVICE</strong> - different strengths, weaknesses, and costs</li>
+                    <li>Services are <strong>IMPROVING RAPIDLY</strong> - what's true today may change soon</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="card purple">
+                <div class="card-header">
+                    <h2 class="card-title">The AI Image Problem</h2>
+                    <p class="card-subtitle">Why AI-generated images can backfire</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Easy to recognize:</strong> AI images have a distinctive look that people can spot</li>
+                        <li><strong>Quality perception:</strong> Using too many AI images can reduce the perceived value of your work</li>
+                        <li><strong>Getting better:</strong> Errors like weird hands and impossible poses are becoming less common</li>
+                        <li><strong>Challenge:</strong> How to make AI images look less generic and more professional</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card blue">
+                <div class="card-header">
+                    <h2 class="card-title">Making Images Less Generic</h2>
+                    <p class="card-subtitle">Techniques to improve AI image quality</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Style specification:</strong> Request specific artistic styles (watercolor, oil painting, photorealistic)</li>
+                        <li><strong>Reference images:</strong> Provide examples of the look you want to achieve</li>
+                        <li><strong>Detailed prompts:</strong> Be specific about lighting, composition, color palette, and mood</li>
+                        <li><strong>Iterate and refine:</strong> Don't accept the first result - ask for variations and improvements</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <div class="card-header">
+                    <h2 class="card-title">Images as Communication</h2>
+                    <p class="card-subtitle">Using images to interact with AI</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Upload and analyze:</strong> AI can read text from images, identify objects, and understand context</li>
+                        <li><strong>Visual prompts:</strong> Show the AI what you want instead of describing it</li>
+                        <li><strong>Image-to-image:</strong> Transform existing images into new styles or formats</li>
+                        <li><strong>Multimodal interaction:</strong> Combine images with text for more precise instructions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card green">
+                <div class="card-header">
+                    <h2 class="card-title">Analyzing and Processing Images</h2>
+                    <p class="card-subtitle">What AI can do with images</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Content extraction:</strong> Pull text, data, and information from images</li>
+                        <li><strong>Object recognition:</strong> Identify items, people (with privacy considerations), and scenes</li>
+                        <li><strong>Style analysis:</strong> Understand artistic techniques and visual elements</li>
+                        <li><strong>Conversion:</strong> Transform sketches into photorealistic images or vice versa</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card pink">
+                <div class="card-header">
+                    <h2 class="card-title">AI Video Generation</h2>
+                    <p class="card-subtitle">Creating videos with generative AI</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Text-to-video:</strong> Generate video clips from text descriptions</li>
+                        <li><strong>Transition clips:</strong> Create smooth transitions between two frames</li>
+                        <li><strong>Storyboarding:</strong> Convert sketches into realistic previsualization</li>
+                        <li><strong>Cost consideration:</strong> Premium services can be expensive ($20+ per clip)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card teal">
+                <div class="card-header">
+                    <h2 class="card-title">Video Workflow Process</h2>
+                    <p class="card-subtitle">Building AI-generated videos efficiently</p>
+                </div>
+                <div class="card-body">
+                    <ol class="card-list steps">
+                        <li><strong>Storyboard:</strong> Create sketches of key scenes</li>
+                        <li><strong>Generate keyframes:</strong> Convert sketches to photorealistic images</li>
+                        <li><strong>Source basic clips:</strong> Film or generate your main footage</li>
+                        <li><strong>Create transition clips:</strong> Use AI to join scenes smoothly</li>
+                        <li><strong>Edit together:</strong> Use video editing software to assemble the final product</li>
+                    </ol>
+                    <p class="card-description" style="margin-top: 15px;">
+                        <strong>Key principle:</strong> Do work as early as possible - it's cheaper to refine in the storyboard phase than in production
+                    </p>
+                </div>
+            </div>
+
+            <div class="card coral">
+                <div class="card-header">
+                    <h2 class="card-title">Transition Clips</h2>
+                    <p class="card-subtitle">Bridging scenes with AI</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>How it works:</strong> Provide a start frame and end frame, AI generates the motion between them</li>
+                        <li><strong>Use cases:</strong> Cinematic transitions, scene changes (jungle to desert), character movement</li>
+                        <li><strong>Services:</strong> Google Veo (premium), Kling AI (mid-tier)</li>
+                        <li><strong>Cost example:</strong> A one-minute storyboarded video can cost $80+ to produce</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card indigo">
+                <div class="card-header">
+                    <h2 class="card-title">Pre-visualization Benefits</h2>
+                    <p class="card-subtitle">Why AI video is valuable for production</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Cost savings:</strong> Expensive for casual use, cheap compared to traditional film production</li>
+                        <li><strong>Better planning:</strong> Transform simple storyboards into realistic visual representations</li>
+                        <li><strong>Client communication:</strong> Show stakeholders what the final product will look like</li>
+                        <li><strong>Faster iteration:</strong> Test different approaches before committing to expensive shoots</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mint">
+                <div class="card-header">
+                    <h2 class="card-title">AI Image Services</h2>
+                    <p class="card-subtitle">Cloud-based options</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>ChatGPT:</strong> General purpose, good for quick generation</li>
+                        <li><strong>Google Gemini:</strong> Integrated with Google services</li>
+                        <li><strong>Meta AI:</strong> Improving rapidly, still developing</li>
+                        <li><strong>Mid Journey:</strong> Famous for artistic illustrations</li>
+                        <li><strong>Adobe Firefly:</strong> Focused on graphic designers</li>
+                        <li><strong>Stable Diffusion:</strong> Can be self-hosted (requires technical skill)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card purple">
+                <div class="card-header">
+                    <h2 class="card-title">AI Video Services</h2>
+                    <p class="card-subtitle">Options for different budgets</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Budget/Mid-tier:</strong> LumaLabs (based on footage), HeyGen (AI dubbing), Kling AI (start/end frames)</li>
+                        <li><strong>Premium:</strong> Google Veo (most practical), Sora (recently improved), Runway ML (high-end)</li>
+                        <li><strong>Self-hosted:</strong> Requires powerful machine, lots of time, and technical expertise</li>
+                        <li><strong>Limitations:</strong> Services like Veo allow only 2-3 free videos per day</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card green">
+                <div class="card-header">
+                    <h2 class="card-title">Important Warnings</h2>
+                    <p class="card-subtitle">What to watch out for</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Privacy:</strong> Don't share sensitive information you wouldn't want on the front page of newspapers</li>
+                        <li><strong>Costs:</strong> Premium video services can be very expensive ($20-80+ per short video)</li>
+                        <li><strong>Reliability:</strong> Services can be slow or go down during live use</li>
+                        <li><strong>Variability:</strong> Same prompt will produce different results each time</li>
+                        <li><strong>Ethics:</strong> Some services now allow generating videos with public figures</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card orange">
+                <div class="card-header">
+                    <h2 class="card-title">Best Practices</h2>
+                    <p class="card-subtitle">Getting the most from AI image and video tools</p>
+                </div>
+                <div class="card-body">
+                    <ul class="card-list">
+                        <li><strong>Experiment:</strong> Try different services - each has unique strengths</li>
+                        <li><strong>Stay updated:</strong> Services improve rapidly; what's bad today may be good tomorrow</li>
+                        <li><strong>Plan ahead:</strong> For video work, do as much as possible in pre-production</li>
+                        <li><strong>Verify outputs:</strong> Always check AI-generated content for accuracy and appropriateness</li>
+                        <li><strong>Consider costs:</strong> Budget carefully if using premium video services</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
