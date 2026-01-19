@@ -2548,11 +2548,12 @@
         isShiftPressed = false;
         isCtrlPressed = false;
         isMetaPressed = false;
+        lastPressure = 1.0;  // Add this line
         if (!isDrawing) {
             canvas.style.cursor = 'default';
         }
     }
-
+    
     function loadImageToCanvas(blob) {
         const reader = new FileReader();
 
