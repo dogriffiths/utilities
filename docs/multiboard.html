@@ -945,7 +945,7 @@
         </svg>
     </button>
     <div id="digitalClock"></div>
-    
+
     <!-- Info Panel -->
     <div id="infoPanel">
         <div class="info-row">
@@ -1130,7 +1130,7 @@
         } else {
             canvas.style.cursor = 'default';
         }
-        
+
         // Update info panel if it's visible
         const infoPanel = document.getElementById('infoPanel');
         if (infoPanel && infoPanel.classList.contains('visible')) {
@@ -1156,7 +1156,7 @@
     function toggleEraser() {
         setActiveTool('eraser');
     }
-    
+
     function toggleDashedLine() {
         isDashedLine = !isDashedLine;
         setActiveTool('pen');
@@ -1362,7 +1362,7 @@
         ctx.lineWidth = newBrushSize;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        
+
         // Set line dash if dashed line mode is active
         if (isDashedLine && currentTool === 'pen') {
             // Scale the dash pattern with brush size to prevent dashes from joining
@@ -1447,7 +1447,7 @@
                 isDashedLine = false;
                 setActiveTool('pen');
             }
-            
+
             // Reset to pen if it was temporarily set to highlighter
             if (isTemporaryHighlighter) {
                 isTemporaryHighlighter = false;
@@ -1856,7 +1856,12 @@
 
     function handlePointerEvent(event) {
         if (event.pointerType === 'pen') {
-            lastPressure = event.pressure;
+            // Only update pressure when the pen is actively in contact (pressure > 0).
+            // Pointer events fired during focus changes report pressure = 0 even though
+            // the pen hasn't moved, which would incorrectly shrink or distort strokes.
+            if (event.pressure > 0) {
+                lastPressure = event.pressure;
+            }
             if (event.button === 5) {
                 setActiveTool('eraser');
             } else if (event.button === 0 && currentTool === 'eraser') {
@@ -1960,7 +1965,7 @@
     function updateBrushSizeDisplay() {
         brushSizeDisplay.value = brushSize.value;
         // lastBrushSize = brushSize.value;
-        
+
         // Update info panel if it's visible
         const infoPanel = document.getElementById('infoPanel');
         if (infoPanel && infoPanel.classList.contains('visible')) {
@@ -1977,7 +1982,7 @@
         }
         brushSize.value = value;
         brushSizeDisplay.value = value;
-        
+
         // Update info panel if it's visible
         const infoPanel = document.getElementById('infoPanel');
         if (infoPanel && infoPanel.classList.contains('visible')) {
@@ -2108,7 +2113,7 @@
         if (event.key === 'Control') {
             isCtrlPressed = true;
         }
-        
+
         if (event.key === 'Meta') {
             isMetaPressed = true;
         }
@@ -2548,7 +2553,6 @@
         isShiftPressed = false;
         isCtrlPressed = false;
         isMetaPressed = false;
-        lastPressure = 1.0;  // Add this line
         if (!isDrawing) {
             canvas.style.cursor = 'default';
         }
@@ -2970,14 +2974,14 @@
     function updateInfoPanel() {
         const infoTool = document.getElementById('infoTool');
         const infoWidth = document.getElementById('infoWidth');
-        
+
         // Get current tool name and icon
         let toolName = '';
         let toolIcon = '';
-        
+
         if (currentTool === 'pen') {
             toolName = isDashedLine ? 'Dashed Line' : 'Pen';
-            toolIcon = isDashedLine 
+            toolIcon = isDashedLine
                 ? '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 4"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line></svg>'
                 : '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>';
         } else if (currentTool === 'highlighter') {
@@ -2987,7 +2991,7 @@
             toolName = 'Eraser';
             toolIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16C2 15 2 13 3 12L11 4C12 3 14 3 15 4L21 10C22 11 22 13 21 14L13 22"></path></svg>';
         }
-        
+
         infoTool.innerHTML = toolIcon + ' ' + toolName;
         infoWidth.textContent = brushSize.value;
     }
