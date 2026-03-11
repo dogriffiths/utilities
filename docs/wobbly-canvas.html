@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wobbly Draw</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #1a1008; --bg: #ffffff;
+      --accent: #b5451b; --muted: #8c7b60; --ui-bg: rgba(255,255,255,0.92);
+      --ui-border: rgba(0,0,0,0.10); --shadow: rgba(0,0,0,0.12);
+    }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+
+    /* Full-page canvas stack */
+    #wrapper {
+      position: fixed; inset: 0;
+    }
+    .canvas-layer {
+      position: absolute; top: 0; left: 0;
+      touch-action: none;
+    }
+    #hitLayer {
+      position: absolute; top: 0; left: 0;
+      z-index: 10; cursor: crosshair;
+      touch-action: none; background: transparent;
+    }
+
+    /* Floating toolbar at bottom-centre */
+    .toolbar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 20;
+      display: flex; align-items: center; gap: 12px;
+      background: var(--ui-bg);
+      border: 1px solid var(--ui-border);
+      padding: 8px 16px; border-radius: 999px;
+      box-shadow: 0 4px 24px var(--shadow);
+      backdrop-filter: blur(12px);
+      flex-wrap: nowrap;
+      font-family: 'Caveat', cursive;
+      white-space: nowrap;
+    }
+    .tool-group { display: flex; align-items: center; gap: 7px; }
+    .tool-label { font-size: 0.95rem; color: var(--muted); }
+
+    .swatch {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid transparent; cursor: pointer;
+      transition: transform 0.12s;
+      flex-shrink: 0;
+    }
+    .swatch:hover { transform: scale(1.18); }
+    .swatch.active {
+      border-color: #000;
+      box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #000;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none; height: 3px; border-radius: 2px;
+      background: #ddd; outline: none; width: 72px; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+      background: var(--ink); border: 2px solid #fff;
+      box-shadow: 0 1px 3px var(--shadow);
+    }
+
+    .divider { width: 1px; height: 24px; background: #e0e0e0; flex-shrink: 0; }
+
+    .btn {
+      font-family: 'Caveat', cursive; font-size: 0.95rem; padding: 3px 12px;
+      border-radius: 999px; border: 1.5px solid #ccc;
+      background: transparent; color: var(--ink); cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .btn.active-mode { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .btn.danger { border-color: var(--accent); color: var(--accent); }
+    .btn.danger:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="wrapper">
+  <canvas id="hitLayer"></canvas>
+</div>
+
+<div class="toolbar">
+  <div class="tool-group">
+    <div id="swatches" style="display:flex;gap:5px;"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="tool-group">
+    <span class="tool-label">size</span>
+    <input type="range" id="sizeSlider" min="1" max="24" value="4"/>
+  </div>
+  <div class="divider"></div>
+  <div class="tool-group">
+    <span class="tool-label">wobble</span>
+    <input type="range" id="wobbleSlider" min="0" max="100" value="40" style="width:64px"/>
+  </div>
+  <div class="divider"></div>
+  <div class="tool-group">
+    <span class="tool-label">speed</span>
+    <input type="range" id="speedSlider" min="50" max="1000" value="250" style="width:64px"/>
+  </div>
+  <div class="divider"></div>
+  <div class="tool-group">
+    <button class="btn" id="eraserBtn">eraser</button>
+    <button class="btn" id="dashBtn">dashed</button>
+    <button class="btn danger" id="clearBtn">clear</button>
+    <button class="btn" id="exportBtn">↓ export</button>
+    <button class="btn" id="importBtn">↑ import</button>
+    <input type="file" id="importFile" accept=".zip" style="display:none"/>
+    <button class="btn" id="fsBtn">⛶ fullscreen</button>
+  </div>
+</div>
+
+<script>
+const NUM_LAYERS = 4;
+const FRAME_MS   = 250;
+
+// ── Build canvas layers ────────────────────────────────────────────────────
+const wrapper  = document.getElementById('wrapper');
+const hitLayer = document.getElementById('hitLayer');
+
+const layers = [];
+for (let i = 0; i < NUM_LAYERS; i++) {
+  const c = document.createElement('canvas');
+  c.className = 'canvas-layer';
+  c.style.zIndex = i + 1;
+  wrapper.insertBefore(c, hitLayer);
+  layers.push({ canvas: c, ctx: c.getContext('2d') });
+}
+
+// Each layer gets its own phase offset — spread apart for distinct wobbles
+const LAYER_PHASE_OFFSETS = [0, 17.3, 34.6, 51.9];
+
+// ── Controls & state (declared early so renderAll can reference them) ────────
+const sizeSlider   = document.getElementById('sizeSlider');
+const wobbleSlider = document.getElementById('wobbleSlider');
+const eraserBtn    = document.getElementById('eraserBtn');
+const clearBtn     = document.getElementById('clearBtn');
+
+let drawing = false, lastX = 0, lastY = 0;
+let currentColor = '#1a1008', eraserMode = false;
+let noisePhase = 0, strokePoints = [], strokeColor = '#1a1008';
+let strokeSize = 4, strokeEraser = false, strokeDash = false, strokes = [];
+
+// ── Sizing ─────────────────────────────────────────────────────────────────
+function resize() {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  layers.forEach(({ canvas }) => { canvas.width = W; canvas.height = H; });
+  hitLayer.width  = W;
+  hitLayer.height = H;
+  renderAll();
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── Flicker loop ───────────────────────────────────────────────────────────
+let activeLayer = 0;
+function showLayer(i) {
+  layers.forEach(({ canvas }, idx) => { canvas.style.opacity = idx === i ? '1' : '0'; });
+}
+showLayer(0);
+
+const speedSlider = document.getElementById('speedSlider');
+let flickerInterval = setInterval(tick, +speedSlider.value);
+function tick() {
+  activeLayer = (activeLayer + 1) % NUM_LAYERS;
+  showLayer(activeLayer);
+}
+speedSlider.addEventListener('input', () => {
+  clearInterval(flickerInterval);
+  flickerInterval = setInterval(tick, +speedSlider.value);
+});
+
+// ── Palette ────────────────────────────────────────────────────────────────
+const palette = ['#1a1008','#b5451b','#2b5c3f','#1c3d6e','#7b3fa0','#b08030','#6b6b6b','#d4436a'];
+const swatchContainer = document.getElementById('swatches');
+palette.forEach(color => {
+  const s = document.createElement('div');
+  s.className = 'swatch' + (color === currentColor ? ' active' : '');
+  s.style.background = color;
+  s.addEventListener('click', () => {
+    currentColor = color; eraserMode = false;
+    eraserBtn.classList.remove('active-mode');
+    document.querySelectorAll('.swatch').forEach(el => el.classList.remove('active'));
+    s.classList.add('active');
+  });
+  swatchContainer.appendChild(s);
+});
+
+let dashMode = false;
+
+eraserBtn.addEventListener('click', () => {
+  eraserMode = !eraserMode;
+  eraserBtn.classList.toggle('active-mode', eraserMode);
+});
+const dashBtn = document.getElementById('dashBtn');
+dashBtn.addEventListener('click', () => {
+  dashMode = !dashMode;
+  dashBtn.classList.toggle('active-mode', dashMode);
+});
+clearBtn.addEventListener('click', () => {
+  strokes = [];
+  layers.forEach(({ canvas, ctx }) => ctx.clearRect(0, 0, canvas.width, canvas.height));
+});
+
+// ── Wobble math ────────────────────────────────────────────────────────────
+function smoothNoise(t) {
+  return Math.sin(t*1.7+0.4)*0.50 + Math.sin(t*3.1+1.1)*0.25 +
+         Math.sin(t*6.3+2.5)*0.15 + Math.sin(t*13.0+0.9)*0.10;
+}
+function perpOffset(x0, y0, x1, y1, amount) {
+  const dx = x1-x0, dy = y1-y0, len = Math.sqrt(dx*dx+dy*dy)||1;
+  return { px: -dy/len*amount, py: dx/len*amount };
+}
+
+function drawStroke(ctx, stroke, wobbleAmt, phaseOffset) {
+  const { points, color, size, eraser, phase } = stroke;
+  if (!points.length) return;
+  const combinedPhase = phase + phaseOffset;
+  ctx.save();
+  ctx.lineWidth = size; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (stroke.dash) ctx.setLineDash([size * 2.5, size * 2]);
+  else ctx.setLineDash([]);
+  if (eraser) {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = color;
+  }
+  if (points.length === 1) {
+    ctx.beginPath();
+    ctx.arc(points[0].x, points[0].y, size/2, 0, Math.PI*2);
+    ctx.fillStyle = eraser ? 'rgba(0,0,0,1)' : color;
+    ctx.fill(); ctx.restore(); return;
+  }
+  const wpts = points.map((p, i) => {
+    if (i===0 || i===points.length-1) return {x:p.x, y:p.y};
+    const noise = smoothNoise(combinedPhase + i*0.28);
+    const prev = points[i-1], next = points[i+1]||p;
+    const {px,py} = perpOffset(prev.x, prev.y, next.x, next.y, noise*wobbleAmt);
+    return {x:p.x+px, y:p.y+py};
+  });
+  ctx.beginPath();
+  ctx.moveTo(wpts[0].x, wpts[0].y);
+  if (wpts.length===2) {
+    ctx.lineTo(wpts[1].x, wpts[1].y);
+  } else {
+    for (let i=1; i<wpts.length-1; i++) {
+      const mx=(wpts[i].x+wpts[i+1].x)/2, my=(wpts[i].y+wpts[i+1].y)/2;
+      ctx.quadraticCurveTo(wpts[i].x, wpts[i].y, mx, my);
+    }
+    ctx.lineTo(wpts[wpts.length-1].x, wpts[wpts.length-1].y);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function renderAll() {
+  const wobbleAmt = +wobbleSlider.value * 0.06;
+  layers.forEach(({ canvas, ctx }, li) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const off = LAYER_PHASE_OFFSETS[li];
+    for (const s of strokes) drawStroke(ctx, s, wobbleAmt, off);
+    if (drawing && strokePoints.length > 1) {
+      drawStroke(ctx, { points:strokePoints, color:strokeColor, size:strokeSize, eraser:strokeEraser, dash:strokeDash, phase:noisePhase }, wobbleAmt, off);
+    }
+  });
+}
+
+// ── Pointer ────────────────────────────────────────────────────────────────
+function getPos(e) {
+  const rect = hitLayer.getBoundingClientRect();
+  const src  = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - rect.left) * (hitLayer.width  / rect.width),
+    y: (src.clientY - rect.top)  * (hitLayer.height / rect.height)
+  };
+}
+function startDraw(e) {
+  e.preventDefault();
+  drawing=true; noisePhase=Math.random()*100; strokePoints=[];
+  strokeColor=currentColor; strokeSize=+sizeSlider.value; strokeEraser=eraserMode; strokeDash=dashMode;
+  const p=getPos(e); strokePoints.push(p); lastX=p.x; lastY=p.y;
+}
+function moveDraw(e) {
+  if (!drawing) return; e.preventDefault();
+  const p=getPos(e); const dx=p.x-lastX, dy=p.y-lastY;
+  if (dx*dx+dy*dy<4) return;
+  strokePoints.push(p); lastX=p.x; lastY=p.y; renderAll();
+}
+function endDraw(e) {
+  if (!drawing) return; drawing=false;
+  if (strokePoints.length>0) strokes.push({points:strokePoints.slice(),color:strokeColor,size:strokeSize,eraser:strokeEraser,dash:strokeDash,phase:noisePhase});
+  strokePoints=[]; renderAll();
+}
+
+hitLayer.addEventListener('mousedown',  startDraw);
+hitLayer.addEventListener('mousemove',  moveDraw);
+hitLayer.addEventListener('mouseup',    endDraw);
+hitLayer.addEventListener('mouseleave', endDraw);
+hitLayer.addEventListener('touchstart', startDraw, { passive:false });
+hitLayer.addEventListener('touchmove',  moveDraw,  { passive:false });
+hitLayer.addEventListener('touchend',   endDraw,   { passive:false });
+// ── Export ─────────────────────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', async () => {
+  const zip = new JSZip();
+  // Composite each layer onto a white background before saving
+  for (let i = 0; i < NUM_LAYERS; i++) {
+    const src = layers[i].canvas;
+    const tmp = document.createElement('canvas');
+    tmp.width = src.width; tmp.height = src.height;
+    const tc = tmp.getContext('2d');
+    tc.fillStyle = '#ffffff';
+    tc.fillRect(0, 0, tmp.width, tmp.height);
+    tc.drawImage(src, 0, 0);
+    const blob = await new Promise(res => tmp.toBlob(res, 'image/png'));
+    zip.file(`frame-${i + 1}.png`, blob);
+  }
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'wobbly-drawing.zip';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+// ── Import ─────────────────────────────────────────────────────────────────
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = ''; // reset so same file can be re-imported
+  const zip = await JSZip.loadAsync(file);
+  // Find PNG files sorted by name
+  const pngFiles = Object.values(zip.files)
+    .filter(f => !f.dir && f.name.match(/\.png$/i))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  if (pngFiles.length === 0) return alert('No PNG files found in zip.');
+  // Clear existing strokes — imported layers become the source of truth
+  strokes = [];
+  for (let i = 0; i < Math.min(pngFiles.length, NUM_LAYERS); i++) {
+    const blob = await pngFiles[i].async('blob');
+    const url  = URL.createObjectURL(blob);
+    await new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => {
+        const { canvas, ctx } = layers[i];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Scale image to fit canvas
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        res();
+      };
+      img.onerror = rej;
+      img.src = url;
+    });
+  }
+});
+
+
+fsBtn.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+});
+document.addEventListener('fullscreenchange', () => {
+  const inFs = !!document.fullscreenElement;
+  fsBtn.textContent = inFs ? '✕ exit fullscreen' : '⛶ fullscreen';
+  fsBtn.classList.toggle('active-mode', inFs);
+});
+</script>
+</body>
+</html>
