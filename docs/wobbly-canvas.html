@@ -81,6 +81,16 @@
     .btn.active-mode { background: var(--ink); color: #fff; border-color: var(--ink); }
     .btn.danger { border-color: var(--accent); color: var(--accent); }
     .btn.danger:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    #clock {
+      font-family: 'Caveat', cursive;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 0.04em;
+      min-width: 72px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -118,6 +128,8 @@
     <input type="file" id="importFile" accept=".zip" style="display:none"/>
     <button class="btn" id="fsBtn">⛶ fullscreen</button>
   </div>
+  <div class="divider"></div>
+  <span id="clock">00:00:00</span>
 </div>
 
 <script>
@@ -433,6 +445,18 @@ document.addEventListener('fullscreenchange', () => {
   fsBtn.textContent = inFs ? '✕ exit fullscreen' : '⛶ fullscreen';
   fsBtn.classList.toggle('active-mode', inFs);
 });
+
+// ── Clock ──────────────────────────────────────────────────────────────────
+const clockEl = document.getElementById('clock');
+function updateClock() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  clockEl.textContent = `${hh}:${mm}:${ss}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
 </script>
 </body>
 </html>
