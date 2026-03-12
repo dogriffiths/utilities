@@ -151,6 +151,12 @@ let currentColor = '#1a1008', eraserMode = false;
 let noisePhase = 0, strokePoints = [], strokeColor = '#1a1008';
 let strokeSize = 4, strokeEraser = false, strokeDash = false, strokes = [];
 
+// Alt-key axis-constrain state
+let altConstrain = false;       // was Alt held at stroke start?
+let constrainAxis = null;       // null | 'h' | 'v' — determined after sampling stretch
+let constrainOrigin = null;     // {x, y} — the anchor point the axis locks to
+const CONSTRAIN_SAMPLE_PX = 18; // pixels of travel before axis is decided
+
 // ── Sizing ─────────────────────────────────────────────────────────────────
 function resize() {
   const W = window.innerWidth;
@@ -292,10 +298,37 @@ function startDraw(e) {
   drawing=true; noisePhase=Math.random()*100; strokePoints=[];
   strokeColor=currentColor; strokeSize=+sizeSlider.value; strokeEraser=eraserMode; strokeDash=dashMode;
   const p=getPos(e); strokePoints.push(p); lastX=p.x; lastY=p.y;
+  // Alt-constrain setup
+  altConstrain = !!e.altKey;
+  constrainAxis = null;
+  constrainOrigin = { x: p.x, y: p.y };
 }
 function moveDraw(e) {
   if (!drawing) return; e.preventDefault();
-  const p=getPos(e); const dx=p.x-lastX, dy=p.y-lastY;
+  let p = getPos(e);
+
+  // Alt-constrain: snap to horizontal or vertical from the stroke origin
+  if (altConstrain) {
+    const totalDx = p.x - constrainOrigin.x;
+    const totalDy = p.y - constrainOrigin.y;
+    const totalDist = Math.sqrt(totalDx*totalDx + totalDy*totalDy);
+
+    // Determine axis once we've travelled far enough to tell intent
+    if (constrainAxis === null && totalDist >= CONSTRAIN_SAMPLE_PX) {
+      constrainAxis = Math.abs(totalDx) >= Math.abs(totalDy) ? 'h' : 'v';
+    }
+
+    if (constrainAxis === 'h') {
+      p = { x: p.x, y: constrainOrigin.y };
+    } else if (constrainAxis === 'v') {
+      p = { x: constrainOrigin.x, y: p.y };
+    } else {
+      // Still sampling — don't draw yet
+      return;
+    }
+  }
+
+  const dx=p.x-lastX, dy=p.y-lastY;
   if (dx*dx+dy*dy<4) return;
   strokePoints.push(p); lastX=p.x; lastY=p.y; renderAll();
 }
