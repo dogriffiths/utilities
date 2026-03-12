@@ -179,7 +179,9 @@ showLayer(0);
 const speedSlider = document.getElementById('speedSlider');
 let flickerInterval = setInterval(tick, +speedSlider.value);
 function tick() {
-  activeLayer = (activeLayer + 1) % NUM_LAYERS;
+  let next;
+  do { next = Math.floor(Math.random() * NUM_LAYERS); } while (next === activeLayer);
+  activeLayer = next;
   showLayer(activeLayer);
 }
 speedSlider.addEventListener('input', () => {
