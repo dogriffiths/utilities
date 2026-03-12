@@ -96,7 +96,7 @@
   <div class="divider"></div>
   <div class="tool-group">
     <span class="tool-label">size</span>
-    <input type="range" id="sizeSlider" min="1" max="24" value="4"/>
+    <input type="range" id="sizeSlider" min="1" max="24" value="8"/>
   </div>
   <div class="divider"></div>
   <div class="tool-group">
@@ -344,7 +344,12 @@ hitLayer.addEventListener('contextmenu', e => e.preventDefault());
 
 // ── Keyboard colour shortcuts ──────────────────────────────────────────────
 const keyColorMap = { m: 0, r: 1, g: 2, b: 3 };
+const keySizeMap  = { '0': 2, '1': 8, '2': 16, '3': 30, '4': 50 };
 document.addEventListener('keydown', e => {
+  if (keySizeMap[e.key] !== undefined) {
+    sizeSlider.value = keySizeMap[e.key];
+    return;
+  }
   const idx = keyColorMap[e.key.toLowerCase()];
   if (idx === undefined) return;
   const swatches = document.querySelectorAll('.swatch');
