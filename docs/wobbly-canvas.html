@@ -190,7 +190,7 @@ speedSlider.addEventListener('input', () => {
 });
 
 // ── Palette ────────────────────────────────────────────────────────────────
-const palette = ['#1a1008','#b5451b','#2b5c3f','#1c3d6e','#7b3fa0','#b08030','#6b6b6b','#d4436a'];
+const palette = ['#1a1008','#e4450f','#299e61','#145ecf','#7b3fa0','#b08030','#6b6b6b','#d4436a'];
 const swatchContainer = document.getElementById('swatches');
 palette.forEach(color => {
   const s = document.createElement('div');
@@ -341,6 +341,15 @@ function endDraw(e) {
 }
 
 hitLayer.addEventListener('contextmenu', e => e.preventDefault());
+
+// ── Keyboard colour shortcuts ──────────────────────────────────────────────
+const keyColorMap = { m: 0, r: 1, g: 2, b: 3 };
+document.addEventListener('keydown', e => {
+  const idx = keyColorMap[e.key.toLowerCase()];
+  if (idx === undefined) return;
+  const swatches = document.querySelectorAll('.swatch');
+  swatches[idx].click();
+});
 hitLayer.addEventListener('mousedown',  startDraw);
 hitLayer.addEventListener('mousemove',  moveDraw);
 hitLayer.addEventListener('mouseup',    endDraw);
