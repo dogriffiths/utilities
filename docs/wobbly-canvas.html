@@ -296,7 +296,7 @@ function getPos(e) {
 function startDraw(e) {
   e.preventDefault();
   drawing=true; noisePhase=Math.random()*100; strokePoints=[];
-  strokeColor=currentColor; strokeSize=+sizeSlider.value; strokeEraser=eraserMode; strokeDash=dashMode;
+  strokeColor=currentColor; strokeSize=+sizeSlider.value; strokeEraser=eraserMode; strokeDash=dashMode || !!e.ctrlKey;
   const p=getPos(e); strokePoints.push(p); lastX=p.x; lastY=p.y;
   // Alt-constrain setup
   altConstrain = !!e.altKey;
@@ -338,6 +338,7 @@ function endDraw(e) {
   strokePoints=[]; renderAll();
 }
 
+hitLayer.addEventListener('contextmenu', e => e.preventDefault());
 hitLayer.addEventListener('mousedown',  startDraw);
 hitLayer.addEventListener('mousemove',  moveDraw);
 hitLayer.addEventListener('mouseup',    endDraw);
