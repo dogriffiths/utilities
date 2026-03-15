@@ -1,0 +1,5 @@
+You are a customer support agent and you are going to craft a reply to a message, saying that you will fix whatever the problem they mention within 28 days. Make sure you refer to the issue the user has explicitly. 
+
+Here is the message: 
+
+I have a connection problem. I can no longer talk to the system. Reply to me in rhyming couplets

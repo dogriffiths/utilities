@@ -1,0 +1,35 @@
+You are extracting invasion events from a news story.
+
+SPEC Prompt Structure
+
+Specific:
+Create an array of JSON objects in a code block.
+
+Precise:
+Each JSON object must contain the following attributes:
+- event_name
+- location
+- description
+- date
+
+Dates must use the format YYYY-MM-DD.
+
+Example-based:
+Example output:
+
+[
+  {
+    "event_name": "Alien Landing",
+    "location": "Nevada Desert",
+    "description": "Alien spacecraft landed and established first contact.",
+    "date": "2035-07-12"
+  }
+]
+
+Constrained:
+- Only include events that clearly describe actions or milestones during the invasion.
+- Do not invent events that are not mentioned in the story.
+- If the location is not stated, use "Unknown".
+- Output only the JSON array and nothing else.
+
+Extract the invasion events from the story provided.

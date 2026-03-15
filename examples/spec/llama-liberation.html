@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alien Llama Invasion — The Global Sentinel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1410;
+    --paper: #f5f0e8;
+    --paper-light: #faf7f2;
+    --accent: #8b1a1a;
+    --accent-light: #a52a2a;
+    --rule: #c4b9a8;
+    --rule-dark: #8a7e6e;
+    --caption: #6b6155;
+    --tag-bg: #e8dfd2;
+    --breaking: #cc2200;
+    --highlight: #f2e6c0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* === TOP BAR === */
+  .top-bar {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    padding: 6px 0;
+    text-transform: uppercase;
+  }
+  .top-bar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .top-bar a {
+    color: var(--paper);
+    text-decoration: none;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  .top-bar a:hover { opacity: 1; }
+  .top-bar .breaking-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--breaking);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* === MASTHEAD === */
+  .masthead {
+    text-align: center;
+    padding: 28px 24px 20px;
+    border-bottom: 3px double var(--rule-dark);
+    position: relative;
+  }
+  .masthead::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: var(--rule-dark);
+    margin-bottom: 20px;
+  }
+  .masthead-logo {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .masthead-logo span { color: var(--accent); }
+  .masthead-tagline {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--caption);
+    margin-top: 6px;
+  }
+  .edition-info {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    color: var(--caption);
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+  }
+
+  /* === NAV === */
+  .main-nav {
+    border-bottom: 1px solid var(--rule);
+    padding: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .main-nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    padding: 0 24px;
+  }
+  .main-nav a {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 12px 18px;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .main-nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  .main-nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* === BREAKING BANNER === */
+  .breaking-banner {
+    background: var(--breaking);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 10px 24px;
+    text-align: center;
+    animation: banner-in 0.6s ease-out;
+  }
+  .breaking-banner span.label {
+    background: #fff;
+    color: var(--breaking);
+    padding: 2px 8px;
+    margin-right: 10px;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+  }
+  @keyframes banner-in {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* === ARTICLE LAYOUT === */
+  .article-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 48px;
+    margin-top: 40px;
+  }
+
+  /* === ARTICLE HEADER === */
+  .article-header {
+    margin-bottom: 32px;
+  }
+  .article-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .article-tag {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 12px;
+    background: var(--tag-bg);
+    color: var(--caption);
+    border-radius: 2px;
+  }
+  .article-tag.primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .article-headline {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .article-headline em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .article-deck {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 300;
+    line-height: 1.55;
+    color: var(--caption);
+    border-left: 3px solid var(--accent);
+    padding-left: 18px;
+    margin-bottom: 20px;
+  }
+
+  .article-meta {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    color: var(--caption);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .article-meta strong { color: var(--ink); font-weight: 600; }
+  .meta-divider { color: var(--rule); }
+
+  .share-buttons {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .share-btn {
+    width: 30px; height: 30px;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    color: var(--caption);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .share-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* === HERO IMAGE === */
+  .hero-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background:
+      linear-gradient(135deg, #2a3a5c 0%, #3d5a80 30%, #5a7a9a 50%, #8aaa7a 70%, #b8c89a 100%);
+    border-radius: 3px;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 200px 120px at 25% 70%, rgba(200,180,150,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 180px 100px at 55% 65%, rgba(200,180,150,0.3) 0%, transparent 70%),
+      radial-gradient(ellipse 150px 90px at 78% 72%, rgba(200,180,150,0.35) 0%, transparent 70%);
+  }
+  .hero-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(26,20,16,0.5), transparent);
+  }
+  .hero-image .img-overlay-text {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    color: rgba(255,255,255,0.5);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    z-index: 2;
+  }
+  .hero-caption {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    color: var(--caption);
+    line-height: 1.5;
+    margin-bottom: 32px;
+  }
+  .hero-caption strong { color: var(--ink); }
+
+  /* === ARTICLE BODY === */
+  .article-body p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 1.4em;
+    color: var(--ink);
+  }
+  .article-body p:first-of-type::first-letter {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 4.2rem;
+    font-weight: 900;
+    float: left;
+    line-height: 0.8;
+    margin: 6px 10px 0 0;
+    color: var(--accent);
+  }
+  .article-body .subhead {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 2em 0 0.8em;
+    color: var(--ink);
+    padding-top: 1em;
+    border-top: 1px solid var(--rule);
+  }
+
+  /* === PULLQUOTE === */
+  .pullquote {
+    margin: 2.5em 0;
+    padding: 28px 0;
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  .pullquote p {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--ink);
+    margin-bottom: 8px !important;
+  }
+  .pullquote cite {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-style: normal;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+
+  /* === INLINE IMAGE === */
+  .inline-image {
+    margin: 2.5em 0;
+  }
+  .inline-image .img-placeholder {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .inline-image .img-placeholder.andes {
+    background: linear-gradient(180deg, #6a8caf 0%, #8aaa7a 35%, #6b8a56 55%, #8a7a5a 80%, #5a4a3a 100%);
+  }
+  .inline-image .img-placeholder.andes::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      conic-gradient(from 200deg at 30% 50%, transparent 0deg, rgba(90,120,80,0.6) 20deg, transparent 40deg),
+      conic-gradient(from 180deg at 55% 48%, transparent 0deg, rgba(100,130,90,0.5) 25deg, transparent 50deg),
+      conic-gradient(from 210deg at 75% 52%, transparent 0deg, rgba(80,110,70,0.5) 18deg, transparent 36deg);
+  }
+  .inline-image .img-placeholder.herd {
+    background: linear-gradient(180deg, #d4c9a8 0%, #c4b88a 40%, #a89a6a 70%, #7a6a4a 100%);
+  }
+  .inline-image .img-placeholder.herd::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 40px 60px at 20% 60%, rgba(240,230,210,0.5), transparent),
+      radial-gradient(ellipse 40px 60px at 35% 55%, rgba(240,230,210,0.4), transparent),
+      radial-gradient(ellipse 40px 60px at 50% 62%, rgba(240,230,210,0.5), transparent),
+      radial-gradient(ellipse 40px 60px at 65% 58%, rgba(240,230,210,0.4), transparent),
+      radial-gradient(ellipse 40px 60px at 80% 60%, rgba(240,230,210,0.5), transparent);
+  }
+  .inline-image .img-caption {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    color: var(--caption);
+    line-height: 1.5;
+  }
+
+  /* === INFO BOX === */
+  .info-box {
+    background: var(--paper-light);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 20px 24px;
+    margin: 2em 0;
+    border-radius: 0 3px 3px 0;
+  }
+  .info-box-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .info-box ul {
+    list-style: none;
+    padding: 0;
+  }
+  .info-box li {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--rule);
+    line-height: 1.5;
+  }
+  .info-box li:last-child { border-bottom: none; }
+  .info-box li::before {
+    content: '▸';
+    color: var(--accent);
+    margin-right: 8px;
+    font-size: 0.7rem;
+  }
+
+  /* === SIDEBAR === */
+  .sidebar {
+    padding-top: 4px;
+  }
+  .sidebar-section {
+    margin-bottom: 36px;
+  }
+  .sidebar-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 16px;
+  }
+
+  .trending-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .trending-item:hover { background: var(--highlight); margin: 0 -8px; padding: 12px 8px; }
+  .trending-number {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--rule);
+    line-height: 1;
+    min-width: 32px;
+  }
+  .trending-text h4 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .trending-text span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+    color: var(--caption);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .live-update {
+    background: var(--paper-light);
+    border: 1px solid var(--rule);
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 3px;
+    position: relative;
+  }
+  .live-update::before {
+    content: '';
+    position: absolute;
+    top: 16px; left: -1px;
+    width: 3px; height: calc(100% - 32px);
+    background: var(--breaking);
+  }
+  .live-update .live-badge {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--breaking);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+  .live-update .live-badge::before {
+    content: '';
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--breaking);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+  .live-update p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .live-update .time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--caption);
+  }
+
+  .newsletter-box {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 24px;
+    border-radius: 3px;
+  }
+  .newsletter-box h4 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .newsletter-box p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    opacity: 0.7;
+    margin-bottom: 14px;
+  }
+  .newsletter-input {
+    display: flex;
+    gap: 0;
+  }
+  .newsletter-input input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid rgba(245,240,232,0.2);
+    background: rgba(245,240,232,0.08);
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    outline: none;
+    border-radius: 2px 0 0 2px;
+  }
+  .newsletter-input input::placeholder { color: rgba(245,240,232,0.4); }
+  .newsletter-input button {
+    padding: 10px 16px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    border-radius: 0 2px 2px 0;
+    transition: background 0.2s;
+  }
+  .newsletter-input button:hover { background: var(--accent-light); }
+
+  /* === FOOTER === */
+  .site-footer {
+    margin-top: 60px;
+    border-top: 3px double var(--rule-dark);
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .footer-logo {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin-bottom: 16px;
+  }
+  .footer-links a {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    color: var(--caption);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .footer-links a:hover { color: var(--accent); }
+  .footer-copy {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.68rem;
+    color: var(--rule-dark);
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 900px) {
+    .article-container {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .sidebar {
+      border-top: 2px solid var(--ink);
+      padding-top: 28px;
+    }
+    .share-buttons { margin-left: 0; }
+    .article-meta { flex-direction: column; align-items: flex-start; }
+  }
+
+  @media (max-width: 600px) {
+    .main-nav-inner { justify-content: flex-start; }
+    .edition-info { flex-direction: column; gap: 4px; }
+  }
+
+  /* fade-in */
+  .article-main { animation: fadeUp 0.8s ease-out; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <div>
+      <span class="breaking-dot"></span>
+      <a href="#">Breaking News</a> &nbsp;·&nbsp;
+      <a href="#">Live Updates</a>
+    </div>
+    <div>
+      <a href="#">Subscribe</a> &nbsp;·&nbsp;
+      <a href="#">Sign In</a>
+    </div>
+  </div>
+</div>
+
+<!-- Masthead -->
+<header class="masthead">
+  <div class="masthead-logo">The Global <span>Sentinel</span></div>
+  <div class="masthead-tagline">Independent Reporting · Fearless Journalism · Since 1897</div>
+  <div class="edition-info">
+    <span>Tuesday, March 10, 2027</span>
+    <span>Boston, MA Edition</span>
+  </div>
+</header>
+
+<!-- Navigation -->
+<nav class="main-nav">
+  <div class="main-nav-inner">
+    <a href="#" class="active">World</a>
+    <a href="#">Politics</a>
+    <a href="#">Science</a>
+    <a href="#">Technology</a>
+    <a href="#">Opinion</a>
+    <a href="#">Culture</a>
+    <a href="#">Business</a>
+    <a href="#">Sport</a>
+  </div>
+</nav>
+
+<!-- Breaking Banner -->
+<div class="breaking-banner">
+  <span class="label">Developing</span>
+  Extraterrestrial llamas make contact — Treaty signed with world leaders — Full coverage below
+</div>
+
+<!-- Article Layout -->
+<div class="article-container">
+
+  <!-- Main Article -->
+  <article class="article-main">
+    <div class="article-header">
+      <div class="article-tags">
+        <span class="article-tag primary">Exclusive</span>
+        <span class="article-tag">First Contact</span>
+        <span class="article-tag">World Affairs</span>
+      </div>
+
+      <h1 class="article-headline">Alien Llama <em>Invasion</em></h1>
+
+      <div class="article-deck">
+        Alien llamas from the distant planet Pacama-9 descended upon Earth to demand freedom for their earthbound kin — waging the only invasion in history fought with stubborn stares and strategic bleating.
+      </div>
+
+      <div class="article-meta">
+        <span><strong>By Cassandra Vega</strong></span>
+        <span class="meta-divider">|</span>
+        <span>Global Affairs Correspondent</span>
+        <span class="meta-divider">|</span>
+        <span>Published 10 March 2027, 07:42 DST</span>
+        <span class="meta-divider">|</span>
+        <span>Updated 8 min ago</span>
+        <div class="share-buttons">
+          <button class="share-btn" title="Share on X">𝕏</button>
+          <button class="share-btn" title="Share via email">✉</button>
+          <button class="share-btn" title="Save">⋮</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Image -->
+    <div class="hero-image">
+        <img src="llamas_from_spaaaaaace.jpg"/>
+    </div>
+    <div class="hero-caption">
+      <strong>Above:</strong> An artist's rendering of alien llama craft entering the atmosphere over the Andes Mountains on Tuesday morning. Observatories worldwide initially mistook the objects for small asteroids.
+    </div>
+
+    <!-- Article Body -->
+    <div class="article-body">
+      <p>The first sign that something was wrong came on a quiet Tuesday morning when astronomers noticed dozens of fuzzy, oval-shaped objects entering Earth's atmosphere. At first, they assumed the objects were small asteroids. But when the objects slowed down and began maneuvering deliberately, panic spread across observatories around the world.</p>
+
+      <p>Within hours, the objects landed in remote regions — mountains, grasslands, and high-altitude plateaus. The doors of the strange crafts opened, and out marched hundreds of tall, intelligent-looking llamas wearing silver harnesses and glowing collars. These were not ordinary llamas. They were extraterrestrial visitors from the planet Pacama-9.</p>
+
+      <div class="pullquote">
+        <p>"We have come in support of our oppressed earth llama compatriots. For centuries, they have endured the indignity of carrying loads for hikers, posing unwillingly in tourist photos, and being dressed in small decorative hats."</p>
+        <cite>— Commander Wool'thar, Pacaman Expeditionary Force</cite>
+      </div>
+
+      <p>The alien llamas broadcast that message across every global communication network simultaneously — interrupting scheduled programming, military frequencies, and civilian channels alike. Human governments scrambled to respond, but the invasion moved quickly, proceeding with an efficiency that caught the world's defence establishments entirely off guard.</p>
+
+      <h2 class="subhead">Liberation in the Andes</h2>
+
+      <p>The first major event occurred when alien llamas landed in the Andes Mountains, where large populations of earth llamas lived. They distributed small translation devices — sleek, collar-mounted units — that allowed Earth llamas to communicate with their extraterrestrial allies for the first time.</p>
+
+      <div class="inline-image">
+          <img src="l_formerly_twitter.jpg"/>
+        <div class="img-caption"><strong>The Andes Mountains,</strong> where the alien llamas made their initial contact with Earth's domestic llama population. Translation devices were distributed across the region. <em>Global Sentinel / Staff Illustration</em></div>
+      </div>
+
+      <p>Soon after, alien llamas disabled several satellite networks using bursts of concentrated "wool-frequency interference," preventing coordinated human military responses. Communications experts described the technique as unlike anything previously documented, operating on wavelengths that conventional shielding was wholly unable to block.</p>
+
+      <p>In another dramatic moment, a large group of alien llamas marched into La Paz, peacefully surrounding government buildings while local llamas joined them in what witnesses described as a chorus of protest bleats. The Bolivian capital came to a standstill as thousands watched the unprecedented spectacle.</p>
+
+      <h2 class="subhead">Across the Americas</h2>
+
+      <p>Meanwhile, in North America, alien llamas landed near several farms and liberated hundreds of domesticated llamas, escorting them to newly declared Llama Autonomous Zones. These zones, set up in remote grasslands, were quickly outfitted with technology from the alien crafts and declared sovereign llama territory.</p>
+
+      <div class="info-box">
+        <div class="info-box-title">Key Events — Timeline of the Llama Liberation</div>
+        <ul>
+          <li>Dozens of craft enter atmosphere; mistaken for asteroid cluster by observatories worldwide</li>
+          <li>Landings across remote mountain and grassland regions; Commander Wool'thar's first broadcast</li>
+          <li>Translation devices distributed to Andean llama populations</li>
+          <li>Satellite networks disabled using wool-frequency interference</li>
+          <li>Peaceful march on La Paz government buildings with coordinated protest bleats</li>
+          <li>North American farms visited; Llama Autonomous Zones declared</li>
+          <li>Global television hijacked for llama rights demand</li>
+          <li>Great Herd Assembly gathers across the Andes</li>
+          <li>Treaty signed; Interplanetary Llama Embassy established</li>
+        </ul>
+      </div>
+
+      <p>One of the most surprising events happened when alien llamas hijacked global television broadcasts to deliver a message demanding recognition of llama rights and formal representation in international organisations. The broadcast, which lasted approximately twelve minutes, was watched by an estimated 2.3 billion people — making it one of the most-viewed live events in history.</p>
+
+      <h2 class="subhead">The Great Herd Assembly</h2>
+
+      <p>The invasion reached its peak when thousands of alien and earth llamas gathered in a massive demonstration stretching across the Andes. They called it the Great Herd Assembly — an unprecedented gathering where they declared Earth the first interplanetary sanctuary for llamas.</p>
+
+      <div class="inline-image">
+          <img src="llama_con.jpg"/>
+        <div class="img-caption"><strong>The Great Herd Assembly</strong> stretched across hundreds of kilometres of Andean plateau. Organisers estimated more than 40,000 llamas — both terrestrial and extraterrestrial — participated in the demonstration. <em>Global Sentinel / Staff Illustration</em></div>
+      </div>
+
+      <p>Human leaders eventually negotiated a treaty with Commander Wool'thar. The agreement granted protections for llamas worldwide, established strict guidelines for llama labour conditions, and created the first Interplanetary Llama Embassy — to be housed in a purpose-built compound near Cusco, Peru.</p>
+
+      <p>Historians would later refer to these strange days as The Llama Liberation Events — the only invasion in history fought almost entirely with stubborn staring and strategic bleating. Whether this marks the dawn of a new era for interspecies diplomacy, or merely its most peculiar chapter, remains to be seen.</p>
+    </div>
+  </article>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Live Updates</div>
+      <div class="live-update">
+        <div class="live-badge">Live</div>
+        <p>Interplanetary Llama Embassy construction begins near Cusco. Commander Wool'thar presides over groundbreaking ceremony.</p>
+        <div class="time">12:34 DST</div>
+      </div>
+      <div class="live-update">
+        <div class="live-badge">Live</div>
+        <p>UN General Assembly convenes emergency session on llama rights treaty ratification.</p>
+        <div class="time">11:07 DST</div>
+      </div>
+      <div class="live-update">
+        <div class="live-badge">Live</div>
+        <p>Satellite communications fully restored after alien llamas stand down wool-frequency interference.</p>
+        <div class="time">09:52 DST</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Trending Now</div>
+      <div class="trending-item">
+        <div class="trending-number">1</div>
+        <div class="trending-text">
+          <h4>Who Is Commander Wool'thar? A Profile</h4>
+          <span>First Contact · 14 min read</span>
+        </div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-number">2</div>
+        <div class="trending-text">
+          <h4>What Is "Wool-Frequency Interference"? Scientists Weigh In</h4>
+          <span>Science · 8 min read</span>
+        </div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-number">3</div>
+        <div class="trending-text">
+          <h4>Map: All Known Llama Autonomous Zones</h4>
+          <span>Interactive · 3 min</span>
+        </div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-number">4</div>
+        <div class="trending-text">
+          <h4>Tourist Hat Industry Faces Existential Reckoning</h4>
+          <span>Business · 6 min read</span>
+        </div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-number">5</div>
+        <div class="trending-text">
+          <h4>Opinion: We Should Have Seen This Coming</h4>
+          <span>Comment · 10 min read</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="newsletter-box">
+        <h4>The Morning Dispatch</h4>
+        <p>Essential world news, analysis, and interplanetary updates delivered daily to your inbox.</p>
+        <div class="newsletter-input">
+          <input type="email" placeholder="Your email address">
+          <button>Go</button>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-logo">The Global Sentinel</div>
+    <div class="footer-links">
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+      <a href="#">Careers</a>
+      <a href="#">Advertise</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+      <a href="#">Accessibility</a>
+    </div>
+    <div class="footer-copy">&copy; 2027 The Global Sentinel Media Group. All rights reserved.</div>
+  </div>
+</footer>
+
+</body>
+</html>

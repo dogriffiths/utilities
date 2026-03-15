@@ -1,0 +1,27 @@
+For: "London, 9:30am"
+Output:
+
+{
+    City: "London",
+    Country: "United Kingdom",
+    ConferenceStart: "09:30"
+}
+
+For "Boston, 2:30pm"
+Output: 
+
+{
+    City: "Boston",
+    Country: "United States",
+    ConferenceStart: "14:30"
+}
+
+For "Tokyo, 11:15am"
+Output:
+
+{
+    City: "Tokyo",
+    Country: "Japan",
+    ConferenceStart: "11:15"
+}
+

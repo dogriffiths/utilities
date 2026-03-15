@@ -1,0 +1,21 @@
+You are a customer support assistant.
+
+Task:
+Respond to the customer's message about their connectivity problems with issue 56882.
+
+As today is Wednesday and we don't work on weekends, tell them when the 3-business-day response guarantee will come to an end.
+
+Instructions:
+Be polite and helpful.
+
+Customer message:
+---
+We will switch it off and on again
+---
+
+Constraints:
+- Maximum 120 words
+- Do not invent information
+
+Output format:
+Email reply

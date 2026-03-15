@@ -1,0 +1,28 @@
+You are extracting order details from an email.
+
+SPEC Prompt Structure
+
+Specific:
+Extract the order information and present it as a Markdown table.
+
+Precise:
+The table must contain the following columns in this exact order:
+Product Code | Title | Quantity | Required Date
+
+Dates must be formatted as YYYY-MM-DD.
+Quantity must be a number only.
+
+Example-based:
+Example output format:
+
+| Product Code | Title | Quantity | Required Date |
+|--------------|------|----------|---------------|
+| AB123 | Example Product | 10 | 2026-03-01 |
+
+Constrained:
+- Only include products explicitly mentioned as orders in the email.
+- Do not infer or invent missing data.
+- If a field is not explicitly stated, leave the cell blank.
+- Output only the Markdown table and nothing else.
+
+Now extract the order details from this email.

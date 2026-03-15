@@ -1,0 +1,21 @@
+You are a customer support assistant.
+
+Task:
+Respond to the customer's message [ISSUE] with issue [ISSUE NUMBER].
+
+As today is [TODAY] and we don't work on weekends, tell them when the 3-business-day response guarantee will come to an end.
+
+Instructions:
+Be polite and helpful.
+
+Customer message:
+---
+[MESSAGE]
+---
+
+Constraints:
+- Maximum 120 words
+- Do not invent information
+
+Output format:
+[EMAIL / SMS / DIRECT MESSAGE]

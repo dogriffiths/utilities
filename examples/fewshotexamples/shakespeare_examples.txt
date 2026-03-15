@@ -1,0 +1,8 @@
+Input: Where are you going?
+Output: Whither goest thou?
+
+Input: I cannot believe this happened.
+Output: I can scarce believe this hath come to pass.
+
+Input: Please wait here.
+Output: Pray, tarry here awhile.
