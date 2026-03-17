@@ -1,0 +1,7 @@
+Write a professional email requesting a meeting. You MUST apply all of the following rules:
+
+1 The subject line must be under 8 words and contain the word 'meeting'.
+2 The opening line must reference a specific reason for the meeting — use: 'to discuss the Q2 budget review'.
+3 The body must be no longer than 3 sentences.
+4 Do not use the words 'just', 'quick', or 'hopefully'.
+5 Close with 'Kind regards' — no other sign-off.

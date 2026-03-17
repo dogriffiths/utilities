@@ -1,0 +1,6 @@
+Summarise this. Follow these rules in order, stopping as soon as one applies:
+
+1 If the text is under 50 words, rewrite it as a single plain sentence.
+2 If the text is 50–200 words, give exactly 3 bullet points — no intro, no outro.
+3 If the text is over 200 words, give a one-line headline followed by exactly 3 bullet points.
+
