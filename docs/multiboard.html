@@ -777,6 +777,39 @@
                 left: 60px;
             }
         }
+
+        /* Toolbar toggle */
+        .control-panel, #digitalClock {
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .toolbar-hidden .control-panel,
+        .toolbar-hidden #digitalClock {
+            opacity: 0;
+            transform: translateY(12px);
+            pointer-events: none;
+        }
+
+        #toolbarHint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(0);
+            z-index: 999;
+            background-color: rgba(28, 28, 28, 0.75);
+            color: rgba(255,255,255,0.55);
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            white-space: nowrap;
+        }
+
+        #toolbarHint.visible {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -798,6 +831,7 @@
 <div id="sticky-notes-menu" class="popup-menu">
     <div id="sticky-notes-list"></div>
 </div>
+<div id="toolbarHint">Press ` to show toolbar</div>
 <div id="drawing-controls" class="control-panel">
     <input type="file" id="fileInput" accept="image/*">
     <button id="invertBtn" class="round-button" title="Invert Colors">
@@ -1833,6 +1867,23 @@
             e.preventDefault();
             toggleInfoPanel();
         }
+        if (e.key === '`') {
+            e.preventDefault();
+            toggleToolbar();
+        }
+    }
+
+    let toolbarHintTimer = null;
+
+    function toggleToolbar() {
+        const hidden = document.body.classList.toggle('toolbar-hidden');
+        const hint = document.getElementById('toolbarHint');
+        hint.textContent = hidden ? 'Press ` to show toolbar' : 'Press ` to hide toolbar';
+
+        // Show hint briefly
+        hint.classList.add('visible');
+        clearTimeout(toolbarHintTimer);
+        toolbarHintTimer = setTimeout(() => hint.classList.remove('visible'), 1800);
     }
 
     function handlePaste(e) {
