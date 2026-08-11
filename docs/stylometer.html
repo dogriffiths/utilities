@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Stylometer — how stylometric detection works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E4E7E2; --paper-deep:#D6DAD4; --grid:#C6CCC5;
+  --ink:#1B2A2E; --ink-soft:#5A6B6E;
+  --pen:#D2205A; --envelope:#2F6F6B; --envelope-fill:rgba(47,111,107,.13);
+  --flag:#B8790C; --rule:#B7BEB6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  color:var(--ink);font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px 90px}
+
+.masthead{padding:56px 0 30px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:500;letter-spacing:.20em;
+  text-transform:uppercase;color:var(--ink-soft);display:flex;gap:14px;flex-wrap:wrap;align-items:baseline}
+.eyebrow span:not(:last-child)::after{content:" /";color:var(--rule);margin-left:14px}
+h1{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;
+  font-size:clamp(2.6rem,8.5vw,4.6rem);line-height:.94;letter-spacing:-.035em;margin:.22em 0 .28em}
+.standfirst{max-width:56ch;color:var(--ink-soft);margin:0;font-size:1.06rem}
+
+.station{padding:44px 0;border-bottom:1px solid var(--rule)}
+.station:last-of-type{border-bottom:none}
+.station-head{display:flex;align-items:baseline;gap:14px;margin-bottom:20px}
+.station-num{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  color:var(--pen);letter-spacing:.1em;padding-top:.35em}
+h2{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.42rem;
+  letter-spacing:-.02em;margin:0;line-height:1.15}
+.note{font-size:.95rem;color:var(--ink-soft);max-width:62ch;margin:.5em 0 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  padding:8px 13px;border:1px solid var(--rule);background:transparent;color:var(--ink-soft);cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.chip:focus-visible{outline:2px solid var(--pen);outline-offset:2px}
+
+.specimen{background:rgba(255,255,255,.62);border:1px solid var(--rule);padding:22px 24px;
+  min-height:170px;font-size:1rem;line-height:1.72}
+.specimen[contenteditable]:focus{outline:none;border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.specimen s-sent{transition:background .28s ease}
+.specimen s-sent.lit{background:rgba(210,32,90,.16);box-shadow:0 1px 0 var(--pen)}
+
+.bars{display:flex;align-items:flex-end;gap:3px;height:66px;margin-top:14px}
+.bar{flex:1;background:var(--ink);transform:scaleY(0);transform-origin:bottom;
+  transition:transform .3s cubic-bezier(.2,.9,.3,1);min-width:3px}
+.bars-cap{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-soft);
+  letter-spacing:.07em;text-transform:uppercase;margin-top:8px}
+
+.run{margin-top:22px;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1rem;
+  letter-spacing:-.01em;padding:13px 26px;border:none;background:var(--pen);color:#fff;cursor:pointer}
+.run:hover{background:#B01A4C}
+.run:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.run[disabled]{background:var(--ink-soft);cursor:progress}
+
+.chart-scroll{overflow-x:auto;margin:0 -4px}
+svg.recorder{display:block;width:100%;min-width:680px;height:auto}
+.grid-line{stroke:var(--grid);stroke-width:1}
+.axis{stroke:var(--ink);stroke-width:1.5}
+.divider{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 4}
+.axis-txt{font-family:"IBM Plex Mono",monospace;font-size:10px;fill:var(--ink-soft)}
+.stn-txt{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:var(--ink);letter-spacing:.03em}
+.zone-txt{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em}
+.band{fill:var(--envelope-fill);stroke:var(--envelope);stroke-width:1;stroke-dasharray:3 3}
+.band-lbl{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:var(--envelope);letter-spacing:.08em}
+.trace{fill:none;stroke:var(--pen);stroke-width:2.25;stroke-linejoin:round;stroke-linecap:round}
+.dot{fill:var(--paper);stroke:var(--pen);stroke-width:2.25;opacity:0;transition:opacity .2s}
+.dot.out{fill:var(--pen)}
+.dot.shown{opacity:1}
+.penhead{transition:transform .34s cubic-bezier(.4,.05,.35,1);opacity:0}
+.penhead.live{opacity:1}
+
+table{width:100%;border-collapse:collapse;font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+thead th{text-align:left;font-weight:600;letter-spacing:.09em;text-transform:uppercase;font-size:10px;
+  color:var(--ink-soft);border-bottom:1.5px solid var(--ink);padding:0 10px 8px 0}
+tbody td{padding:11px 10px 11px 0;border-bottom:1px solid var(--rule);vertical-align:baseline}
+tbody tr{opacity:0;transition:opacity .25s}
+tbody tr.shown{opacity:1}
+td.num{text-align:right;white-space:nowrap}
+.z{font-weight:600}
+.z.hot{color:var(--pen)}
+.tag{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;
+  border:1px solid currentColor;white-space:nowrap}
+.tag.ctx{color:var(--ink-soft)}
+.tag.dir{color:var(--envelope)}
+
+.scale{position:relative;height:54px;margin:26px 0 6px}
+.scale-track{position:absolute;top:23px;left:0;right:0;height:9px;background:var(--paper-deep);border:1px solid var(--rule)}
+.scale-zone{position:absolute;top:23px;height:9px;transition:left .2s,width .2s,right .2s}
+.zone-ok{left:0;background:var(--envelope-fill)}
+.zone-amber{background:rgba(184,121,12,.20)}
+.zone-flag{right:0;background:rgba(210,32,90,.20)}
+.thresh{position:absolute;top:12px;height:32px;width:0;border-left:2px dashed var(--ink);transition:left .2s}
+.thresh-lbl{position:absolute;top:-6px;left:5px;font-family:"IBM Plex Mono",monospace;font-size:9px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink);white-space:nowrap}
+.marker{position:absolute;top:5px;left:0;width:3px;height:42px;background:var(--mstate,var(--ink));
+  transition:left 1s cubic-bezier(.34,.1,.2,1),background .3s}
+.marker::before{content:"";position:absolute;top:-7px;left:-6px;border-left:7px solid transparent;
+  border-right:7px solid transparent;border-top:9px solid var(--mstate,var(--ink))}
+.scale-lbls{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;
+  font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)}
+
+.dial{margin-top:26px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.dial label{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-soft)}
+input[type=range]{flex:1;min-width:200px;accent-color:var(--pen)}
+
+.result{--state:var(--rule);display:flex;margin:30px 0 0;border:3px solid var(--state);
+  background:rgba(255,255,255,.55);opacity:0;transform:scale(.93);
+  transition:opacity .28s ease,transform .4s cubic-bezier(.2,1.3,.4,1),border-color .3s}
+.result.shown{opacity:1;transform:scale(1)}
+.result[data-state="human"]{--state:var(--envelope)}
+.result[data-state="uncertain"]{--state:var(--flag)}
+.result[data-state="ai"]{--state:var(--pen)}
+.result-mark{flex:0 0 auto;width:104px;background:var(--state);color:#fff;display:flex;
+  align-items:center;justify-content:center;font-family:"Bricolage Grotesque",sans-serif;
+  font-weight:800;font-size:3.4rem;line-height:1;transition:background .3s}
+.result-body{padding:22px 26px 24px;min-width:0}
+.result-label{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+  font-size:clamp(1.3rem,4.6vw,2.1rem);line-height:1.02;letter-spacing:-.035em;
+  color:var(--state);text-transform:uppercase;transition:color .3s}
+.result-score{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-soft);margin:11px 0 13px}
+.result-score b{color:var(--state);font-weight:600;font-size:17px;letter-spacing:0}
+.result-sub{margin:0;font-size:.97rem;color:var(--ink-soft);max-width:54ch}
+@media(max-width:560px){.result{flex-direction:column}.result-mark{width:100%;height:76px;font-size:2.6rem}}
+
+.warn{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--flag);
+  letter-spacing:.05em;margin-top:14px;display:none}
+.warn.shown{display:block}
+
+.caveat{margin-top:44px;border-left:3px solid var(--flag);padding:4px 0 4px 22px}
+.caveat h3{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.15rem;
+  margin:0 0 .5em;letter-spacing:-.015em}
+.caveat p{margin:0 0 .8em;font-size:.98rem}
+.caveat p:last-child{margin-bottom:0}
+footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.06em;
+  color:var(--ink-soft);text-transform:uppercase}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms !important;animation-duration:.01ms !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow"><span>Forensic stylometry</span><span>Bench demonstration</span><span>Measures, not verdicts</span></div>
+    <h1>The<br>Stylometer</h1>
+    <p class="standfirst">Feed it a passage. It counts sentence rhythm, formulaic connectives, abstract-noun density and vocabulary turnover, then plots each measurement against a reference range of human writing. Everything is computed live from the text in the box — nothing is pre-baked.</p>
+  </header>
+
+  <section class="station">
+    <div class="station-head"><span class="station-num">01</span><h2>Load a specimen</h2></div>
+    <p class="note">Three prepared samples, or paste your own. The box is editable.</p>
+    <div class="chips" id="chips"></div>
+    <div class="specimen" id="specimen" contenteditable="true" spellcheck="false"></div>
+    <div class="bars" id="bars"></div>
+    <div class="bars-cap" id="barsCap">One bar per sentence, height = word count</div>
+    <button class="run" id="run">Run the analysis</button>
+  </section>
+
+  <section class="station">
+    <div class="station-head"><span class="station-num">02</span><h2>Plot against the reference range</h2></div>
+    <p class="note">Each measurement becomes a <em>z-score</em>: how many standard deviations from the reference mean. The shaded corridor is ±2σ, where roughly 95% of human samples fall. The first three stations are scored; the remaining five are measured but excluded, because they track genre far more than authorship.</p>
+    <div class="chart-scroll">
+      <svg class="recorder" viewBox="0 0 760 340" role="img" aria-labelledby="chartTitle">
+        <title id="chartTitle">Chart recorder plotting z-scores for eight stylometric features against a two-sigma human reference band</title>
+        <g id="gridg"></g>
+        <rect class="band" x="70" y="96.7" width="660" height="106.7"></rect>
+        <text class="band-lbl" x="76" y="92">HUMAN REFERENCE RANGE ±2σ</text>
+        <line class="axis" x1="70" y1="150" x2="730" y2="150"></line>
+        <line class="axis" x1="70" y1="24" x2="70" y2="282"></line>
+        <g id="axisLbls"></g>
+        <polyline class="trace" id="trace" points=""></polyline>
+        <g id="dots"></g>
+        <g class="penhead" id="pen">
+          <line x1="0" y1="-13" x2="0" y2="0" stroke="#1B2A2E" stroke-width="1.5"></line>
+          <path d="M -5 -22 L 5 -22 L 0 -12 Z" fill="#1B2A2E"></path>
+          <circle cx="0" cy="0" r="3.2" fill="#D2205A"></circle>
+        </g>
+        <g id="stnLbls"></g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="station">
+    <div class="station-head"><span class="station-num">03</span><h2>The readout</h2></div>
+    <p class="note">Note what is <em>not</em> scored. Lexical variety is the feature everyone assumes runs low in machine text — and on the assistant specimen it runs conspicuously high, because survey prose piles up distinct abstract nouns while a personal narrative repeats the same handful of words. The direction of that signal flips with genre, so scoring it would be worse than useless.</p>
+    <table>
+      <thead><tr>
+        <th>Feature</th><th class="num" style="text-align:right">Measured</th>
+        <th class="num" style="text-align:right">Reference μ ± σ</th>
+        <th class="num" style="text-align:right">z</th><th>Role</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </section>
+
+  <section class="station">
+    <div class="station-head"><span class="station-num">04</span><h2>The decision rule</h2></div>
+    <p class="note">The three scored z-scores are averaged and mapped to a 0–100 index. Then a line is drawn. Drag it.</p>
+    <div class="scale">
+      <div class="scale-track"></div>
+      <div class="scale-zone zone-ok" id="zoneOk"></div>
+      <div class="scale-zone zone-amber" id="zoneAmber"></div>
+      <div class="scale-zone zone-flag" id="zoneFlag"></div>
+      <div class="thresh" id="threshLine"><span class="thresh-lbl" id="threshLbl">threshold 65</span></div>
+      <div class="marker" id="marker"></div>
+    </div>
+    <div class="scale-lbls"><span>0 · human-like</span><span>AI-likeness index</span><span>100 · AI-like</span></div>
+
+    <div class="dial">
+      <label for="thr">Accusation threshold</label>
+      <input type="range" id="thr" min="20" max="90" value="65" step="1">
+    </div>
+
+    <div class="result" id="result">
+      <div class="result-mark" id="resultMark">?</div>
+      <div class="result-body">
+        <div class="result-label" id="resultLabel">Awaiting analysis</div>
+        <div class="result-score" id="resultScore">AI-likeness index <b>—</b></div>
+        <p class="result-sub" id="resultSub"></p>
+      </div>
+    </div>
+    <p class="warn" id="warn">⚠ Sample under 120 words. These measures are unstable at this length and the verdict should not be read at all.</p>
+
+    <div class="caveat">
+      <h3>What the instrument cannot tell you</h3>
+      <p>Run the second specimen, then move the threshold slider. Nothing about the text changes; the verdict does. Every detector has this dial, most keep it hidden, and where a vendor sets it is a commercial decision about which error they would rather make — accusing the innocent, or missing the guilty.</p>
+      <p>Now run the third specimen: plain, careful academic English of the kind millions of competent non-native writers produce. It lands mid-scale. Leave the threshold at 65 and it is cleared; drag it to 45 — a defensible-sounding setting, and one that catches considerably more machine text — and a human writer is accused, with a large red stamp and a number that looks like evidence.</p>
+      <p>The two features doing the real work here, formulaic connectives and abstract-noun density, are honest signals. They are also a description of institutional register. A management consultant, a policy analyst and a compliance officer all write like this professionally, and the instrument cannot distinguish their prose from a model's, because at the level of these counts there is nothing to distinguish.</p>
+      <p>Finally, the base rate. Set the threshold to catch 90% of machine text and some share of human text comes with it. Across ten thousand essays, even a 2% false-positive rate produces two hundred wrongly accused people. The instrument measures a distribution. It cannot testify about a person.</p>
+    </div>
+  </section>
+
+  <footer>Stylometer · illustrative reference norms · computed in-browser · no text leaves this page</footer>
+</div>
+
+<script>
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const SPECIMENS = {
+  'Human — personal essay': `I lost the notebook. Not misplaced — lost, in the way that things are lost when you are twenty-three and moving flats for the third time in a single year, which is to say that it went into a box, and the box went into a van, and the van went to a house whose address I have never been able to recall. Nine years of handwriting. Gone. My mother says I ought to feel relieved; she has read some of it, and she is probably right. And yet on the quiet evenings, the ones where the heating ticks and nothing is on, I find myself trying to reconstruct a single page from memory. I never get further than the first paragraph. There was a drawing of a heron in the margin somewhere near the middle, done badly, in biro, while I waited for a train that was cancelled. That heron is the only thing I am certain of.`,
+
+  'Machine — assistant prose': `Artificial intelligence has become an increasingly important part of modern business operations. Companies across a wide range of industries are adopting these tools in order to improve efficiency, reduce operational costs, and deliver better outcomes for their customers. However, it is important to consider the significant challenges that accompany this kind of transition. Organisations must think carefully about data privacy, workforce training, and the broader ethical implications of automated decision-making. Leaders should also ensure that appropriate governance structures are established before deployment begins at scale. By taking a thoughtful and measured approach to adoption, businesses can unlock substantial value while managing the associated risks in a responsible manner. Ultimately, the organisations that succeed will be those that treat artificial intelligence as a tool for augmenting human judgement rather than replacing it entirely.`,
+
+  'Human — non-native academic': `This paper examines the effect of soil salinity on wheat yield. We collected soil samples from twelve farms in the study region. The samples were analysed using standard laboratory methods. We also recorded the wheat yield on each of these farms. Our results show that the yield decreases when the salinity increases. This effect was stronger in the sandy soils than in the clay soils. The difference between the two soil types was statistically significant. We think that this difference is caused by the lower water retention of sandy soil. Farmers in this region should therefore monitor the soil salinity on a regular basis. They should also consider the soil type when they choose which variety to plant. Further study is needed to confirm these results in other regions. We plan to repeat this study over three growing seasons.`
+};
+
+const FUNC = new Set(('the of and a to in is it that was for on are as with be at by this had not but from or have an they which one you were her all she there would their we him been has when who will more no if out so what up its about into than them can only other some could these two may then do first any my now such like our over me even most made after also did many before must through back where much your way well down should because each just those how too very make still own see work long get here between both being under never day same another know while last might us great old year off come since against go came right used take three').split(' '));
+
+const MARKERS = /\b(however|moreover|furthermore|additionally|ultimately|overall|therefore|thus|consequently|nonetheless|notably|importantly|crucially|significantly|significant|appropriately|appropriate|comprehensive|robust|crucial|essential|ensures|ensured|ensure|leverage|foster|enhance|facilitate|underscores|underscore|delve|navigate|landscape|realm|multifaceted|nuanced|thoughtful|measured|responsible|effectively|seamlessly|key)\b|\b(in order to|it is important to|it is worth noting|as a result|on the other hand|in addition|in conclusion|a wide range of|rather than)\b/g;
+const NOMINAL = /\b\w{4,}(tion|sion|ment|ance|ence|ity|ness|ism|ency)s?\b/g;
+
+const NORMS = [
+  {key:'sdSent',  label:'Sentence-length variability', unit:'SD, words', mu:9.5,  sd:3.2,  dir:-1, short:'burstiness'},
+  {key:'marker',  label:'Formulaic connectives',       unit:'per 100w',  mu:1.6,  sd:1.1,  dir:+1, short:'connectives'},
+  {key:'nominal', label:'Abstract-noun density',       unit:'per 100w',  mu:3.6,  sd:1.8,  dir:+1, short:'nominalisation'},
+  {key:'meanSent',label:'Mean sentence length',        unit:'words',     mu:19.5, sd:5.5,  dir:0,  short:'sent len'},
+  {key:'wordLen', label:'Mean word length',            unit:'chars',     mu:4.75, sd:0.55, dir:0,  short:'word len'},
+  {key:'mattr',   label:'Lexical variety',             unit:'MATTR-50',  mu:0.79, sd:0.06, dir:0,  short:'variety'},
+  {key:'punct',   label:'Punctuation density',         unit:'per 100w',  mu:5.5,  sd:2.2,  dir:0,  short:'punct'},
+  {key:'func',    label:'Function-word rate',          unit:'ratio',     mu:0.455,sd:0.045,dir:0,  short:'func words'}
+];
+const NSCORED = NORMS.filter(f=>f.dir).length;
+
+function splitSentences(t){
+  return (t.match(/[^.!?…]+[.!?…]*/g)||[]).map(s=>s.trim()).filter(s=>/[A-Za-z]/.test(s));
+}
+function wordsOf(t){ return (t.toLowerCase().match(/[a-z][a-z'’-]*/g)||[]); }
+
+function measure(text){
+  const sents = splitSentences(text), words = wordsOf(text), n = words.length;
+  if(n < 25) return null;
+  const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
+
+  const lens = sents.map(s=>wordsOf(s).length).filter(l=>l>0);
+  const meanSent = mean(lens);
+  const sdSent = lens.length>1 ? Math.sqrt(lens.reduce((a,l)=>a+(l-meanSent)**2,0)/(lens.length-1)) : 0;
+  const wordLen = mean(words.map(w=>w.replace(/[^a-z]/g,'').length));
+
+  const W = Math.min(50, n); let r=[];
+  for(let i=0;i+W<=n;i++) r.push(new Set(words.slice(i,i+W)).size / W);
+  const mattr = r.length ? mean(r) : new Set(words).size/n;
+
+  const low = text.toLowerCase();
+  const marker  = (low.match(MARKERS)||[]).length / n * 100;
+  const nominal = (low.match(NOMINAL)||[]).length / n * 100;
+
+  const marks = [',',';',':','—','–','(',')','!','?','“','"',"'",'…'];
+  const punct = marks.reduce((a,m)=>a + (text.split(m).length-1),0) / n * 100;
+  const func  = words.filter(w=>FUNC.has(w)).length / n;
+
+  return {vals:{meanSent,sdSent,wordLen,mattr,marker,nominal,punct,func}, lens, sents, n};
+}
+
+const X0=70, X1=730, YMID=150, YSCALE=120/4.5;
+const xAt = i => X0 + i*((X1-X0)/(NORMS.length-1));
+const yAt = z => YMID - Math.max(-4.4, Math.min(4.4, z))*YSCALE;
+
+(function drawStatic(){
+  const g=document.getElementById('gridg'), a=document.getElementById('axisLbls'),
+        s=document.getElementById('stnLbls'), NS='http://www.w3.org/2000/svg';
+  [-4,-3,-2,-1,1,2,3,4].forEach(z=>{
+    const ln=document.createElementNS(NS,'line');
+    ln.setAttribute('class','grid-line');
+    ln.setAttribute('x1',X0);ln.setAttribute('x2',X1);
+    ln.setAttribute('y1',yAt(z));ln.setAttribute('y2',yAt(z));g.appendChild(ln);
+    const tx=document.createElementNS(NS,'text');
+    tx.setAttribute('class','axis-txt');tx.setAttribute('x',X0-10);
+    tx.setAttribute('y',yAt(z)+3.5);tx.setAttribute('text-anchor','end');
+    tx.textContent=(z>0?'+':'')+z+'σ';a.appendChild(tx);
+  });
+  const zero=document.createElementNS(NS,'text');
+  zero.setAttribute('class','axis-txt');zero.setAttribute('x',X0-10);
+  zero.setAttribute('y',YMID+3.5);zero.setAttribute('text-anchor','end');
+  zero.textContent='0';a.appendChild(zero);
+
+  const cut=(xAt(NSCORED-1)+xAt(NSCORED))/2;
+  const dv=document.createElementNS(NS,'line');
+  dv.setAttribute('class','divider');dv.setAttribute('x1',cut);dv.setAttribute('x2',cut);
+  dv.setAttribute('y1',18);dv.setAttribute('y2',292);s.appendChild(dv);
+  const z1=document.createElementNS(NS,'text');
+  z1.setAttribute('class','zone-txt');z1.setAttribute('x',X0+6);z1.setAttribute('y',16);
+  z1.setAttribute('fill','#D2205A');z1.textContent='SCORED';s.appendChild(z1);
+  const z2=document.createElementNS(NS,'text');
+  z2.setAttribute('class','zone-txt');z2.setAttribute('x',cut+8);z2.setAttribute('y',16);
+  z2.setAttribute('fill','#5A6B6E');z2.textContent='MEASURED, NOT SCORED';s.appendChild(z2);
+
+  NORMS.forEach((f,i)=>{
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('class','stn-txt');t.setAttribute('x',xAt(i));
+    t.setAttribute('y',306);t.setAttribute('text-anchor','middle');
+    t.textContent=f.short;s.appendChild(t);
+    const tick=document.createElementNS(NS,'line');
+    tick.setAttribute('class','grid-line');tick.setAttribute('x1',xAt(i));
+    tick.setAttribute('x2',xAt(i));tick.setAttribute('y1',24);tick.setAttribute('y2',282);g.appendChild(tick);
+    const c=document.createElementNS(NS,'circle');
+    c.setAttribute('class','dot');c.setAttribute('r',5);
+    c.setAttribute('cx',xAt(i));c.setAttribute('cy',YMID);
+    c.setAttribute('id','dot'+i);document.getElementById('dots').appendChild(c);
+  });
+})();
+
+const specimen=document.getElementById('specimen'), chips=document.getElementById('chips'),
+      barsEl=document.getElementById('bars'), rowsEl=document.getElementById('rows'),
+      traceEl=document.getElementById('trace'), penEl=document.getElementById('pen'),
+      markerEl=document.getElementById('marker'), resultEl=document.getElementById('result'),
+      markEl=document.getElementById('resultMark'), labelEl=document.getElementById('resultLabel'),
+      scoreEl=document.getElementById('resultScore'), subEl=document.getElementById('resultSub'),
+      warnEl=document.getElementById('warn'), runBtn=document.getElementById('run'),
+      thrEl=document.getElementById('thr'), threshLine=document.getElementById('threshLine'),
+      threshLbl=document.getElementById('threshLbl'), zoneOk=document.getElementById('zoneOk'),
+      zoneAmber=document.getElementById('zoneAmber'), zoneFlag=document.getElementById('zoneFlag');
+
+let lastPct = null, lastShort = false;
+
+Object.keys(SPECIMENS).forEach((name,i)=>{
+  const b=document.createElement('button');
+  b.className='chip'; b.textContent=name; b.setAttribute('aria-pressed', i===0);
+  b.onclick=()=>{
+    [...chips.children].forEach(c=>c.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    specimen.textContent=SPECIMENS[name]; reset();
+  };
+  chips.appendChild(b);
+});
+specimen.textContent = SPECIMENS[Object.keys(SPECIMENS)[0]];
+
+function drawZones(){
+  const t=+thrEl.value, amber=Math.max(0,t-12);
+  zoneOk.style.left='0%'; zoneOk.style.width=amber+'%';
+  zoneAmber.style.left=amber+'%'; zoneAmber.style.width=(t-amber)+'%';
+  zoneFlag.style.left=t+'%'; zoneFlag.style.width=(100-t)+'%';
+  threshLine.style.left=t+'%';
+  threshLbl.textContent='threshold '+t;
+}
+drawZones();
+
+function reset(){
+  barsEl.innerHTML=''; rowsEl.innerHTML=''; traceEl.setAttribute('points','');
+  traceEl.style.strokeDasharray=''; traceEl.style.strokeDashoffset='';
+  NORMS.forEach((_,i)=>document.getElementById('dot'+i).classList.remove('shown','out'));
+  penEl.classList.remove('live');
+  markerEl.style.left='0%'; markerEl.style.removeProperty('--mstate');
+  resultEl.classList.remove('shown'); resultEl.removeAttribute('data-state');
+  markEl.textContent='?'; labelEl.textContent='Awaiting analysis';
+  scoreEl.innerHTML='AI-likeness index <b>—</b>'; subEl.textContent='';
+  warnEl.classList.remove('shown'); lastPct=null;
+  document.getElementById('barsCap').textContent='One bar per sentence, height = word count';
+}
+specimen.addEventListener('input', reset);
+
+function renderVerdict(){
+  if(lastPct===null) return;
+  const pct=lastPct, t=+thrEl.value;
+  const V = pct>=t
+    ? {s:'ai', mark:'✕', label:'Likely AI-generated',
+       sub:'Flat sentence rhythm, heavy formulaic connectives, dense abstract nouns. This is the stamp a commercial detector would print — a claim about three numbers and one adjustable line, not about the writer.'}
+    : pct>=t-12
+    ? {s:'uncertain', mark:'?', label:'Inconclusive',
+       sub:'Close enough to the line that a nudge either way flips it. Most real writing lands here, and this is where a tool forced to answer yes or no starts manufacturing certainty.'}
+    : {s:'human', mark:'✓', label:'Likely human-written',
+       sub:'Below the line as it is currently set. That means the passage sits on the human side of an arbitrary threshold — not that a human wrote it. Move the slider and the same passage can be accused.'};
+  const col = V.s==='human'?'var(--envelope)':V.s==='ai'?'var(--pen)':'var(--flag)';
+  markerEl.style.setProperty('--mstate', col);
+  resultEl.setAttribute('data-state', V.s);
+  markEl.textContent=V.mark; labelEl.textContent=V.label;
+  scoreEl.innerHTML=`AI-likeness index <b>${Math.round(pct)} / 100</b> &nbsp;·&nbsp; threshold ${t}`;
+  subEl.textContent=V.sub;
+  resultEl.classList.add('shown');
+}
+thrEl.addEventListener('input', ()=>{ drawZones(); renderVerdict(); });
+
+const wait = ms => new Promise(r=>setTimeout(r, REDUCED?0:ms));
+
+async function run(){
+  runBtn.disabled=true; reset();
+  const m = measure(specimen.textContent);
+  if(!m){
+    resultEl.setAttribute('data-state','uncertain');
+    markEl.textContent='!'; labelEl.textContent='No verdict';
+    scoreEl.innerHTML='Sample too short <b>&lt;25 words</b>';
+    subEl.textContent='Every measure here estimates a distribution, and distributions need something to estimate from.';
+    resultEl.classList.add('shown'); runBtn.disabled=false; return;
+  }
+
+  specimen.innerHTML = m.sents.map(s=>`<s-sent>${s.replace(/[<>]/g,'')}</s-sent> `).join('');
+  const spans=[...specimen.querySelectorAll('s-sent')], maxL=Math.max(...m.lens);
+  m.lens.forEach(()=>{const d=document.createElement('div');d.className='bar';barsEl.appendChild(d);});
+  const bars=[...barsEl.children];
+  for(let i=0;i<spans.length;i++){
+    spans[i].classList.add('lit');
+    if(bars[i]) bars[i].style.transform=`scaleY(${(m.lens[i]/maxL).toFixed(3)})`;
+    await wait(90);
+    spans[i].classList.remove('lit');
+  }
+  document.getElementById('barsCap').textContent =
+    `${m.lens.length} sentences · mean ${m.vals.meanSent.toFixed(1)} words · SD ${m.vals.sdSent.toFixed(1)}`;
+  await wait(300);
+
+  const zs = NORMS.map(f=>(m.vals[f.key]-f.mu)/f.sd);
+  const pts = zs.map((z,i)=>[xAt(i), yAt(z)]);
+  traceEl.setAttribute('points', pts.map(p=>p.join(',')).join(' '));
+  const total = traceEl.getTotalLength(), cum=[0];
+  for(let i=1;i<pts.length;i++)
+    cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]));
+  traceEl.style.strokeDasharray=total; traceEl.style.strokeDashoffset=total;
+  penEl.classList.add('live');
+  for(let i=0;i<pts.length;i++){
+    penEl.style.transform=`translate(${pts[i][0]}px, ${pts[i][1]}px)`;
+    traceEl.style.transition = REDUCED?'none':'stroke-dashoffset .34s linear';
+    traceEl.style.strokeDashoffset = total - (cum[i]/cum[cum.length-1])*total;
+    const d=document.getElementById('dot'+i);
+    d.setAttribute('cy', pts[i][1]); d.classList.add('shown');
+    if(Math.abs(zs[i])>2) d.classList.add('out');
+    await wait(360);
+  }
+  penEl.classList.remove('live');
+  await wait(200);
+
+  for(let i=0;i<NORMS.length;i++){
+    const f=NORMS[i], v=m.vals[f.key], z=zs[i], dp = v<2 ? 3 : 2;
+    const tr=document.createElement('tr');
+    tr.innerHTML=
+      `<td>${f.label}<br><span style="color:var(--ink-soft);font-size:10px">${f.unit}</span></td>`+
+      `<td class="num">${v.toFixed(dp)}</td>`+
+      `<td class="num">${f.mu} ± ${f.sd}</td>`+
+      `<td class="num"><span class="z ${Math.abs(z)>2?'hot':''}">${z>0?'+':''}${z.toFixed(2)}</span></td>`+
+      `<td><span class="tag ${f.dir?'dir':'ctx'}">${f.dir?'scored':'context'}</span></td>`;
+    rowsEl.appendChild(tr);
+    await wait(60);
+    tr.classList.add('shown');
+  }
+  await wait(300);
+
+  const clamp = x => Math.max(-4, Math.min(4, x));
+  const scored = NORMS.map((f,i)=>f.dir?clamp(f.dir*zs[i]):null).filter(x=>x!==null);
+  const lean = scored.reduce((a,b)=>a+b,0)/scored.length;
+  lastPct = Math.max(0, Math.min(100, (lean+2)/6*100));
+  markerEl.style.left = lastPct.toFixed(1)+'%';
+  await wait(REDUCED?0:1050);
+  renderVerdict();
+  if(m.n<120) warnEl.classList.add('shown');
+  runBtn.disabled=false;
+}
+runBtn.addEventListener('click', run);
+</script>
+</body>
+</html>
