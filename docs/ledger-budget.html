@@ -547,6 +547,38 @@ function defaultSeed(){
   };
 }
 
+/* ---------------- Local storage backend ----------------
+   Drop-in replacement for the old window.storage API, but backed
+   entirely by the browser's localStorage — nothing leaves the device. */
+const storage = {
+  async get(key){
+    const value = window.localStorage.getItem(key);
+    if(value === null){
+      const err = new Error('Not found: ' + key);
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+    return { key, value };
+  },
+  async set(key, value){
+    window.localStorage.setItem(key, value);
+    return { key, value };
+  },
+  async delete(key){
+    const existed = window.localStorage.getItem(key) !== null;
+    window.localStorage.removeItem(key);
+    return { key, deleted: existed };
+  },
+  async list(prefix){
+    const keys = [];
+    for(let i=0; i<window.localStorage.length; i++){
+      const k = window.localStorage.key(i);
+      if(!prefix || (k && k.startsWith(prefix))) keys.push(k);
+    }
+    return { keys };
+  }
+};
+
 /* ---------------- State ---------------- */
 let currentMonth = (() => {
   const d = new Date();
@@ -569,12 +601,12 @@ async function loadMonth(month){
   filterItemId = null;
   render();
   try{
-    const res = await window.storage.get(storeKey(month));
+    const res = await storage.get(storeKey(month));
     state = JSON.parse(res.value);
   }catch(e){
     // no data for this month — try previous month as a structural template
     try{
-      const prev = await window.storage.get(storeKey(shiftMonth(month, -1)));
+      const prev = await storage.get(storeKey(shiftMonth(month, -1)));
       const prevState = JSON.parse(prev.value);
       state = {
         groups: JSON.parse(JSON.stringify(prevState.groups)),
@@ -593,7 +625,7 @@ async function persist(){
   saveStatus = 'saving…';
   render();
   try{
-    await window.storage.set(storeKey(currentMonth), JSON.stringify(state));
+    await storage.set(storeKey(currentMonth), JSON.stringify(state));
     saveStatus = 'saved';
   }catch(e){
     saveStatus = 'save failed';
@@ -964,14 +996,14 @@ async function exportData(){
   render();
   try{
     // make sure the month currently open is flushed first
-    await window.storage.set(storeKey(currentMonth), JSON.stringify(state));
+    await storage.set(storeKey(currentMonth), JSON.stringify(state));
 
-    const listRes = await window.storage.list('ledger:');
+    const listRes = await storage.list('ledger:');
     const keys = (listRes && listRes.keys) ? listRes.keys : [];
     const bundle = {};
     for(const key of keys){
       try{
-        const res = await window.storage.get(key);
+        const res = await storage.get(key);
         const month = key.replace(/^ledger:/, '');
         bundle[month] = JSON.parse(res.value);
       }catch(e){ /* skip unreadable key */ }
@@ -1042,7 +1074,7 @@ async function confirmImport(){
   render();
   try{
     for(const month of monthKeys){
-      await window.storage.set(storeKey(month), JSON.stringify(months[month]));
+      await storage.set(storeKey(month), JSON.stringify(months[month]));
     }
     saveStatus = 'imported';
     await loadMonth(currentMonth); // refresh view, picks up new data if current month was included
