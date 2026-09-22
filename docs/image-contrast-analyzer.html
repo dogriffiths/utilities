@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Image Brightness &amp; Contrast Analyzer</title>
+<style>
+  :root {
+    --bg: #0f1216;
+    --panel: #171b21;
+    --panel-2: #1e232b;
+    --border: #2a3038;
+    --text: #e8ebef;
+    --text-dim: #9aa4b2;
+    --accent: #6ea8fe;
+    --accent-2: #7ee6b8;
+    --warn: #ffb86b;
+    --red: #ff6b6b;
+    --amber: #ffb86b;
+    --green: #5fd68a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --panel-2: #f0f2f5;
+      --border: #dde1e6;
+      --text: #1a1d22;
+      --text-dim: #5a6472;
+      --accent: #2f6fe4;
+      --accent-2: #12946b;
+      --warn: #b5650a;
+      --red: #d1373f;
+      --amber: #b5650a;
+      --green: #1c8a54;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1216; --panel: #171b21; --panel-2: #1e232b; --border: #2a3038;
+    --text: #e8ebef; --text-dim: #9aa4b2; --accent: #6ea8fe; --accent-2: #7ee6b8; --warn: #ffb86b;
+    --red: #ff6b6b; --amber: #ffb86b; --green: #5fd68a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .sub { color: var(--text-dim); font-size: 0.92rem; margin: 0 0 24px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; margin-bottom: 18px;
+  }
+  .drop {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 28px 16px;
+    text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    background: var(--panel-2);
+  }
+  .drop:hover, .drop.drag { border-color: var(--accent); background: rgba(110,168,254,0.08); }
+  .drop input { display: none; }
+  .drop .hint { color: var(--text-dim); font-size: 0.85rem; margin-top: 6px; }
+  .drop .icon { font-size: 2rem; margin-bottom: 6px; }
+  .preview-row { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 4px; }
+  .preview-box { flex: 1 1 340px; min-width: 260px; }
+  .preview-box h3, .hist-box h3, .adjust-box h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); margin: 0 0 10px; font-weight: 600; }
+  canvas#imgCanvas {
+    width: 100%; max-height: 420px; object-fit: contain; border-radius: 10px;
+    background: repeating-conic-gradient(#33383f 0% 25%, #2a2f36 0% 50%) 50% / 20px 20px;
+    display: block; border: 1px solid var(--border);
+  }
+  .hist-box { flex: 1 1 320px; min-width: 260px; }
+  canvas#histCanvas { width: 100%; height: 160px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel-2); display: block; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 18px; }
+  .metric {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+  }
+  .metric .label { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 6px; display:flex; align-items:center; gap:6px; justify-content: space-between; }
+  .metric .value { font-size: 1.5rem; font-weight: 650; color: var(--accent); }
+  .metric .value.secondary { color: var(--accent-2); }
+  .metric .desc { font-size: 0.78rem; color: var(--text-dim); margin-top: 6px; line-height: 1.4; }
+  .bar { height: 6px; border-radius: 4px; background: var(--border); margin-top: 8px; overflow: hidden; }
+  .bar > div { height: 100%; background: var(--accent); border-radius: 4px; }
+  .note { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .note b { color: var(--text); }
+  .filename { font-size: 0.85rem; color: var(--text-dim); margin-top: 10px; word-break: break-all; }
+  footer { text-align: center; color: var(--text-dim); font-size: 0.78rem; margin-top: 30px; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.03em; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid transparent;
+  }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .badge.red { color: var(--red); background: rgba(255,107,107,0.12); border-color: rgba(255,107,107,0.35); }
+  .badge.red .dot { background: var(--red); }
+  .badge.amber { color: var(--amber); background: rgba(255,184,107,0.14); border-color: rgba(255,184,107,0.4); }
+  .badge.amber .dot { background: var(--amber); }
+  .badge.green { color: var(--green); background: rgba(95,214,138,0.14); border-color: rgba(95,214,138,0.4); }
+  .badge.green .dot { background: var(--green); }
+
+  .assess-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 4px; }
+  .assess-card {
+    flex: 1 1 260px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .assess-card .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .assess-card .title { font-weight: 650; font-size: 0.95rem; }
+  .assess-card .msg { font-size: 0.82rem; color: var(--text-dim); line-height: 1.4; }
+
+  .adjust-box { margin-top: 18px; }
+  .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .slider-row label { flex: 0 0 110px; font-size: 0.85rem; color: var(--text-dim); }
+  .slider-row input[type=range] { flex: 1; }
+  .slider-row .num { flex: 0 0 44px; text-align: right; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+  button.tool {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 9px;
+    padding: 9px 14px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  }
+  button.tool:hover { border-color: var(--accent); }
+  button.tool.primary { background: var(--accent); color: #0b1220; border-color: var(--accent); }
+  button.tool.primary:hover { opacity: 0.92; }
+  button.tool:disabled { opacity: 0.4; cursor: not-allowed; }
+  .toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .toggle-row input { width: 16px; height: 16px; }
+  .toggle-row label { font-size: 0.85rem; color: var(--text); cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Image Brightness &amp; Contrast Analyzer</h1>
+  <p class="sub">Load an image to measure brightness and contrast (RMS, Michelson, Weber), get a red/amber/green read on each, then adjust and download the result.</p>
+
+  <div class="card">
+    <label class="drop" id="dropZone">
+      <div class="icon">🖼️</div>
+      <div><strong>Click to choose an image</strong> or drag &amp; drop one here</div>
+      <div class="hint">Processed entirely in your browser — nothing is uploaded anywhere.</div>
+      <input type="file" id="fileInput" accept="image/*">
+    </label>
+    <div class="filename" id="fileName"></div>
+  </div>
+
+  <div class="card" id="resultsCard" style="display:none;">
+
+    <div class="assess-row" id="assessRow"></div>
+
+    <div class="preview-row">
+      <div class="preview-box">
+        <h3>Image (live preview of adjustments)</h3>
+        <canvas id="imgCanvas"></canvas>
+      </div>
+      <div class="hist-box">
+        <h3>Luminance histogram</h3>
+        <canvas id="histCanvas" width="600" height="160"></canvas>
+      </div>
+    </div>
+
+    <div class="grid" id="metricsGrid"></div>
+
+    <div class="adjust-box">
+      <h3>Adjust</h3>
+      <div class="toggle-row">
+        <input type="checkbox" id="autoLevels">
+        <label for="autoLevels">Auto Levels (stretch each colour channel to use the full 0–255 range)</label>
+      </div>
+      <div class="slider-row">
+        <label for="brightness">Brightness</label>
+        <input type="range" id="brightness" min="-100" max="100" value="0">
+        <span class="num" id="brightnessVal">0</span>
+      </div>
+      <div class="slider-row">
+        <label for="contrast">Contrast</label>
+        <input type="range" id="contrast" min="-100" max="100" value="0">
+        <span class="num" id="contrastVal">0</span>
+      </div>
+      <div class="toolbar">
+        <button class="tool" id="resetBtn">Reset</button>
+        <button class="tool primary" id="downloadBtn">Download adjusted image</button>
+      </div>
+    </div>
+
+    <div class="note">
+      <p><b>How these are computed.</b> Each pixel's luminance is taken as L = 0.2126·R + 0.7152·G + 0.0722·B (perceptual weighting), scaled 0–255. All metrics below reflect whatever adjustments are currently applied.</p>
+      <p><b>Brightness</b> is the mean luminance across all pixels.</p>
+      <p><b>RMS contrast</b> is the standard deviation of the normalized luminance (0–1 scale) — a global measure of intensity variation that works well for complex natural images.</p>
+      <p><b>Michelson contrast</b> is (L<sub>max</sub> − L<sub>min</sub>) / (L<sub>max</sub> + L<sub>min</sub>) — best suited to simple stimuli with a clear peak and trough, and can be dominated by single outlier pixels in photos.</p>
+      <p><b>Weber contrast</b> is traditionally (I<sub>feature</sub> − I<sub>background</sub>) / I<sub>background</sub> for a small feature on a uniform background. Since a general photo has no single "background," this tool shows two approximations using the mean luminance as the background estimate: contrast of the brightest region and of the darkest region relative to the mean.</p>
+      <p><b>Red/amber/green</b> bands are general-purpose rules of thumb (very under/overexposed or very flat/harsh vs. a comfortable mid-range) — not a universal or clinical standard, and "correct" exposure/contrast is often intentional (e.g. low-key photography).</p>
+      <p><b>Auto Levels</b> stretches each of the R, G and B channels independently so its darkest pixel becomes 0 and its brightest becomes 255, then your Brightness/Contrast sliders apply on top of that.</p>
+    </div>
+  </div>
+
+  <footer>Runs fully client-side · no data leaves your browser</footer>
+</div>
+
+<script>
+(function () {
+  const fileInput = document.getElementById('fileInput');
+  const dropZone = document.getElementById('dropZone');
+  const fileNameEl = document.getElementById('fileName');
+  const resultsCard = document.getElementById('resultsCard');
+  const imgCanvas = document.getElementById('imgCanvas');
+  const histCanvas = document.getElementById('histCanvas');
+  const metricsGrid = document.getElementById('metricsGrid');
+  const assessRow = document.getElementById('assessRow');
+
+  const autoLevelsEl = document.getElementById('autoLevels');
+  const brightnessEl = document.getElementById('brightness');
+  const contrastEl = document.getElementById('contrast');
+  const brightnessVal = document.getElementById('brightnessVal');
+  const contrastVal = document.getElementById('contrastVal');
+  const resetBtn = document.getElementById('resetBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  let originalData = null;  // Uint8ClampedArray, untouched pixels at analysis resolution
+  let cw = 0, ch = 0;
+  let channelBounds = null; // {rMin,rMax,gMin,gMax,bMin,bMax}
+  let currentFileBase = 'image';
+
+  ['dragenter', 'dragover'].forEach(evt => {
+    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('drag'); });
+  });
+  ['dragleave', 'drop'].forEach(evt => {
+    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('drag'); });
+  });
+  dropZone.addEventListener('drop', e => {
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  fileInput.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (f) handleFile(f);
+  });
+
+  function handleFile(file) {
+    if (!file.type.startsWith('image/')) {
+      alert('Please choose an image file.');
+      return;
+    }
+    currentFileBase = (file.name || 'image').replace(/\.[^.]+$/, '') || 'image';
+    fileNameEl.textContent = file.name + '  ·  ' + Math.round(file.size / 1024) + ' KB';
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => loadImage(img);
+      img.onerror = () => alert('Could not read that image file.');
+      img.src = e.target.result;
+    };
+    reader.onerror = () => alert('Could not read that file.');
+    reader.readAsDataURL(file);
+  }
+
+  function loadImage(img) {
+    const MAX_DIM = 900;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    const scale = Math.min(1, MAX_DIM / Math.max(w, h));
+    cw = Math.max(1, Math.round(w * scale));
+    ch = Math.max(1, Math.round(h * scale));
+
+    imgCanvas.width = cw;
+    imgCanvas.height = ch;
+    const ctx = imgCanvas.getContext('2d');
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(img, 0, 0, cw, ch);
+
+    let data;
+    try {
+      data = ctx.getImageData(0, 0, cw, ch).data;
+    } catch (err) {
+      alert('Could not read pixel data from this image (it may be cross-origin restricted).');
+      return;
+    }
+
+    originalData = new Uint8ClampedArray(data); // clone, keep pristine
+    channelBounds = computeChannelBounds(originalData);
+
+    // reset controls
+    autoLevelsEl.checked = false;
+    brightnessEl.value = 0;
+    contrastEl.value = 0;
+    brightnessVal.textContent = '0';
+    contrastVal.textContent = '0';
+
+    resultsCard.style.display = 'block';
+    render();
+    resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function computeChannelBounds(data) {
+    let rMin = 255, rMax = 0, gMin = 255, gMax = 0, bMin = 255, bMax = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      if (r < rMin) rMin = r; if (r > rMax) rMax = r;
+      if (g < gMin) gMin = g; if (g > gMax) gMax = g;
+      if (b < bMin) bMin = b; if (b > bMax) bMax = b;
+    }
+    return { rMin, rMax, gMin, gMax, bMin, bMax };
+  }
+
+  function render() {
+    if (!originalData) return;
+
+    const brightness = parseInt(brightnessEl.value, 10);
+    const contrast = parseInt(contrastEl.value, 10);
+    const useAutoLevels = autoLevelsEl.checked;
+
+    brightnessVal.textContent = brightness;
+    contrastVal.textContent = contrast;
+
+    // classic contrast formula, slider -100..100 mapped to -255..255
+    const C = contrast * 2.55;
+    const factor = (259 * (C + 255)) / (255 * (259 - C));
+
+    const { rMin, rMax, gMin, gMax, bMin, bMax } = channelBounds;
+    const rSpan = Math.max(1, rMax - rMin);
+    const gSpan = Math.max(1, gMax - gMin);
+    const bSpan = Math.max(1, bMax - bMin);
+
+    const out = new Uint8ClampedArray(originalData.length);
+    const lum = new Float64Array(cw * ch);
+    const hist = new Uint32Array(256);
+    let sum = 0, min = 255, max = 0;
+
+    for (let i = 0, p = 0; i < originalData.length; i += 4, p++) {
+      let r = originalData[i], g = originalData[i + 1], b = originalData[i + 2];
+      const a = originalData[i + 3];
+
+      if (useAutoLevels) {
+        r = ((r - rMin) / rSpan) * 255;
+        g = ((g - gMin) / gSpan) * 255;
+        b = ((b - bMin) / bSpan) * 255;
+      }
+
+      r += brightness; g += brightness; b += brightness;
+      r = factor * (r - 128) + 128;
+      g = factor * (g - 128) + 128;
+      b = factor * (b - 128) + 128;
+
+      r = r < 0 ? 0 : r > 255 ? 255 : r;
+      g = g < 0 ? 0 : g > 255 ? 255 : g;
+      b = b < 0 ? 0 : b > 255 ? 255 : b;
+
+      out[i] = r; out[i + 1] = g; out[i + 2] = b; out[i + 3] = a;
+
+      const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      lum[p] = L;
+      sum += L;
+      if (L < min) min = L;
+      if (L > max) max = L;
+      hist[Math.min(255, Math.round(L))]++;
+    }
+
+    const ctx = imgCanvas.getContext('2d');
+    const imageData = new ImageData(out, cw, ch);
+    ctx.putImageData(imageData, 0, 0);
+
+    const n = cw * ch;
+    const mean = sum / n;
+
+    let sqDiffSum = 0;
+    const meanNorm = mean / 255;
+    for (let p = 0; p < n; p++) {
+      const norm = lum[p] / 255;
+      sqDiffSum += (norm - meanNorm) * (norm - meanNorm);
+    }
+    const rms = Math.sqrt(sqDiffSum / n);
+    const michelson = (max + min) > 0 ? (max - min) / (max + min) : 0;
+    const weberBright = mean > 0 ? (max - mean) / mean : 0;
+    const weberDark = mean > 0 ? (mean - min) / mean : 0;
+
+    drawHistogram(hist, mean);
+    renderMetrics({ mean, rms, michelson, weberBright, weberDark, min, max });
+    renderAssessment(mean, rms);
+  }
+
+  function drawHistogram(hist, mean) {
+    const ctx = histCanvas.getContext('2d');
+    const w = histCanvas.width, h = histCanvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const maxCount = Math.max(...hist);
+    const barW = w / 256;
+
+    const styles = getComputedStyle(document.documentElement);
+    const accent = styles.getPropertyValue('--accent').trim() || '#6ea8fe';
+    const border = styles.getPropertyValue('--border').trim() || '#2a3038';
+
+    ctx.fillStyle = accent;
+    for (let i = 0; i < 256; i++) {
+      const barH = maxCount > 0 ? (hist[i] / maxCount) * (h - 8) : 0;
+      ctx.fillRect(i * barW, h - barH, Math.max(1, barW), barH);
+    }
+
+    const meanX = (mean / 255) * w;
+    ctx.strokeStyle = '#ffb86b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(meanX, 0);
+    ctx.lineTo(meanX, h);
+    ctx.stroke();
+
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
+  }
+
+  function pct(x) { return (x * 100).toFixed(1) + '%'; }
+  function num(x, d) { return x.toFixed(d === undefined ? 1 : d); }
+
+  function metricCard(label, value, valueClass, desc, barFraction) {
+    const div = document.createElement('div');
+    div.className = 'metric';
+    div.innerHTML =
+      '<div class="label">' + label + '</div>' +
+      '<div class="value' + (valueClass ? ' ' + valueClass : '') + '">' + value + '</div>' +
+      (barFraction !== undefined ? '<div class="bar"><div style="width:' + Math.min(100, Math.max(0, barFraction * 100)) + '%"></div></div>' : '') +
+      '<div class="desc">' + desc + '</div>';
+    return div;
+  }
+
+  function renderMetrics(m) {
+    metricsGrid.innerHTML = '';
+    metricsGrid.appendChild(metricCard(
+      'Brightness (mean luminance)',
+      num(m.mean, 1) + ' / 255',
+      '',
+      'Average perceptual luminance across the image.',
+      m.mean / 255
+    ));
+    metricsGrid.appendChild(metricCard(
+      'RMS contrast',
+      pct(m.rms),
+      'secondary',
+      'Std. deviation of normalized luminance. Higher = more overall intensity variation.',
+      m.rms / 0.5
+    ));
+    metricsGrid.appendChild(metricCard(
+      'Michelson contrast',
+      pct(m.michelson),
+      '',
+      '(L max − L min) / (L max + L min). Sensitive to the single brightest/darkest pixels.',
+      m.michelson
+    ));
+    metricsGrid.appendChild(metricCard(
+      'Weber contrast (bright features)',
+      pct(m.weberBright),
+      'secondary',
+      '(L max − mean) / mean, treating the mean as background.',
+      Math.min(1, m.weberBright)
+    ));
+    metricsGrid.appendChild(metricCard(
+      'Weber contrast (dark features)',
+      pct(m.weberDark),
+      '',
+      '(mean − L min) / mean, treating the mean as background.',
+      Math.min(1, m.weberDark)
+    ));
+    metricsGrid.appendChild(metricCard(
+      'Luminance range',
+      num(m.min, 0) + ' – ' + num(m.max, 0),
+      'secondary',
+      'Darkest and brightest pixel luminance found (0–255 scale).',
+      undefined
+    ));
+  }
+
+  function classifyBrightness(mean) {
+    if (mean < 50) return { level: 'red', label: 'Too dark', msg: 'Mean luminance is very low — shadow detail is likely crushed. Consider raising brightness or exposure.' };
+    if (mean < 85) return { level: 'amber', label: 'On the dark side', msg: 'Image reads darker than a typical mid-range exposure. May be intentional (low-key), otherwise consider a lift.' };
+    if (mean <= 170) return { level: 'green', label: 'Balanced', msg: 'Mean luminance sits in a comfortable mid-range.' };
+    if (mean <= 205) return { level: 'amber', label: 'On the bright side', msg: 'Image reads brighter than a typical mid-range exposure. May be intentional (high-key), otherwise consider pulling back.' };
+    return { level: 'red', label: 'Too bright', msg: 'Mean luminance is very high — highlight detail is likely blown out.' };
+  }
+
+  function classifyContrast(rms) {
+    if (rms < 0.08) return { level: 'red', label: 'Very flat', msg: 'Very low tonal variation — image may look washed out or foggy. Try Auto Levels or increasing contrast.' };
+    if (rms < 0.14) return { level: 'amber', label: 'Low contrast', msg: 'Below typical natural-image contrast. Could be a soft/hazy scene, or worth a contrast boost.' };
+    if (rms <= 0.35) return { level: 'green', label: 'Good contrast', msg: 'Tonal variation is in a healthy range for a natural photo.' };
+    if (rms <= 0.45) return { level: 'amber', label: 'High contrast', msg: 'Punchy, high-contrast look. Fine if intentional; may clip detail in shadows/highlights.' };
+    return { level: 'red', label: 'Extreme contrast', msg: 'Very harsh tonal range — likely to be clipping large areas to pure black/white.' };
+  }
+
+  function renderAssessment(mean, rms) {
+    const b = classifyBrightness(mean);
+    const c = classifyContrast(rms);
+    assessRow.innerHTML = '';
+    assessRow.appendChild(assessCard('Brightness', b));
+    assessRow.appendChild(assessCard('Contrast (RMS)', c));
+  }
+
+  function assessCard(title, verdict) {
+    const div = document.createElement('div');
+    div.className = 'assess-card';
+    div.innerHTML =
+      '<div class="top"><span class="title">' + title + '</span>' +
+      '<span class="badge ' + verdict.level + '"><span class="dot"></span>' + verdict.label + '</span></div>' +
+      '<div class="msg">' + verdict.msg + '</div>';
+    return div;
+  }
+
+  autoLevelsEl.addEventListener('change', render);
+  brightnessEl.addEventListener('input', render);
+  contrastEl.addEventListener('input', render);
+
+  resetBtn.addEventListener('click', () => {
+    autoLevelsEl.checked = false;
+    brightnessEl.value = 0;
+    contrastEl.value = 0;
+    render();
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    if (!originalData) return;
+    const link = document.createElement('a');
+    link.download = currentFileBase + '-adjusted.png';
+    link.href = imgCanvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+})();
+</script>
+</body>
+</html>
