@@ -100,15 +100,111 @@ footer{padding:24px 0 40px;color:var(--mute);font-size:.9rem}
  .grid{display:block}.grid .card{margin:0 0 10px}
  a{color:#000}
 }
+
+/* Visual refresh: editorial learning dashboard */
+:root{
+ --bg:#f6f7fb;--card:#fff;--surface:#fff;--ink:#1c2440;--mute:#626e86;--muted:var(--mute);
+ --line:#e4e8f2;--accent:#584bd8;--on-accent:#fff;
+ --a1:#6554e8;--a2:#db8b4d;--a3:#16957e;--a4:#b06ad0;
+ --a1b:#efedff;--a2b:#fff2e7;--a3b:#e5f7f2;--a4b:#f7ebfc;
+ --good:#198767;--goodb:#e3f7ee;--bad:#c94c53;--badb:#ffedef;
+ --shadow:0 12px 35px rgba(36,45,88,.055);--radius:18px;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#0d1220;--card:#192237;--surface:#192237;--ink:#f0f3ff;--mute:#abb6cd;--muted:var(--mute);
+ --line:#303b53;--accent:#a79cff;--on-accent:#141226;
+ --a1:#aa9aff;--a2:#f0b17a;--a3:#76dec6;--a4:#dda1f5;
+ --a1b:#302b50;--a2b:#3c2c2b;--a3b:#1a3b38;--a4b:#3d2a4a;
+ --good:#72dfb3;--goodb:#193c32;--bad:#ff929a;--badb:#44262f;
+ --shadow:0 12px 35px rgba(0,0,0,.18);
+}}
+:root[data-theme="dark"]{
+ --bg:#0d1220;--card:#192237;--surface:#192237;--ink:#f0f3ff;--mute:#abb6cd;--muted:var(--mute);
+ --line:#303b53;--accent:#a79cff;--on-accent:#141226;
+ --a1:#aa9aff;--a2:#f0b17a;--a3:#76dec6;--a4:#dda1f5;
+ --a1b:#302b50;--a2b:#3c2c2b;--a3b:#1a3b38;--a4b:#3d2a4a;
+ --good:#72dfb3;--goodb:#193c32;--bad:#ff929a;--badb:#44262f;
+ --shadow:0 12px 35px rgba(0,0,0,.18);
+}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.7;letter-spacing:-.006em;background:var(--bg)}
+.wrap{max-width:1160px;padding-left:clamp(18px,4vw,42px);padding-right:clamp(18px,4vw,42px)}
+header.top{position:relative;isolation:isolate;overflow:hidden;padding:54px 0 47px;background:radial-gradient(ellipse 60% 120% at 95% -30%,#7463ff 0,transparent 70%),linear-gradient(125deg,#141d3b 0%,#28245d 56%,#413186 100%);color:#fff}
+header.top:after{content:"";position:absolute;right:-95px;bottom:-280px;width:550px;height:550px;border:1px solid rgba(255,255,255,.16);border-radius:50%;box-shadow:0 0 0 75px rgba(255,255,255,.035),0 0 0 150px rgba(255,255,255,.025);z-index:-1;pointer-events:none}
+header.top .row{align-items:flex-start;gap:26px}
+header.top .row>div{max-width:800px}
+.eyebrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.69rem;font-weight:800;letter-spacing:.15em;color:#cecaff;margin-bottom:24px}
+.eyebrow-dot{width:8px;height:8px;border-radius:50%;background:#b9ffda;box-shadow:0 0 0 4px rgba(185,255,218,.14)}
+.eyebrow-rule{width:25px;height:1px;background:rgba(255,255,255,.3)}
+header.top h1{font-size:clamp(2.35rem,5.5vw,4.45rem);line-height:1.08;letter-spacing:-.055em;font-weight:830;margin:0 0 19px}
+.hero-highlight{color:#c3bbff}
+header.top .sub{color:#e0dff5;max-width:625px;font-size:clamp(1rem,1.4vw,1.17rem);line-height:1.6}
+.hero-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:26px}
+.hero-meta span{display:inline-flex;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 12px;background:rgba(255,255,255,.07);color:#f1eeff;font-size:.81rem;font-weight:600}
+.hero-source{margin-top:20px!important;color:#bfbde3;font-size:.89rem}
+.hero-source a{color:#fff;text-decoration-color:#9d91ed;text-underline-offset:4px}
+header.top #themeBtn{flex:none;background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.32);border-radius:999px;padding:9px 16px;font-size:.83rem;font-weight:650}
+header.top #themeBtn:hover{background:rgba(255,255,255,.23);border-color:#fff}
+nav.tabbar{background:var(--card);box-shadow:0 3px 20px rgba(19,24,54,.045);border-bottom:1px solid var(--line);top:0}
+[role=tablist]{gap:8px;padding:12px 0;scrollbar-width:thin}
+[role=tab]{color:var(--mute);border-radius:10px;padding:10px 16px;font-size:.88rem;font-weight:650;transition:background .2s,color .2s,border-color .2s}
+[role=tab]:hover{background:var(--bg);color:var(--ink)}
+[role=tab][aria-selected=true]{background:var(--a1b);color:var(--accent);border-color:transparent;box-shadow:none}
+main.wrap{padding-top:30px;padding-bottom:50px}
+[role=tabpanel]{animation:panel-in .24s ease-out;min-height:45vh}
+@keyframes panel-in{from{opacity:.5;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+h2{font-size:clamp(1.35rem,2.1vw,1.65rem);line-height:1.3;letter-spacing:-.032em;margin:34px 0 15px;font-weight:790}
+h3{font-size:1.07rem;letter-spacing:-.015em;line-height:1.4}
+p{margin:.65rem 0}a{text-underline-offset:3px;text-decoration-thickness:1px}
+.card,.q{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin:15px 0;box-shadow:var(--shadow)}
+.card{transition:border-color .18s,box-shadow .18s,transform .18s}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 30%,var(--line));box-shadow:0 14px 30px rgba(35,35,80,.085)}
+.card h3{font-weight:760;margin:0 0 9px}
+.card p{color:var(--mute)}
+.card p:last-child{margin-bottom:0}
+.grid,.cards{gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,285px),1fr))}
+.grid .card.c1,.grid .card.c2,.grid .card.c3,.grid .card.c4{border-top:1px solid var(--line);position:relative;overflow:hidden}
+.grid .card.c1:before,.grid .card.c2:before,.grid .card.c3:before,.grid .card.c4:before{content:"";display:block;width:33px;height:5px;border-radius:99px;background:var(--a1);margin-bottom:18px}
+.grid .card.c2:before{background:var(--a2)}.grid .card.c3:before{background:var(--a3)}.grid .card.c4:before{background:var(--a4)}
+.callout{background:linear-gradient(110deg,var(--a1b),var(--card));border:1px solid color-mix(in srgb,var(--accent) 20%,var(--line));border-left:5px solid var(--accent);border-radius:var(--radius);padding:22px 26px;margin:0 0 22px;font-size:1.13rem;line-height:1.65;box-shadow:var(--shadow)}
+.jump{margin:18px 0 24px;gap:9px}
+.jump a{padding:7px 14px;border-radius:9px;background:var(--card);font-size:.83rem;font-weight:650;color:var(--mute)}
+.jump a:hover{color:var(--accent);border-color:var(--accent);background:var(--a1b)}
+.btn{background:var(--card);border-radius:10px;padding:9px 15px;font-size:.88rem;font-weight:700;transition:all .2s}
+.btn.primary{background:#584bd8;color:#fff;border-color:#584bd8;box-shadow:0 4px 12px rgba(88,75,216,.2)}
+.btn:hover{transform:translateY(-1px)}
+.tablewrap{border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
+table{border-collapse:separate;border-spacing:0}th,td{border:0;border-bottom:1px solid var(--line);padding:14px 17px;line-height:1.6}tr:last-child td{border-bottom:0}th{background:var(--a1b);font-size:.81rem;letter-spacing:.025em;color:var(--ink)}tbody tr:hover{background:color-mix(in srgb,var(--a1b) 35%,transparent)}
+dt{color:var(--ink);font-weight:760;margin-top:18px}dd{padding-bottom:13px;border-bottom:1px solid var(--line)}
+.note{color:var(--mute);font-size:.9rem}
+.prompt{padding:17px 18px;border-radius:12px;background:var(--bg);line-height:1.65;border-color:var(--line)}
+.prompt-head{align-items:center;gap:12px}.prompt-head h3{font-size:1.06rem}
+.scorebar{top:73px;border-radius:13px;box-shadow:var(--shadow);padding:13px 17px}
+.q{padding:21px 24px}.q h3{font-size:1.07rem;line-height:1.5;margin-bottom:13px}
+.opt{border-radius:11px;padding:12px 15px;margin:8px 0;transition:background .2s,border-color .2s,transform .2s}
+.opt:hover:not([disabled]){background:var(--a1b);transform:translateX(3px)}
+#cloud,#mind{border-radius:var(--radius);padding:25px;box-shadow:var(--shadow)}
+#cloud{gap:11px 19px;line-height:1.4}#cloud span{transition:transform .2s;cursor:default}#cloud span:hover{transform:scale(1.09)}
+ul.vlist{background:var(--card);box-shadow:var(--shadow);overflow:hidden;border-radius:14px}
+ul.vlist li{padding:13px 18px;align-items:center}ul.vlist li:hover{background:var(--bg)}
+ul.vlist a{text-decoration:none;font-weight:550}ul.vlist a:hover{text-decoration:underline}ul.vlist .dur{color:var(--mute)}
+img.instructor{width:105px;border-radius:50%;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+footer{border-top:1px solid var(--line);padding:27px 0 42px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:640px){header.top{padding:37px 0 34px}header.top .row{flex-direction:column-reverse;gap:20px}header.top #themeBtn{align-self:flex-end}.eyebrow{font-size:.6rem;margin-bottom:17px}header.top h1{font-size:clamp(2.25rem,10vw,3.4rem)}.hero-meta{gap:7px}.hero-meta span{font-size:.73rem;padding:4px 9px}main.wrap{padding-top:20px}h2{margin-top:28px}.card,.q{padding:18px}.callout{padding:19px;font-size:1rem}.scorebar{top:68px}[role=tab]{padding:9px 12px;font-size:.82rem}.tablewrap{margin-right:-2px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media print{header.top{background:#fff!important;color:#000!important;padding:12px 0}header.top h1,.hero-highlight{color:#000!important}.hero-meta,.eyebrow,.hero-source{display:none!important}main.wrap{padding-top:0}.card,.q,.callout{box-shadow:none!important}body{background:#fff!important}nav.tabbar{display:none!important}}
+
 </style>
 </head>
 <body>
 <header class="top"><div class="wrap">
  <div class="row">
   <div>
-   <h1>AI-Powered Project Management</h1>
-   <p class="sub">Course companion · Instructor: David Griffiths</p>
-   <h2>Companion notes for <a href="https://learning.oreilly.com/live-events/ai-powered-project-management/0790145085649/0642572256425/">AI-Powered Project Management</a> from O'Reilly Media.</h2>
+   <div class="eyebrow"><span class="eyebrow-dot"></span> INTERACTIVE LEARNING COMPANION <span class="eyebrow-rule"></span> O’REILLY COURSE</div>
+   <h1>AI-Powered<br><span class="hero-highlight">Project Management.</span></h1>
+   <p class="sub">A practical toolkit for putting generative AI to work across your projects.</p>
+   <div class="hero-meta"><span>✦ Course notes</span><span>◷ Quick reference</span><span>✓ Practice quiz</span></div>
+   <p class="hero-source">Based on David Griffiths’ <a href="https://learning.oreilly.com/live-events/ai-powered-project-management/0790145085649/0642572256425/">O’Reilly course <span aria-hidden="true">↗</span></a></p>
   </div>
   <button class="btn" id="themeBtn" type="button" aria-label="Switch between light and dark theme">Theme: auto</button>
  </div>
