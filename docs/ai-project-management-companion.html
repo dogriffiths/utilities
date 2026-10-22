@@ -194,6 +194,37 @@ footer{border-top:1px solid var(--line);padding:27px 0 42px}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media print{header.top{background:#fff!important;color:#000!important;padding:12px 0}header.top h1,.hero-highlight{color:#000!important}.hero-meta,.eyebrow,.hero-source{display:none!important}main.wrap{padding-top:0}.card,.q,.callout{box-shadow:none!important}body{background:#fff!important}nav.tabbar{display:none!important}}
 
+
+/* Crossword tab */
+.xw-now{position:sticky;top:70px;z-index:4;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:12px;padding:10px 16px;margin:12px 0;box-shadow:var(--shadow);font-weight:600;line-height:1.5;min-height:3.4em}
+.xw-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.xw-layout{display:grid;grid-template-columns:minmax(0,max-content) minmax(260px,1fr);gap:24px;align-items:start}
+.xw-gridwrap{overflow-x:auto;padding:4px;max-width:100%}
+.xw-grid{--xc:30px;display:grid;gap:2px;width:max-content;background:#000;padding:2px;border-radius:4px}
+.xw-blank{width:var(--xc);height:var(--xc);background:#000}
+.xw-cell{position:relative;width:var(--xc);height:var(--xc);background:var(--card);border:1px solid var(--mute);border-radius:3px}
+.xw-num{position:absolute;top:1px;left:2px;font-size:9px;line-height:1;font-weight:600;color:var(--mute);pointer-events:none;z-index:1}
+.xw-cell input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:6px 0 0;border:0;border-radius:3px;background:transparent;color:var(--ink);font-family:inherit;font-size:16px;font-weight:700;text-align:center;text-transform:uppercase;caret-color:transparent;cursor:pointer}
+.xw-cell input:focus,.xw-cell input:focus-visible{outline:none}
+.xw-cell.xw-word{background:var(--a1b)}
+.xw-cell.xw-cur{background:var(--a2b);outline:3px solid var(--accent);outline-offset:-2px;z-index:2}
+.xw-cell.xw-bad{background:var(--badb)}
+.xw-cell.xw-bad input{color:var(--bad)}
+.xw-clues .card{margin:0 0 16px}
+.xw-clues{position:relative;align-self:stretch}
+.xw-scroll{position:absolute;inset:0;overflow-y:auto;padding-right:6px}
+.xw-list{list-style:none;margin:0;padding:0}
+.xw-list li{margin:2px 0}
+.xw-clue{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:8px;padding:7px 9px;font-size:.92rem;line-height:1.5;color:var(--ink)}
+.xw-clue:hover{background:var(--a1b)}
+.xw-clue.xw-active{background:var(--a1b);outline:2px solid var(--accent);outline-offset:-2px}
+.xw-cn{display:inline-block;min-width:1.8em;font-weight:800;color:var(--accent)}
+.xw-done .xw-clue{color:var(--mute)}
+.xw-done .xw-clue::after{content:" \2713";color:var(--good);font-weight:800}
+@media(max-width:900px){.xw-layout{grid-template-columns:minmax(0,1fr)}.xw-clues{position:static}.xw-scroll{position:static;overflow:visible;padding-right:0}}
+@media(max-width:640px){.xw-grid{--xc:26px}.xw-now{top:64px}}
+@media print{.xw-now{position:static;box-shadow:none}}
+
 </style>
 </head>
 <body>
@@ -216,6 +247,7 @@ footer{border-top:1px solid var(--line);padding:27px 0 42px}
      <button role="tab" id="tab-cheat" aria-controls="panel-cheat" aria-selected="false" tabindex="-1" data-hash="cheat">Cheat sheet</button>
   <button role="tab" id="tab-prompts" aria-controls="panel-prompts" aria-selected="false" tabindex="-1" data-hash="prompts">Prompts</button>
   <button role="tab" id="tab-quiz" aria-controls="panel-quiz" aria-selected="false" tabindex="-1" data-hash="quiz">Quiz</button>
+  <button role="tab" id="tab-crossword" aria-controls="panel-crossword" aria-selected="false" tabindex="-1" data-hash="crossword">Crossword</button>
   <button role="tab" id="tab-visuals" aria-controls="panel-visuals" aria-selected="false" tabindex="-1" data-hash="visuals">Word cloud and mindmap</button>
   <button role="tab" id="tab-courses" aria-controls="panel-courses" aria-selected="false" tabindex="-1" data-hash="courses">Other courses</button>
  </div>
@@ -417,6 +449,26 @@ footer{border-top:1px solid var(--line);padding:27px 0 42px}
  </div>
  <div id="quizList"></div>
  <div class="card" id="quizResult" style="display:none"></div>
+</section>
+
+<!-- CROSSWORD -->
+<section role="tabpanel" id="panel-crossword" aria-labelledby="tab-crossword" tabindex="0">
+ <p class="note" style="margin-top:14px">Every answer is a term from the glossary on the Summary tab, and each clue is that term's definition. Spaces, hyphens and brackets are left out of the answers. Click a square or a clue, then type. Arrow keys move, Space switches between across and down, Tab jumps to the next clue. On a small screen, scroll the grid sideways.</p>
+ <div class="xw-now" id="xwNow" aria-live="polite">Select a square to see its clue.</div>
+ <div class="xw-bar noprint">
+  <button class="btn primary" type="button" id="xwCheck">Check answers</button>
+  <button class="btn" type="button" id="xwRevealWord">Reveal word</button>
+  <button class="btn" type="button" id="xwRevealAll">Reveal all</button>
+  <button class="btn" type="button" id="xwClear">Clear all</button>
+  <span class="note" id="xwStatus" aria-live="polite"></span>
+ </div>
+ <div class="xw-layout">
+  <div class="xw-gridwrap"><div class="xw-grid" id="xwGrid" role="group" aria-label="Crossword grid"></div></div>
+  <div class="xw-clues"><div class="xw-scroll">
+   <div class="card"><h3>Across</h3><ul class="xw-list" id="xwAcross"></ul></div>
+   <div class="card"><h3>Down</h3><ul class="xw-list" id="xwDown"></ul></div>
+  </div></div>
+ </div>
 </section>
 
 <!-- VISUALS -->
@@ -761,6 +813,202 @@ function drawMind(){
  rectText(cx-centerW/2,cy-22,centerW,44,"mc","mtext c",MIND.center);
  box.innerHTML="";box.appendChild(svg);
 }
+
+/* crossword */
+(function(){
+ var XW={"h":21,"w":21,"entries":[{"n":1,"d":"A","r":0,"c":0,"a":"NETPROMOTERSCORE","term":"Net promoter score","clue":"On a 0 to 10 scale, 9 to 10 are advocates, 7 to 8 are passives and 0 to 6 are detractors. The measure combines these into a single figure from minus 100 to 100.","e":"3,8,5"},{"n":5,"d":"A","r":2,"c":7,"a":"AFFINITYGROUPS","term":"Affinity groups","clue":"Clusters of similar feedback items, for example by the aspect of the project they refer to.","e":"8,6"},{"n":7,"d":"A","r":4,"c":7,"a":"BOXOUTS","term":"Box-outs","clue":"Small separate information panels used to break up a complex story.","e":"3,4"},{"n":8,"d":"A","r":6,"c":0,"a":"SCOPECREEP","term":"Scope creep","clue":"When you and the product owner come to hold different views of what is included in a piece of work.","e":"5,5"},{"n":10,"d":"A","r":7,"c":16,"a":"RAG","term":"RAG","clue":"Retrieval-augmented generation: a chatbot looks up relevant fragments from a stored document collection before answering. (Abbreviation)","e":"3"},{"n":12,"d":"A","r":9,"c":0,"a":"MERMAID","term":"Mermaid","clue":"A text format for diagrams that can be rendered into a chart.","e":"7"},{"n":17,"d":"A","r":16,"c":4,"a":"TENTPOLESENTENCES","term":"Tentpole sentences","clue":"Your key thoughts in order, used to shape text a chatbot expands.","e":"8,9"},{"n":19,"d":"A","r":18,"c":1,"a":"RETROSPECTIVE","term":"Retrospective","clue":"A team session that turns feedback into actions to improve how the project runs.","e":"13"},{"n":20,"d":"A","r":20,"c":2,"a":"FEATUREFILE","term":"Feature file","clue":"A container holding many BDD scenarios; can be run as automated tests.","e":"7,4"},{"n":2,"d":"D","r":0,"c":12,"a":"COINTELLIGENCE","term":"Co-intelligence","clue":"A human plus a chatbot producing better work than either alone.","e":"2,12"},{"n":3,"d":"D","r":0,"c":20,"a":"BASICGLOBALENGLISH","term":"Basic global English","clue":"A simplified form of the language with a smaller vocabulary and fewer tenses.","e":"5,6,7"},{"n":4,"d":"D","r":1,"c":16,"a":"TRANSCRIPTION","term":"Transcription","clue":"A text version of spoken audio. Tools mentioned include phone recorder apps, Live Transcribe, Whisper and Otter.ai.","e":"13"},{"n":6,"d":"D","r":3,"c":4,"a":"ACCEPTANCECRITERIA","term":"Acceptance criteria","clue":"Statements that, once all true, mean a story is complete.","e":"10,8"},{"n":9,"d":"D","r":7,"c":14,"a":"MITIGATION","term":"Mitigation","clue":"An action that reduces a risk's likelihood or its impact.","e":"10"},{"n":11,"d":"D","r":8,"c":6,"a":"BDD","term":"Behaviour-driven development (BDD)","clue":"Writing scenarios in Given, When, Then form describing how a perfect system behaves, then building to satisfy them. (Abbreviation)","e":"3"},{"n":13,"d":"D","r":11,"c":1,"a":"USERSTORY","term":"User story","clue":"A smaller piece of work, derived from the scope, that is valuable in its own right.","e":"4,5"},{"n":14,"d":"D","r":11,"c":7,"a":"INVEST","term":"INVEST","clue":"Independent, Negotiable, Valuable, Estimable, Short, Testable: six checks for a good story.","e":"6"},{"n":15,"d":"D","r":11,"c":18,"a":"RISKSCORE","term":"Risk score","clue":"Likelihood multiplied by impact. With a probability and a money impact it equals expected loss.","e":"4,5"},{"n":16,"d":"D","r":12,"c":10,"a":"SKILL","term":"Skill","clue":"A packaged set of instructions, and sometimes code, that makes a chatbot repeat a process the same way each time.","e":"5"},{"n":18,"d":"D","r":16,"c":16,"a":"EPIC","term":"Epic","clue":"A large piece of work that takes the whole team months, such as building an aircraft hangar.","e":"4"}]};
+ var gridEl=$("xwGrid");if(!gridEl){return;}
+ var E=XW.entries,H=XW.h,W=XW.w;
+ var cells={},all=[];
+ function key(r,c){return r+","+c;}
+ E.forEach(function(e){
+  e.cells=[];
+  for(var k=0;k<e.a.length;k++){
+   var r=e.r+(e.d==="D"?k:0),c=e.c+(e.d==="A"?k:0),kk=key(r,c);
+   var o=cells[kk];
+   if(!o){o=cells[kk]={r:r,c:c,ch:e.a.charAt(k)};all.push(o);}
+   if(e.d==="A"){o.across=e;}else{o.down=e;}
+   if(k===0){o.num=e.n;}
+   e.cells.push(o);
+  }
+ });
+ var sel={o:null,e:null};
+ var nowEl=$("xwNow"),statusEl=$("xwStatus");
+
+ function selectCell(o,dir,noFocus){
+  var e=dir==="A"?o.across:o.down;
+  if(!e){e=o.across||o.down;}
+  sel.o=o;sel.e=e;paint();
+  if(!noFocus&&document.activeElement!==o.inp){o.inp.focus();}
+ }
+ function paint(){
+  all.forEach(function(o){
+   o.el.classList.remove("xw-word","xw-cur");
+   o.inp.tabIndex=(o===sel.o)?0:-1;
+  });
+  if(!sel.e){return;}
+  sel.e.cells.forEach(function(o){o.el.classList.add("xw-word");});
+  sel.o.el.classList.add("xw-cur");
+  nowEl.textContent=sel.e.n+" "+(sel.e.d==="A"?"Across":"Down")+" ("+sel.e.e+"): "+sel.e.clue;
+  E.forEach(function(e){if(e.btn){e.btn.classList.toggle("xw-active",e===sel.e);}});
+ }
+ function advance(o){
+  var cs=sel.e.cells,i=cs.indexOf(o);
+  if(i>=0&&i<cs.length-1){selectCell(cs[i+1],sel.e.d);}
+ }
+ function move(o,dr,dc,dir){
+  var t=cells[key(o.r+dr,o.c+dc)];
+  if(t){selectCell(t,dir);}
+ }
+ function entryDone(e){return e.cells.every(function(o){return o.inp.value===o.ch;});}
+ function refresh(){
+  var n=0;
+  E.forEach(function(e){
+   var d=entryDone(e);if(d){n++;}
+   if(e.btn){e.btn.parentNode.classList.toggle("xw-done",d);}
+  });
+  statusEl.textContent=n===E.length?"Solved! All "+E.length+" terms found.":n+" of "+E.length+" terms complete.";
+ }
+ function save(){
+  var s={};
+  all.forEach(function(o){if(o.inp.value){s[key(o.r,o.c)]=o.inp.value;}});
+  store("pmcomp-xw",JSON.stringify(s));
+ }
+ function changed(o){
+  if(o){o.el.classList.remove("xw-bad");}
+  save();refresh();
+ }
+
+ function wire(o){
+  var inp=o.inp,pre=null;
+  inp.addEventListener("mousedown",function(){pre=sel.o;});
+  inp.addEventListener("focus",function(){
+   if(sel.o!==o){selectCell(o,sel.e?sel.e.d:"A",true);}
+   setTimeout(function(){try{inp.select();}catch(err){}},0);
+  });
+  inp.addEventListener("click",function(){
+   if(pre===o&&o.across&&o.down){selectCell(o,sel.e.d==="A"?"D":"A",true);}
+   pre=null;
+  });
+  inp.addEventListener("keydown",function(ev){
+   if(ev.ctrlKey||ev.metaKey||ev.altKey){return;}
+   var k=ev.key;
+   if(k&&k.length===1&&/[a-zA-Z]/.test(k)){
+    ev.preventDefault();inp.value=k.toUpperCase();changed(o);advance(o);return;
+   }
+   if(k==="Backspace"||k==="Delete"){
+    ev.preventDefault();
+    if(inp.value){inp.value="";changed(o);}
+    else if(k==="Backspace"){
+     var cs=sel.e.cells,i=cs.indexOf(o);
+     if(i>0){var p=cs[i-1];p.inp.value="";changed(p);selectCell(p,sel.e.d);}
+    }
+    return;
+   }
+   if(k==="ArrowLeft"){ev.preventDefault();move(o,0,-1,"A");return;}
+   if(k==="ArrowRight"){ev.preventDefault();move(o,0,1,"A");return;}
+   if(k==="ArrowUp"){ev.preventDefault();move(o,-1,0,"D");return;}
+   if(k==="ArrowDown"){ev.preventDefault();move(o,1,0,"D");return;}
+   if(k===" "||k==="Enter"){
+    ev.preventDefault();
+    if(o.across&&o.down){selectCell(o,sel.e.d==="A"?"D":"A");}
+    return;
+   }
+   if(k==="Tab"){
+    var idx=E.indexOf(sel.e);
+    if((!ev.shiftKey&&idx===E.length-1)||(ev.shiftKey&&idx===0)){return;}
+    ev.preventDefault();
+    var n=E[idx+(ev.shiftKey?-1:1)];
+    selectCell(n.cells[0],n.d);
+   }
+  });
+  /* fallback for mobile keyboards that do not report a key */
+  inp.addEventListener("input",function(){
+   var v=inp.value.replace(/[^a-zA-Z]/g,"");
+   if(!v){inp.value="";changed(o);return;}
+   inp.value=v.charAt(v.length-1).toUpperCase();
+   changed(o);advance(o);
+  });
+ }
+
+ /* build the grid */
+ gridEl.style.gridTemplateColumns="repeat("+W+",var(--xc))";
+ for(var r=0;r<H;r++){
+  for(var c=0;c<W;c++){
+   var o=cells[key(r,c)];
+   if(!o){
+    var b=document.createElement("div");b.className="xw-blank";b.setAttribute("aria-hidden","true");gridEl.appendChild(b);
+    continue;
+   }
+   var d=document.createElement("div");d.className="xw-cell";
+   if(o.num){var nm=document.createElement("span");nm.className="xw-num";nm.textContent=o.num;nm.setAttribute("aria-hidden","true");d.appendChild(nm);}
+   var inp=document.createElement("input");
+   inp.type="text";inp.maxLength=1;inp.autocomplete="off";
+   inp.setAttribute("autocapitalize","characters");inp.setAttribute("autocorrect","off");inp.setAttribute("spellcheck","false");
+   var lab="Row "+(o.r+1)+", column "+(o.c+1);
+   if(o.across){lab+=", "+o.across.n+" across";}
+   if(o.down){lab+=", "+o.down.n+" down";}
+   inp.setAttribute("aria-label",lab);
+   d.appendChild(inp);gridEl.appendChild(d);
+   o.el=d;o.inp=inp;
+   wire(o);
+  }
+ }
+
+ /* clue lists */
+ var lists={A:$("xwAcross"),D:$("xwDown")};
+ E.forEach(function(e){
+  var li=document.createElement("li");
+  var bt=document.createElement("button");bt.type="button";bt.className="xw-clue";
+  var cn=document.createElement("span");cn.className="xw-cn";cn.textContent=e.n;
+  bt.appendChild(cn);bt.appendChild(document.createTextNode(e.clue+" ("+e.e+")"));
+  bt.addEventListener("click",function(){selectCell(e.cells[0],e.d);});
+  li.appendChild(bt);lists[e.d].appendChild(li);e.btn=bt;
+ });
+
+ /* restore saved letters */
+ var sv={};
+ try{sv=JSON.parse(store("pmcomp-xw")||"{}")||{};}catch(err){sv={};}
+ all.forEach(function(o){var v=sv[key(o.r,o.c)];if(typeof v==="string"&&/^[A-Z]$/.test(v)){o.inp.value=v;}});
+
+ /* buttons */
+ function twoStep(btn,label,fn){
+  var orig=btn.textContent,t=null;
+  btn.addEventListener("click",function(){
+   if(t){clearTimeout(t);t=null;btn.textContent=orig;fn();return;}
+   btn.textContent=label;
+   t=setTimeout(function(){t=null;btn.textContent=orig;},3000);
+  });
+ }
+ $("xwCheck").addEventListener("click",function(){
+  var bad=0,filled=0;
+  all.forEach(function(o){
+   var v=o.inp.value;
+   if(v){
+    filled++;
+    if(v!==o.ch){bad++;o.el.classList.add("xw-bad");}else{o.el.classList.remove("xw-bad");}
+   }
+  });
+  statusEl.textContent=bad?(bad+(bad===1?" letter is":" letters are")+" wrong (shown in red)."):(filled?"No mistakes so far.":"Nothing to check yet.");
+ });
+ $("xwRevealWord").addEventListener("click",function(){
+  if(!sel.e){statusEl.textContent="Select a square first.";return;}
+  sel.e.cells.forEach(function(o){o.inp.value=o.ch;o.el.classList.remove("xw-bad");});
+  save();refresh();
+ });
+ twoStep($("xwRevealAll"),"Sure? Click again",function(){
+  all.forEach(function(o){o.inp.value=o.ch;o.el.classList.remove("xw-bad");});
+  save();refresh();
+ });
+ twoStep($("xwClear"),"Sure? Click again",function(){
+  all.forEach(function(o){o.inp.value="";o.el.classList.remove("xw-bad");});
+  save();refresh();
+ });
+
+ selectCell(E[0].cells[0],E[0].d,true);
+ refresh();
+})();
+
 
 showTab((location.hash||"#summary").slice(1),false,true);
 })();
