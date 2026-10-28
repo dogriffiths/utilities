@@ -237,7 +237,10 @@ footer{border-top:1px solid var(--line);padding:27px 0 42px}
    <div class="hero-meta"><span>✦ Course notes</span><span>◷ Quick reference</span><span>✓ Practice quiz</span></div>
    <p class="hero-source">Based on David Griffiths’ <a href="https://learning.oreilly.com/live-events/ai-powered-project-management/0790145085649/0642572256425/">O’Reilly course <span aria-hidden="true">↗</span></a></p>
   </div>
-  <button class="btn" id="themeBtn" type="button" aria-label="Switch between light and dark theme">Theme: auto</button>
+  <div class="hero-actions">
+   <button class="btn" id="demoBtn" type="button" aria-label="Play an automatic tour of every tab">▶ Demo</button>
+   <button class="btn" id="themeBtn" type="button" aria-label="Switch between light and dark theme">Theme: auto</button>
+  </div>
  </div>
 </div></header>
 <nav class="tabbar" aria-label="Companion sections"><div class="wrap">
@@ -1013,6 +1016,148 @@ function drawMind(){
 
 
 showTab((location.hash||"#summary").slice(1),false,true);
+})();
+</script>
+<style>
+/* Self-running demo */
+.hero-actions{display:flex;gap:10px;flex:none;flex-wrap:wrap;justify-content:flex-end}
+header.top #demoBtn{flex:none;background:#fff;color:#2a2368;border:1px solid #fff;border-radius:999px;padding:9px 16px;font-size:.83rem;font-weight:700}
+header.top #demoBtn:hover{background:#e9e6ff}
+header.top #demoBtn.running{background:#ffb4b4;border-color:#ffb4b4;color:#4a1010}
+#demoCursor{position:fixed;left:0;top:0;width:26px;height:26px;z-index:9999;pointer-events:none;opacity:0;transition:transform .8s cubic-bezier(.45,.05,.25,1),opacity .25s;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+#demoCursor.on{opacity:1}
+#demoCursor svg{display:block;width:100%;height:100%}
+#demoCursor.click:after{content:"";position:absolute;left:-10px;top:-10px;width:30px;height:30px;border-radius:50%;border:3px solid var(--accent);animation:demo-ripple .5s ease-out forwards}
+@keyframes demo-ripple{from{transform:scale(.3);opacity:1}to{transform:scale(1.6);opacity:0}}
+.demo-focus{outline:3px solid var(--accent)!important;outline-offset:6px;border-radius:6px;transition:outline-color .2s}
+#demoBanner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9998;background:#1c2440;color:#fff;border-radius:999px;padding:8px 18px;font-size:.85rem;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.3);opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100vw - 32px);text-align:center}
+#demoBanner.on{opacity:1}
+@media(max-width:640px){.hero-actions{align-self:flex-end}}
+@media print{#demoCursor,#demoBanner,#demoBtn{display:none!important}}
+@media(prefers-reduced-motion:reduce){#demoCursor{transition:opacity .01ms}}
+</style>
+<script>
+/* Self-running demo: clicks through each tab, scrolling to and pausing at every heading. */
+(function(){
+"use strict";
+var btn=document.getElementById("demoBtn");
+if(!btn){return;}
+
+var TAB_PAUSE=1200;       /* pause after switching tab, before scrolling */
+var HEADING_PAUSE=1800;   /* pause at each heading */
+var FAST_PAUSE=1000;      /* pause per heading in tabs with many headings */
+var FAST_THRESHOLD=10;
+var STICKY_GAP=130;       /* room for the sticky tab bar (and quiz score bar) */
+
+var running=false,token=0,focused=null;
+
+var cursor=document.createElement("div");
+cursor.id="demoCursor";cursor.setAttribute("aria-hidden","true");
+cursor.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 2l16 9.5-7 1.8 4 7.2-3 1.6-4-7.2L4 20z" fill="#fff" stroke="#1c2440" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+document.body.appendChild(cursor);
+var banner=document.createElement("div");
+banner.id="demoBanner";banner.setAttribute("aria-live","polite");
+document.body.appendChild(banner);
+
+function say(t){banner.textContent=t;banner.classList.toggle("on",!!t);}
+
+/* cancellable sleep */
+function sleep(ms,my){
+ return new Promise(function(res,rej){
+  setTimeout(function(){if(my!==token){rej("stopped");}else{res();}},ms);
+ });
+}
+function reduced(){return window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;}
+
+function moveCursorTo(el,my){
+ var r=el.getBoundingClientRect();
+ var x=Math.max(8,Math.min(window.innerWidth-34,r.left+r.width/2));
+ var y=Math.max(8,Math.min(window.innerHeight-34,r.top+r.height/2));
+ cursor.classList.add("on");
+ cursor.style.transform="translate("+x+"px,"+y+"px)";
+ return sleep(reduced()?50:900,my);
+}
+function clickWithCursor(el,my){
+ /* make sure the control is visible within its own scroller (the tab bar scrolls sideways) */
+ try{el.scrollIntoView({block:"nearest",inline:"center",behavior:"auto"});}catch(e){}
+ return moveCursorTo(el,my).then(function(){
+  cursor.classList.remove("click");void cursor.offsetWidth;cursor.classList.add("click");
+  el.click();
+  return sleep(350,my);
+ });
+}
+
+function clearFocus(){if(focused){focused.classList.remove("demo-focus");focused=null;}}
+function scrollToEl(el){
+ var top=el.getBoundingClientRect().top+window.pageYOffset-STICKY_GAP;
+ window.scrollTo({top:Math.max(0,top),behavior:reduced()?"auto":"smooth"});
+}
+function visibleHeadings(panel){
+ return Array.prototype.filter.call(panel.querySelectorAll("h2,h3"),function(h){
+  return h.getClientRects().length>0;
+ });
+}
+
+function demoTab(tab,my){
+ var panel=document.getElementById(tab.getAttribute("aria-controls"));
+ say("Tab: "+tab.textContent.trim());
+ return clickWithCursor(tab,my).then(function(){
+  window.scrollTo({top:0,behavior:"auto"});
+  return sleep(TAB_PAUSE,my);
+ }).then(function(){
+  var hs=visibleHeadings(panel);
+  var pause=hs.length>FAST_THRESHOLD?FAST_PAUSE:HEADING_PAUSE;
+  var p=Promise.resolve();
+  hs.forEach(function(h,i){
+   p=p.then(function(){
+    clearFocus();
+    scrollToEl(h);
+    h.classList.add("demo-focus");focused=h;
+    say(tab.textContent.trim()+": "+h.textContent.replace(/\s+/g," ").trim().slice(0,70)+" ("+(i+1)+"/"+hs.length+")");
+    return sleep(pause,my);
+   });
+  });
+  return p;
+ }).then(function(){clearFocus();});
+}
+
+function finish(){
+ running=false;clearFocus();
+ btn.classList.remove("running");btn.textContent="▶ Demo";
+ btn.setAttribute("aria-label","Play an automatic tour of every tab");
+ cursor.classList.remove("on");cursor.classList.remove("click");
+ setTimeout(function(){if(!running){say("");}},900);
+}
+function stop(){token++;if(running){finish();}}
+
+function start(){
+ if(running){return;}
+ running=true;var my=++token;
+ btn.classList.add("running");btn.textContent="■ Stop demo";
+ btn.setAttribute("aria-label","Stop the automatic tour");
+ var tabs=Array.prototype.slice.call(document.querySelectorAll("[role=tab]"));
+ window.scrollTo({top:0,behavior:"auto"});
+ var p=Promise.resolve();
+ tabs.forEach(function(t){p=p.then(function(){return demoTab(t,my);});});
+ p=p.then(function(){
+  /* finish back on the first tab */
+  say("Demo complete");
+  return clickWithCursor(tabs[0],my).then(function(){window.scrollTo({top:0,behavior:"smooth"});return sleep(1500,my);});
+ });
+ p.then(function(){if(my===token){finish();}},function(){/* stopped */});
+}
+
+btn.addEventListener("click",function(){if(running){stop();}else{start();}});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&running){stop();}});
+/* stop if the person takes over */
+["wheel","touchstart"].forEach(function(ev){
+ window.addEventListener(ev,function(e){
+  /* our own smooth scrolling does not fire wheel/touch events, so these are the person */
+  if(running){stop();}
+ },{passive:true});
+});
+/* optional: open the page with #demo or ?demo to start automatically */
+if(/[?&]demo\b/.test(location.search)){setTimeout(start,800);}
 })();
 </script>
 </body>
