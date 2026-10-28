@@ -1023,7 +1023,7 @@ showTab((location.hash||"#summary").slice(1),false,true);
 .hero-actions{display:flex;gap:10px;flex:none;flex-wrap:wrap;justify-content:flex-end}
 header.top #demoBtn{flex:none;background:#fff;color:#2a2368;border:1px solid #fff;border-radius:999px;padding:9px 16px;font-size:.83rem;font-weight:700}
 header.top #demoBtn:hover{background:#e9e6ff}
-header.top #demoBtn.running{background:#ffb4b4;border-color:#ffb4b4;color:#4a1010}
+header.top #demoBtn[hidden]{display:none}
 #demoCursor{position:fixed;left:0;top:0;width:26px;height:26px;z-index:9999;pointer-events:none;opacity:0;transition:transform .8s cubic-bezier(.45,.05,.25,1),opacity .25s;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
 #demoCursor.on{opacity:1}
 #demoCursor svg{display:block;width:100%;height:100%}
@@ -1043,7 +1043,8 @@ header.top #demoBtn.running{background:#ffb4b4;border-color:#ffb4b4;color:#4a101
 var btn=document.getElementById("demoBtn");
 if(!btn){return;}
 
-var TAB_PAUSE=1200;       /* pause after switching tab, before scrolling */
+var START_DELAY=2000;     /* pause after the button is pressed, before the tour starts */
+var TAB_PAUSE=1200;      /* pause after switching tab, before scrolling */
 var HEADING_PAUSE=1800;   /* pause at each heading */
 var FAST_PAUSE=1000;      /* pause per heading in tabs with many headings */
 var FAST_THRESHOLD=10;
@@ -1093,7 +1094,7 @@ function scrollToEl(el){
  window.scrollTo({top:Math.max(0,top),behavior:reduced()?"auto":"smooth"});
 }
 function visibleHeadings(panel){
- return Array.prototype.filter.call(panel.querySelectorAll("h2,h3"),function(h){
+ return Array.prototype.filter.call(panel.querySelectorAll("h2"),function(h){
   return h.getClientRects().length>0;
  });
 }
@@ -1123,6 +1124,7 @@ function demoTab(tab,my){
 
 function finish(){
  running=false;clearFocus();
+ btn.hidden=false;
  btn.classList.remove("running");btn.textContent="▶ Demo";
  btn.setAttribute("aria-label","Play an automatic tour of every tab");
  cursor.classList.remove("on");cursor.classList.remove("click");
@@ -1133,11 +1135,10 @@ function stop(){token++;if(running){finish();}}
 function start(){
  if(running){return;}
  running=true;var my=++token;
- btn.classList.add("running");btn.textContent="■ Stop demo";
- btn.setAttribute("aria-label","Stop the automatic tour");
+ btn.hidden=true;
  var tabs=Array.prototype.slice.call(document.querySelectorAll("[role=tab]"));
  window.scrollTo({top:0,behavior:"auto"});
- var p=Promise.resolve();
+ var p=sleep(START_DELAY,my); /* button is already hidden; wait before the animation begins */
  tabs.forEach(function(t){p=p.then(function(){return demoTab(t,my);});});
  p=p.then(function(){
   /* finish back on the first tab */
@@ -1147,7 +1148,7 @@ function start(){
  p.then(function(){if(my===token){finish();}},function(){/* stopped */});
 }
 
-btn.addEventListener("click",function(){if(running){stop();}else{start();}});
+btn.addEventListener("click",function(){if(!running){start();}});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&running){stop();}});
 /* stop if the person takes over */
 ["wheel","touchstart"].forEach(function(ev){
