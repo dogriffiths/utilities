@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="en-GB">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Generative AI to Improve Your Writing: Course Companion</title>
+<style>
+:root{--bg:#fbfbf8;--card:#ffffff;--ink:#1d2330;--mute:#566070;--line:#d9dce3;--accent:#2457c5;--on-accent:#ffffff;--a1:#2457c5;--a2:#b4531a;--a3:#2c7a4b;--a4:#8a3fa8;--a1b:#e6edfb;--a2b:#fbeadf;--a3b:#e2f3e8;--a4b:#f1e5f6;--good:#1f7a43;--goodb:#e2f3e8;--bad:#b3261e;--badb:#fbe7e5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--card:#1c2029;--ink:#e8eaf0;--mute:#a3acbb;--line:#323846;--accent:#7ea6ff;--on-accent:#101521;--a1:#7ea6ff;--a2:#f0a46c;--a3:#6fcf97;--a4:#d6a0ec;--a1b:#1f2a44;--a2b:#3a2a1c;--a3b:#1b3326;--a4b:#33223d;--good:#6fcf97;--goodb:#1b3326;--bad:#ff8a80;--badb:#3d1f1d}}
+:root[data-theme="dark"]{--bg:#14171d;--card:#1c2029;--ink:#e8eaf0;--mute:#a3acbb;--line:#323846;--accent:#7ea6ff;--on-accent:#101521;--a1:#7ea6ff;--a2:#f0a46c;--a3:#6fcf97;--a4:#d6a0ec;--a1b:#1f2a44;--a2b:#3a2a1c;--a3b:#1b3326;--a4b:#33223d;--good:#6fcf97;--goodb:#1b3326;--bad:#ff8a80;--badb:#3d1f1d}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.55;font-size:16px}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+header.top{padding:28px 0 12px}
+header.top .row{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:1.7rem;line-height:1.2;margin:0 0 4px}
+.sub{color:var(--mute);margin:0}
+h2{font-size:1.3rem;margin:1.6rem 0 .6rem;line-height:1.25}
+h3{font-size:1.05rem;margin:1.1rem 0 .4rem}
+p{margin:.5rem 0}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+nav.tabbar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+[role=tablist]{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+[role=tab]{background:transparent;border:1px solid transparent;border-radius:8px;padding:7px 12px;white-space:nowrap;color:var(--mute)}
+[role=tab][aria-selected=true]{background:var(--card);border-color:var(--line);color:var(--ink);font-weight:600;box-shadow:inset 0 -3px 0 var(--accent)}
+[role=tabpanel]{display:none;padding-bottom:48px}
+[role=tabpanel].active{display:block}
+.callout{background:var(--a1b);border-left:5px solid var(--accent);border-radius:8px;padding:12px 16px;margin:14px 0;font-size:1.05rem}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.jump a{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:3px 12px;text-decoration:none;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+.card h3{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.grid .card{margin:0}
+.grid .card.c1{border-top:4px solid var(--a1)}.grid .card.c2{border-top:4px solid var(--a2)}.grid .card.c3{border-top:4px solid var(--a3)}.grid .card.c4{border-top:4px solid var(--a4)}
+ul,ol{padding-left:1.2rem;margin:.4rem 0}
+li{margin:.2rem 0}
+table{border-collapse:collapse;width:100%;font-size:.95rem;background:var(--card)}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--a1b)}
+.tablewrap{overflow-x:auto;border-radius:8px}
+dl{margin:0}
+dt{font-weight:700;margin-top:.7rem}
+dd{margin:.1rem 0 0 0;color:var(--mute)}
+.note{color:var(--mute);font-size:.92rem}
+.tag{display:inline-block;font-size:.78rem;border:1px solid var(--line);border-radius:999px;padding:1px 9px;color:var(--mute);margin-left:6px;vertical-align:middle}
+.prompt{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88rem;margin:8px 0}
+.prompt-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.prompt-head h3{margin:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.card ul,.card ol{margin:6px 0 0;padding-left:20px}
+.card li{margin:3px 0}
+.checklist{list-style:none;padding:0}
+.checklist li{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--line)}
+.checklist input{margin-top:5px;width:18px;height:18px;flex:none}
+.scorebar{position:sticky;top:52px;z-index:5;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:12px 0;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+.q h3{margin:0 0 8px;font-size:1rem}
+.opt{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:6px 0}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt.right{background:var(--goodb);border-color:var(--good)}
+.opt.wrong{background:var(--badb);border-color:var(--bad)}
+.opt[disabled]{cursor:default}
+.expl{display:none;margin-top:8px;color:var(--mute);font-size:.95rem}
+.q.done .expl{display:block}
+#cloud{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:center;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:12px;line-height:1.1}
+#cloud span{font-weight:700}
+.w0{color:var(--a1)}.w1{color:var(--a2)}.w2{color:var(--a3)}.w3{color:var(--a4)}
+#mind{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px}
+#mind svg{display:block;width:100%;min-width:900px;height:auto}
+.mb{stroke-width:2}.ml{stroke-width:1}
+.m1{fill:var(--a1b);stroke:var(--a1)}.m2{fill:var(--a2b);stroke:var(--a2)}.m3{fill:var(--a3b);stroke:var(--a3)}.m4{fill:var(--a4b);stroke:var(--a4)}
+.mc{fill:var(--accent);stroke:var(--accent)}
+.mtext{fill:var(--ink);font-size:13px;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.mtext.b{font-weight:700}
+.mtext.c{fill:var(--on-accent);font-weight:700}
+.conn{fill:none;stroke-width:1.6}
+.cn1{stroke:var(--a1)}.cn2{stroke:var(--a2)}.cn3{stroke:var(--a3)}.cn4{stroke:var(--a4)}
+img.instructor{display:block;width:150px;height:auto;border-radius:12px;border:1px solid var(--line)}
+.linkcard{display:block;text-decoration:none;color:inherit}
+.linkcard:hover{border-color:var(--accent)}
+ul.vlist{list-style:none;margin:6px 0 0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+ul.vlist li{padding:9px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+ul.vlist li:last-child{border-bottom:0}
+ul.vlist .dur{color:var(--muted);font-size:.88rem;white-space:nowrap}
+footer{padding:24px 0 40px;color:var(--mute);font-size:.9rem}
+@media print{
+ header.top .row button,nav.tabbar,.noprint,footer{display:none !important}
+ body{background:#fff;color:#000}
+ [role=tabpanel]{display:none !important}
+ [role=tabpanel].active{display:block !important}
+ .card{break-inside:avoid;border-color:#999}
+ .grid{display:block}.grid .card{margin:0 0 10px}
+ a{color:#000}
+}
+
+/* Visual refresh: editorial learning dashboard */
+:root{
+ --bg:#f6f7fb;--card:#fff;--surface:#fff;--ink:#1c2440;--mute:#626e86;--muted:var(--mute);
+ --line:#e4e8f2;--accent:#584bd8;--on-accent:#fff;
+ --a1:#6554e8;--a2:#db8b4d;--a3:#16957e;--a4:#b06ad0;
+ --a1b:#efedff;--a2b:#fff2e7;--a3b:#e5f7f2;--a4b:#f7ebfc;
+ --good:#198767;--goodb:#e3f7ee;--bad:#c94c53;--badb:#ffedef;
+ --shadow:0 12px 35px rgba(36,45,88,.055);--radius:18px;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#0d1220;--card:#192237;--surface:#192237;--ink:#f0f3ff;--mute:#abb6cd;--muted:var(--mute);
+ --line:#303b53;--accent:#a79cff;--on-accent:#141226;
+ --a1:#aa9aff;--a2:#f0b17a;--a3:#76dec6;--a4:#dda1f5;
+ --a1b:#302b50;--a2b:#3c2c2b;--a3b:#1a3b38;--a4b:#3d2a4a;
+ --good:#72dfb3;--goodb:#193c32;--bad:#ff929a;--badb:#44262f;
+ --shadow:0 12px 35px rgba(0,0,0,.18);
+}}
+:root[data-theme="dark"]{
+ --bg:#0d1220;--card:#192237;--surface:#192237;--ink:#f0f3ff;--mute:#abb6cd;--muted:var(--mute);
+ --line:#303b53;--accent:#a79cff;--on-accent:#141226;
+ --a1:#aa9aff;--a2:#f0b17a;--a3:#76dec6;--a4:#dda1f5;
+ --a1b:#302b50;--a2b:#3c2c2b;--a3b:#1a3b38;--a4b:#3d2a4a;
+ --good:#72dfb3;--goodb:#193c32;--bad:#ff929a;--badb:#44262f;
+ --shadow:0 12px 35px rgba(0,0,0,.18);
+}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.7;letter-spacing:-.006em;background:var(--bg)}
+.wrap{max-width:1160px;padding-left:clamp(18px,4vw,42px);padding-right:clamp(18px,4vw,42px)}
+header.top{position:relative;isolation:isolate;overflow:hidden;padding:54px 0 47px;background:radial-gradient(ellipse 60% 120% at 95% -30%,#7463ff 0,transparent 70%),linear-gradient(125deg,#141d3b 0%,#28245d 56%,#413186 100%);color:#fff}
+header.top:after{content:"";position:absolute;right:-95px;bottom:-280px;width:550px;height:550px;border:1px solid rgba(255,255,255,.16);border-radius:50%;box-shadow:0 0 0 75px rgba(255,255,255,.035),0 0 0 150px rgba(255,255,255,.025);z-index:-1;pointer-events:none}
+header.top .row{align-items:flex-start;gap:26px}
+header.top .row>div{max-width:800px}
+.eyebrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.69rem;font-weight:800;letter-spacing:.15em;color:#cecaff;margin-bottom:24px}
+.eyebrow-dot{width:8px;height:8px;border-radius:50%;background:#b9ffda;box-shadow:0 0 0 4px rgba(185,255,218,.14)}
+.eyebrow-rule{width:25px;height:1px;background:rgba(255,255,255,.3)}
+header.top h1{font-size:clamp(2.35rem,5.5vw,4.45rem);line-height:1.08;letter-spacing:-.055em;font-weight:830;margin:0 0 19px}
+.hero-highlight{color:#c3bbff}
+header.top .sub{color:#e0dff5;max-width:625px;font-size:clamp(1rem,1.4vw,1.17rem);line-height:1.6}
+.hero-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:26px}
+.hero-meta span{display:inline-flex;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 12px;background:rgba(255,255,255,.07);color:#f1eeff;font-size:.81rem;font-weight:600}
+.hero-source{margin-top:20px!important;color:#bfbde3;font-size:.89rem}
+.hero-source a{color:#fff;text-decoration-color:#9d91ed;text-underline-offset:4px}
+header.top #themeBtn{flex:none;background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.32);border-radius:999px;padding:9px 16px;font-size:.83rem;font-weight:650}
+header.top #themeBtn:hover{background:rgba(255,255,255,.23);border-color:#fff}
+nav.tabbar{background:var(--card);box-shadow:0 3px 20px rgba(19,24,54,.045);border-bottom:1px solid var(--line);top:0}
+[role=tablist]{gap:8px;padding:12px 0;scrollbar-width:thin}
+[role=tab]{color:var(--mute);border-radius:10px;padding:10px 16px;font-size:.88rem;font-weight:650;transition:background .2s,color .2s,border-color .2s}
+[role=tab]:hover{background:var(--bg);color:var(--ink)}
+[role=tab][aria-selected=true]{background:var(--a1b);color:var(--accent);border-color:transparent;box-shadow:none}
+main.wrap{padding-top:30px;padding-bottom:50px}
+[role=tabpanel]{animation:panel-in .24s ease-out;min-height:45vh}
+@keyframes panel-in{from{opacity:.5;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+h2{font-size:clamp(1.35rem,2.1vw,1.65rem);line-height:1.3;letter-spacing:-.032em;margin:34px 0 15px;font-weight:790}
+h3{font-size:1.07rem;letter-spacing:-.015em;line-height:1.4}
+p{margin:.65rem 0}a{text-underline-offset:3px;text-decoration-thickness:1px}
+.card,.q{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin:15px 0;box-shadow:var(--shadow)}
+.card{transition:border-color .18s,box-shadow .18s,transform .18s}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 30%,var(--line));box-shadow:0 14px 30px rgba(35,35,80,.085)}
+.card h3{font-weight:760;margin:0 0 9px}
+.card p{color:var(--mute)}
+.card p:last-child{margin-bottom:0}
+.grid,.cards{gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,285px),1fr))}
+.grid .card.c1,.grid .card.c2,.grid .card.c3,.grid .card.c4{border-top:1px solid var(--line);position:relative;overflow:hidden}
+.grid .card.c1:before,.grid .card.c2:before,.grid .card.c3:before,.grid .card.c4:before{content:"";display:block;width:33px;height:5px;border-radius:99px;background:var(--a1);margin-bottom:18px}
+.grid .card.c2:before{background:var(--a2)}.grid .card.c3:before{background:var(--a3)}.grid .card.c4:before{background:var(--a4)}
+.callout{background:linear-gradient(110deg,var(--a1b),var(--card));border:1px solid color-mix(in srgb,var(--accent) 20%,var(--line));border-left:5px solid var(--accent);border-radius:var(--radius);padding:22px 26px;margin:0 0 22px;font-size:1.13rem;line-height:1.65;box-shadow:var(--shadow)}
+.jump{margin:18px 0 24px;gap:9px}
+.jump a{padding:7px 14px;border-radius:9px;background:var(--card);font-size:.83rem;font-weight:650;color:var(--mute)}
+.jump a:hover{color:var(--accent);border-color:var(--accent);background:var(--a1b)}
+.btn{background:var(--card);border-radius:10px;padding:9px 15px;font-size:.88rem;font-weight:700;transition:all .2s}
+.btn.primary{background:#584bd8;color:#fff;border-color:#584bd8;box-shadow:0 4px 12px rgba(88,75,216,.2)}
+.btn:hover{transform:translateY(-1px)}
+.tablewrap{border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
+table{border-collapse:separate;border-spacing:0}th,td{border:0;border-bottom:1px solid var(--line);padding:14px 17px;line-height:1.6}tr:last-child td{border-bottom:0}th{background:var(--a1b);font-size:.81rem;letter-spacing:.025em;color:var(--ink)}tbody tr:hover{background:color-mix(in srgb,var(--a1b) 35%,transparent)}
+dt{color:var(--ink);font-weight:760;margin-top:18px}dd{padding-bottom:13px;border-bottom:1px solid var(--line)}
+.note{color:var(--mute);font-size:.9rem}
+.prompt{padding:17px 18px;border-radius:12px;background:var(--bg);line-height:1.65;border-color:var(--line)}
+.prompt-head{align-items:center;gap:12px}.prompt-head h3{font-size:1.06rem}
+.scorebar{top:73px;border-radius:13px;box-shadow:var(--shadow);padding:13px 17px}
+.q{padding:21px 24px}.q h3{font-size:1.07rem;line-height:1.5;margin-bottom:13px}
+.opt{border-radius:11px;padding:12px 15px;margin:8px 0;transition:background .2s,border-color .2s,transform .2s}
+.opt:hover:not([disabled]){background:var(--a1b);transform:translateX(3px)}
+#cloud,#mind{border-radius:var(--radius);padding:25px;box-shadow:var(--shadow)}
+#cloud{gap:11px 19px;line-height:1.4}#cloud span{transition:transform .2s;cursor:default}#cloud span:hover{transform:scale(1.09)}
+ul.vlist{background:var(--card);box-shadow:var(--shadow);overflow:hidden;border-radius:14px}
+ul.vlist li{padding:13px 18px;align-items:center}ul.vlist li:hover{background:var(--bg)}
+ul.vlist a{text-decoration:none;font-weight:550}ul.vlist a:hover{text-decoration:underline}ul.vlist .dur{color:var(--mute)}
+img.instructor{width:105px;border-radius:50%;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+footer{border-top:1px solid var(--line);padding:27px 0 42px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:640px){header.top{padding:37px 0 34px}header.top .row{flex-direction:column-reverse;gap:20px}header.top #themeBtn{align-self:flex-end}.eyebrow{font-size:.6rem;margin-bottom:17px}header.top h1{font-size:clamp(2.25rem,10vw,3.4rem)}.hero-meta{gap:7px}.hero-meta span{font-size:.73rem;padding:4px 9px}main.wrap{padding-top:20px}h2{margin-top:28px}.card,.q{padding:18px}.callout{padding:19px;font-size:1rem}.scorebar{top:68px}[role=tab]{padding:9px 12px;font-size:.82rem}.tablewrap{margin-right:-2px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media print{header.top{background:#fff!important;color:#000!important;padding:12px 0}header.top h1,.hero-highlight{color:#000!important}.hero-meta,.eyebrow,.hero-source{display:none!important}main.wrap{padding-top:0}.card,.q,.callout{box-shadow:none!important}body{background:#fff!important}nav.tabbar{display:none!important}}
+
+/* Crossword tab */
+.xw-now{position:sticky;top:70px;z-index:4;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:12px;padding:10px 16px;margin:12px 0;box-shadow:var(--shadow);font-weight:600;line-height:1.5;min-height:3.4em}
+.xw-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.xw-layout{display:grid;grid-template-columns:minmax(0,max-content) minmax(260px,1fr);gap:24px;align-items:start}
+.xw-gridwrap{overflow-x:auto;padding:4px;max-width:100%}
+.xw-grid{--xc:30px;display:grid;gap:2px;width:max-content;background:#000;padding:2px;border-radius:4px}
+.xw-blank{width:var(--xc);height:var(--xc);background:#000}
+.xw-cell{position:relative;width:var(--xc);height:var(--xc);background:var(--card);border:1px solid var(--mute);border-radius:3px}
+.xw-num{position:absolute;top:1px;left:2px;font-size:9px;line-height:1;font-weight:600;color:var(--mute);pointer-events:none;z-index:1}
+.xw-cell input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:6px 0 0;border:0;border-radius:3px;background:transparent;color:var(--ink);font-family:inherit;font-size:16px;font-weight:700;text-align:center;text-transform:uppercase;caret-color:transparent;cursor:pointer}
+.xw-cell input:focus,.xw-cell input:focus-visible{outline:none}
+.xw-cell.xw-word{background:var(--a1b)}
+.xw-cell.xw-cur{background:var(--a2b);outline:3px solid var(--accent);outline-offset:-2px;z-index:2}
+.xw-cell.xw-bad{background:var(--badb)}
+.xw-cell.xw-bad input{color:var(--bad)}
+.xw-clues .card{margin:0 0 16px}
+.xw-clues{position:relative;align-self:stretch}
+.xw-scroll{position:absolute;inset:0;overflow-y:auto;padding-right:6px}
+.xw-list{list-style:none;margin:0;padding:0}
+.xw-list li{margin:2px 0}
+.xw-clue{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:8px;padding:7px 9px;font-size:.92rem;line-height:1.5;color:var(--ink)}
+.xw-clue:hover{background:var(--a1b)}
+.xw-clue.xw-active{background:var(--a1b);outline:2px solid var(--accent);outline-offset:-2px}
+.xw-cn{display:inline-block;min-width:1.8em;font-weight:800;color:var(--accent)}
+.xw-done .xw-clue{color:var(--mute)}
+.xw-done .xw-clue::after{content:" \2713";color:var(--good);font-weight:800}
+@media(max-width:900px){.xw-layout{grid-template-columns:minmax(0,1fr)}.xw-clues{position:static}.xw-scroll{position:static;overflow:visible;padding-right:0}}
+@media(max-width:640px){.xw-grid{--xc:26px}.xw-now{top:64px}}
+@media print{.xw-now{position:static;box-shadow:none}}
+
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+ <div class="row">
+  <div>
+   <div class="eyebrow"><span class="eyebrow-dot"></span> INTERACTIVE LEARNING COMPANION <span class="eyebrow-rule"></span> LIVE ONLINE COURSE</div>
+   <h1>Generative AI<br><span class="hero-highlight">to Improve Your Writing.</span></h1>
+   <p class="sub">Use AI to improve your writing, not just create more of it, with a four-stage framework from blank page to finished piece.</p>
+   <div class="hero-meta"><span>✦ Course notes</span><span>◷ Quick reference</span><span>✓ Practice quiz</span></div>
+   <p class="hero-source">Based on David Griffiths’ live online course on using generative AI for writing</p>
+  </div>
+  <button class="btn" id="themeBtn" type="button" aria-label="Switch between light and dark theme">Theme: auto</button>
+ </div>
+</div></header>
+<nav class="tabbar" aria-label="Companion sections"><div class="wrap">
+ <div role="tablist" aria-label="Companion sections" id="tablist">
+     <button role="tab" id="tab-summary" aria-controls="panel-summary" aria-selected="true" tabindex="0" data-hash="summary">Summary</button>
+     <button role="tab" id="tab-videos" aria-controls="panel-videos" aria-selected="false" tabindex="-1" data-hash="videos">Videos</button>
+     <button role="tab" id="tab-cheat" aria-controls="panel-cheat" aria-selected="false" tabindex="-1" data-hash="cheat">Cheat sheet</button>
+  <button role="tab" id="tab-prompts" aria-controls="panel-prompts" aria-selected="false" tabindex="-1" data-hash="prompts">Prompts</button>
+  <button role="tab" id="tab-quiz" aria-controls="panel-quiz" aria-selected="false" tabindex="-1" data-hash="quiz">Quiz</button>
+  <button role="tab" id="tab-visuals" aria-controls="panel-visuals" aria-selected="false" tabindex="-1" data-hash="visuals">Word cloud and mindmap</button>
+  <button role="tab" id="tab-crossword" aria-controls="panel-crossword" aria-selected="false" tabindex="-1" data-hash="crossword">Crossword</button>
+  <button role="tab" id="tab-courses" aria-controls="panel-courses" aria-selected="false" tabindex="-1" data-hash="courses">Other courses</button>
+ </div>
+</div></nav>
+
+<main class="wrap">
+    <!-- SUMMARY -->
+<section role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" class="active" tabindex="0">
+ <div class="callout"><strong>The big idea:</strong> a chatbot is a fast, enthusiastic intern. Use it to generate quantity at each stage of writing, then use your own judgment to choose, trim and edit. The real problem in writing is getting someone to read your words, not getting words onto a page.</div>
+ <div class="jump" aria-label="Jump to a section in this summary">
+  <a href="#s-principles" data-jump="s-principles">Principles</a>
+  <a href="#s-frameworks" data-jump="s-frameworks">Frameworks</a>
+  <a href="#s-examples" data-jump="s-examples">Worked examples</a>
+  <a href="#s-cautions" data-jump="s-cautions">Cautions</a>
+  <a href="#s-glossary" data-jump="s-glossary">Glossary</a>
+ </div>
+ <p>This page accompanies a live three-hour course on using generative AI chatbots to help with writing. It summarises what the instructor taught. It does not replace the course slides.</p>
+
+ <h2 id="s-principles">Principles</h2>
+ <div class="card">
+  <ol>
+   <li><strong>Chatbots can make mistakes.</strong> The instructor suggests treating one like a well-informed stranger you meet in the street: probably useful, but double-check anything you rely on.</li>
+   <li><strong>Generative AI is an intern, not a deity.</strong> It is enthusiastic and very productive, but the average quality of its work is a little below that of an equally well-informed human.</li>
+   <li><strong>No response, and so no prompt, is perfect.</strong> However much detail you cram into a prompt, expect a few mistakes.</li>
+   <li><strong>Ask for options.</strong> Chatbots are good at quantity, humans are good at quality. Combining the two makes you more productive and your work better.</li>
+   <li><strong>Conversations are more powerful than prompts.</strong> Like an intern, a chatbot can be steered back on course as it goes wrong, which is harder with one huge set of instructions.</li>
+   <li><strong>You are the author.</strong> The chatbot is a writing assistant. Whatever you keep from it, you chose and you are responsible for.</li>
+   <li><strong>Solve the right problem.</strong> Writing is not about getting words down. It is about getting somebody else to read them, so use AI to make writing better, not just bigger.</li>
+  </ol>
+ </div>
+
+ <h2 id="s-frameworks">The main frameworks</h2>
+ <div class="grid">
+  <div class="card c1"><h3>Seven parts of a prompt</h3><p>Role, task, format, tone, audience, scope and things to include. A role asks the chatbot to talk in a certain way; it does not make it an expert. Most prompts use only one to three parts. Giving examples is sometimes called few-shot prompting.</p></div>
+  <div class="card c2"><h3>Repeat and refine</h3><p>Ask for ten options, pick the promising one, add scope or feedback, and ask again. It is a broad, shallow search that you steer. It works because responses vary from run to run.</p></div>
+  <div class="card c3"><h3>The four writing stages</h3><p>Think of building a body: ideas are the skeleton, a motivated outline brings it to life, trimming reduces the fat, and the write-up puts skin on the bones. The instructor says this is one way to write, so use what helps.</p></div>
+  <div class="card c4"><h3>Head, heart, behaviour ideas</h3><p>Aristotle's three modes of persuasion (logos, pathos, ethos) as sources of ideas: things you can know, things you can feel, things you can do. Ask a chatbot for ten of each, including ethical ones.</p></div>
+  <div class="card c1"><h3>Motivated outline</h3><p>A bullet outline in which each major section solves a problem for the reader. A problem helps the content get past the brain's filter. The OODA sequence (observe, orient, decide, act) can break a problem down.</p></div>
+  <div class="card c2"><h3>The 10-minute rule</h3><p>A rule of thumb, not a law: attention lasts about ten minutes, roughly four to five pages of text. Split longer sections, each with its own problem.</p></div>
+  <div class="card c3"><h3>Tentpole sentences</h3><p>For a document, write your key thoughts in order as bullets under an outline point. The chatbot expands each into a paragraph. You control the shape and then edit the text.</p></div>
+  <div class="card c4"><h3>Box-outs and basic global English</h3><p>Box-outs split a long text into small panels that skimmers can scan. Basic global English is plainer language that is easier for international readers and often improves the writing.</p></div>
+ </div>
+
+ <h3>Who does what at each stage</h3>
+ <div class="tablewrap"><table>
+  <thead><tr><th>Stage</th><th>What the chatbot does</th><th>What you do</th></tr></thead>
+  <tbody>
+   <tr><td>1. Ideas</td><td>Suggests ten factual, ten emotional and ten behavioural or ethical ideas; can do deeper research with sources</td><td>Choose ideas, check facts, draw them on a paper mind map to find your point</td></tr>
+   <tr><td>2. Outline</td><td>Turns a transcription of your talking into an outline; suggests a problem for each section and a four-step arc</td><td>Edit the outline, check each section really has a problem for the reader</td></tr>
+   <tr><td>3. Trim</td><td>Little or nothing; this stage reduces material, so it is about quality, not quantity</td><td>Split sections over about ten minutes, then sort material into in, out and demoted</td></tr>
+   <tr><td>4a. Write up a presentation</td><td>Shrinks bullets to two or three words; exports slides, possibly via Marp</td><td>Present from the slides, which are your reminders, and edit the deck</td></tr>
+   <tr><td>4b. Write up a document</td><td>Expands tentpole sentences; rewrites in basic global English; suggests box-outs, synonyms and styles</td><td>Edit every paragraph; check facts, which may come from the chatbot's memory</td></tr>
+  </tbody>
+ </table></div>
+
+ <h2 id="s-examples">Worked examples from the session</h2>
+ <p class="note">The outputs shown live in the course were illustrations of the techniques, not verified facts. Do not reuse them as data.</p>
+ <div class="card"><h3>Marathon plan and disaster recovery plan</h3><p>A prompt using all seven parts, then a simpler one asking a personal trainer persona for a weekly marathon schedule in an enthusiastic tone. Both showed better results with more detail, but still not perfect ones.</p></div>
+ <div class="card"><h3>Names and documentary ideas</h3><p>Repeat and refine was used to find a YouTube channel name and to brainstorm a trivial Netflix documentary. Asking for ten, then ten more, then narrowing with scope moved towards ideas such as a series about airport carpets.</p></div>
+ <div class="card"><h3>Head, heart and behaviour ideas, then a mind map</h3><p>Factual, emotional and ethical ideas about a disaster recovery plan were requested, and a React talk was planned on a hand-drawn mind map with three branches. Most of that talk came from one highlighted area of the map.</p></div>
+ <div class="card"><h3>Competitive analysis with a deep research mode</h3><p>A research-style chatbot rated consultancies on vision and ability to execute. One source looked like an SEO listicle when checked against the CRAAP criteria (currency, relevance, authority, accuracy, purpose).</p></div>
+ <div class="card"><h3>Dictation to outline to motivated outline</h3><p>A transcription of the instructor talking through four levels of React state became an outline, then each section was given a problem and a four-step arc.</p></div>
+ <div class="card"><h3>Slides, documents and styles</h3><p>An outline became a PowerPoint file with three-word bullets. A company report became box-outs. A short announcement was rewritten in the styles of a Peckham-flavoured Pride and Prejudice and of a compliment-giving comedian.</p></div>
+ <div class="card"><h3>Interactive graphics</h3><p>A spreadsheet of pastimes by US state became a clickable web map built by a chatbot, then one with county detail, a dark mode and drawing tools. The suggestion is to try something like this for presentations.</p></div>
+
+ <h2 id="s-cautions">Cautions</h2>
+ <div class="card"><ul>
+  <li><strong>Privacy.</strong> The instructor warned that chat services may use your conversations for training. Check the settings and your organisation's rules before pasting anything private.</li>
+  <li><strong>Bias and sources.</strong> A chatbot answering from its core learning knows things without knowing why. Ask for references to push it to search, and be aware that a chatbot may be built with a point of view. Check sources, for example with the CRAAP criteria.</li>
+  <li><strong>Expanded text can be wrong.</strong> When a chatbot expands a bullet, it may use its core memory, which can misremember. Edit and check facts.</li>
+  <li><strong>Too much motivation.</strong> A long, elaborate scenario can become more interesting than the topic, so readers miss what they should learn.</li>
+  <li><strong>Pictures.</strong> AI-generated illustrations are increasingly detectable by viewers and, according to the instructor, no longer add value as they once did.</li>
+  <li><strong>Detecting AI text.</strong> The instructor's view is that detectors are unreliable and are being outpaced by AI-generated text. He argues that signatures would be more trustworthy than watermarks. This is his opinion, not a settled result.</li>
+  <li><strong>Things said informally.</strong> Dates, laws, product features, research references and attributions mentioned in passing may be misremembered or out of date. Verify before repeating them.</li>
+ </ul></div>
+
+ <h2 id="s-glossary">Glossary</h2>
+ <dl>
+  <dt>Prompt and response</dt><dd>A prompt is anything you type into a chatbot. Anything you get back is a response.</dd>
+  <dt>Few-shot prompting</dt><dd>Giving the chatbot a number of examples of what you mean instead of an abstract rule.</dd>
+  <dt>Repeat and refine</dt><dd>Asking for options, filtering them yourself and asking again with more guidance.</dd>
+  <dt>Core learning</dt><dd>What a chatbot picked up in training, as opposed to what it looks up when searching.</dd>
+  <dt>Deep research mode</dt><dd>A mode where a chatbot searches many sources and writes a report with references.</dd>
+  <dt>CRAAP criteria</dt><dd>Currency, relevance, authority, accuracy and purpose: five checks for judging a source.</dd>
+  <dt>Mind map</dt><dd>A diagram with a topic in the centre and ideas on branches, used here to focus and integrate ideas.</dd>
+  <dt>Transcription</dt><dd>A text version of speech, used to turn your talking into material a chatbot can outline.</dd>
+  <dt>Motivated outline</dt><dd>A bullet outline whose major sections each solve a problem for the reader.</dd>
+  <dt>Arc</dt><dd>One problem being solved, roughly one section of the writing.</dd>
+  <dt>OODA</dt><dd>Observe, orient, decide, act: four steps used to describe a problem being solved.</dd>
+  <dt>Globus pallidus</dt><dd>A part of the brain the instructor described as controlling access to working memory, used as a picture of why dull material feels boring.</dd>
+  <dt>10-minute rule</dt><dd>A rule of thumb that a section should take no more than about ten minutes or four to five pages.</dd>
+  <dt>Demoted material</dt><dd>Content moved out of the main piece into an appendix or another document.</dd>
+  <dt>Tentpole sentences</dt><dd>Your key thoughts in order, which hold up the shape of the text a chatbot expands.</dd>
+  <dt>Basic global English</dt><dd>A simplified form of English with a smaller vocabulary and simpler grammar.</dd>
+  <dt>Box-outs</dt><dd>Small separate panels that run alongside the main text so that readers can skim.</dd>
+  <dt>Marp</dt><dd>A text format for slides that can be converted into a PowerPoint file.</dd>
+  <dt>Stylometry</dt><dd>Statistical analysis of writing style, used by some AI-text detectors.</dd>
+  <dt>Watermark and signature</dt><dd>A watermark marks content in a way that can be removed. A signature is a checkable code tied to unchanged content.</dd>
+ </dl>
+
+</section>
+
+<!-- VIDEOS -->
+<section role="tabpanel" id="panel-videos" aria-labelledby="tab-videos" hidden>
+    <h2 style="margin-top:0">Videos</h2>
+    <p style="color:var(--muted)">The lesson videos in <a href="https://learning.oreilly.com/course/generative-ai-for/0642572079673/" target="_blank" rel="noopener noreferrer">Generative AI for Enhanced Project Management</a>, David Griffiths's video course on O'Reilly, listed by module. The links open on O'Reilly and need an account with access to the course. Durations are shown where the course page gave them.</p>
+    <h3 style="margin-top:22px">Introduction</h3><ul class="vlist">
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video371996" target="_blank" rel="noopener noreferrer">Course Introduction</a> <span class="dur">1m 19s</span></li>
+    </ul>
+    <h3 style="margin-top:22px">Module 1: The Basics of Chatbots</h3><ul class="vlist">
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372000" target="_blank" rel="noopener noreferrer">Lesson 1.1: Using Chatbots</a></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372004" target="_blank" rel="noopener noreferrer">Lesson 1.2: Writing Effective Prompts</a></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372008" target="_blank" rel="noopener noreferrer">Lesson 1.3: Exercise: Prompts</a> <span class="dur">1m</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372012" target="_blank" rel="noopener noreferrer">Lesson 1.4: Exercise: Prompts (Sample Solution)</a> <span class="dur">1m 54s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372016" target="_blank" rel="noopener noreferrer">Lesson 1.5: The &quot;Repeat and Refine&quot; Technique</a> <span class="dur">5m 42s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372020" target="_blank" rel="noopener noreferrer">Lesson 1.6: FAQ (1)</a> <span class="dur">5m 50s</span></li>
+    </ul>
+    <h3 style="margin-top:22px">Module 2: Scoping Work</h3><ul class="vlist">
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372024" target="_blank" rel="noopener noreferrer">Lesson 2.1: Scope Introduction</a> <span class="dur">3m 44s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372028" target="_blank" rel="noopener noreferrer">Lesson 2.2: Defining Scope</a> <span class="dur">8m 42s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372032" target="_blank" rel="noopener noreferrer">Lesson 2.3: Exercise: Scope</a> <span class="dur">42s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372036" target="_blank" rel="noopener noreferrer">Lesson 2.4: Exercise: Scope (Solution)</a> <span class="dur">1m 44s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372040" target="_blank" rel="noopener noreferrer">Lesson 2.5: FAQ (2)</a> <span class="dur">5m 14s</span></li>
+    </ul>
+    <h3 style="margin-top:22px">Module 3: Stories</h3><ul class="vlist">
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372044" target="_blank" rel="noopener noreferrer">Lesson 3.1: Creating Stories</a> <span class="dur">9m 5s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372048" target="_blank" rel="noopener noreferrer">Lesson 3.2: FAQ (3)</a> <span class="dur">4m 44s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372052" target="_blank" rel="noopener noreferrer">Lesson 3.3: Exercise: Stories</a> <span class="dur">1m 25s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372056" target="_blank" rel="noopener noreferrer">Lesson 3.4: Exercise: Stories (Sample Solution)</a> <span class="dur">3m 4s</span></li>
+    </ul>
+    <h3 style="margin-top:22px">Module 4: Acceptance Criteria</h3><ul class="vlist">
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372060" target="_blank" rel="noopener noreferrer">Lesson 4.1: Defining Acceptance Criteria</a> <span class="dur">8m 37s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372064" target="_blank" rel="noopener noreferrer">Lesson 4.2: Building a Knowledge Base</a> <span class="dur">6m 34s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372068" target="_blank" rel="noopener noreferrer">Lesson 4.3: Exercise: Acceptance Criteria</a> <span class="dur">47s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372072" target="_blank" rel="noopener noreferrer">Lesson 4.4: Exercise: Acceptance Criteria (Solution)</a> <span class="dur">1m 26s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372076" target="_blank" rel="noopener noreferrer">Lesson 4.5: FAQ (4)</a> <span class="dur">5m 55s</span></li>
+    </ul>
+    <h3 style="margin-top:22px">Module 5: Using Project Tools</h3><ul class="vlist">
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372080" target="_blank" rel="noopener noreferrer">Lesson 5.1: Exporting Your Plan</a></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372084" target="_blank" rel="noopener noreferrer">Lesson 5.2: FAQ (5)</a> <span class="dur">3m 58s</span></li>
+    </ul>
+    <h3 style="margin-top:22px">Module 6: Managing Feedback</h3><ul class="vlist">
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372088" target="_blank" rel="noopener noreferrer">Lesson 6.1: Introduction to Feedback</a> <span class="dur">4m 54s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372092" target="_blank" rel="noopener noreferrer">Lesson 6.2: Feedback Questions</a> <span class="dur">3m 18s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372096" target="_blank" rel="noopener noreferrer">Lesson 6.3: Retrospectives</a> <span class="dur">4m 35s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372100" target="_blank" rel="noopener noreferrer">Lesson 6.4: Sentiment Analysis</a> <span class="dur">6m 42s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372104" target="_blank" rel="noopener noreferrer">Lesson 6.5: FAQ (6)</a> <span class="dur">2m 53s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372108" target="_blank" rel="noopener noreferrer">Lesson 6.6: Exercise: Feedback</a> <span class="dur">45s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372112" target="_blank" rel="noopener noreferrer">Lesson 6.7: Exercise: Feedback (Sample Solution)</a> <span class="dur">2m 41s</span></li>
+    </ul>
+    <h3 style="margin-top:22px">Module 7: Risks and Mitigations</h3><ul class="vlist">
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372116" target="_blank" rel="noopener noreferrer">Lesson 7.1: Finding Risks</a> <span class="dur">4m 43s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372120" target="_blank" rel="noopener noreferrer">Lesson 7.2: Calculating Risks</a> <span class="dur">3m 31s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372124" target="_blank" rel="noopener noreferrer">Lesson 7.3: Mitigating Risks</a> <span class="dur">2m 46s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372128" target="_blank" rel="noopener noreferrer">Lesson 7.4: Exercise: Risks</a> <span class="dur">47s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372132" target="_blank" rel="noopener noreferrer">Lesson 7.5: Exercise: Risks (Sample Solution)</a> <span class="dur">2m 14s</span></li>
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372136" target="_blank" rel="noopener noreferrer">Lesson 7.6: FAQ (7)</a> <span class="dur">4m 8s</span></li>
+    </ul>
+    <h3 style="margin-top:22px">Module 8: What&#x27;s Next?</h3><ul class="vlist">
+        <li><a href="https://learning.oreilly.com/videos/-/0642572079673/0642572079673-video372140" target="_blank" rel="noopener noreferrer">Lesson 8.1: What Next?</a> <span class="dur">5m 28s</span></li>
+    </ul>
+</section>
+
+<!-- CHEAT SHEET -->
+<section role="tabpanel" id="panel-cheat" aria-labelledby="tab-cheat" tabindex="0">
+ <div class="noprint" style="display:flex;gap:8px;align-items:center;margin:14px 0;flex-wrap:wrap">
+  <button class="btn primary" type="button" id="printBtn">Print / save PDF</button>
+  <span class="note">Prints only this tab.</span>
+ </div>
+ <div class="grid">
+  <div class="card c1"><h3>Prompt parts</h3><ul><li>Role (a way of talking)</li><li>Task</li><li>Format</li><li>Tone</li><li>Audience</li><li>Scope (rules, limits)</li><li>Things to include</li></ul></div>
+  <div class="card c2"><h3>Principles</h3><ul><li>Chatbot as intern</li><li>Ask for options</li><li>Conversations beat prompts</li><li>No response is perfect</li><li>You are the author</li></ul></div>
+  <div class="card c3"><h3>Repeat and refine</h3><ol><li>Ask for ten options</li><li>Say why none fit, add scope</li><li>Ask for ten more</li><li>Dig into one with ten variants</li></ol></div>
+  <div class="card c4"><h3>Four writing stages</h3><ol><li>Ideas (skeleton)</li><li>Motivated outline (bring to life)</li><li>Trim (reduce the fat)</li><li>Write up (skin)</li></ol></div>
+  <div class="card c1"><h3>Ideas prompt</h3><ul><li>Ten factual things to consider</li><li>Ten emotional things</li><li>Ten behavioural or ethical things</li><li>Capture them on a paper mind map</li></ul></div>
+  <div class="card c2"><h3>Checking a source (CRAAP)</h3><ul><li>Currency</li><li>Relevance</li><li>Authority</li><li>Accuracy</li><li>Purpose</li></ul></div>
+  <div class="card c3"><h3>Outline to motivated outline</h3><ol><li>Dictate your ideas</li><li>Transcribe, ask for an outline</li><li>Edit it</li><li>Find a problem for each section</li></ol></div>
+  <div class="card c4"><h3>OODA arc</h3><ul><li>Observe: what you want to do</li><li>Orient: the problem</li><li>Decide: a plan</li><li>Act: the details</li></ul></div>
+  <div class="card c1"><h3>Trimming</h3><ul><li>Sections no longer than 4 to 5 pages or 10 minutes</li><li>Sort into in, out and demoted</li><li>No chatbot needed here</li></ul></div>
+  <div class="card c2"><h3>Slides</h3><ul><li>Reduce each bullet to two or three words</li><li>Slides are reminders for you</li><li>No Office export? Ask for Marp format</li><li>Be wary of AI illustrations</li></ul></div>
+  <div class="card c3"><h3>Documents</h3><ul><li>Write tentpole sentences</li><li>Ask for paragraphs</li><li>Edit and fact-check</li><li>Try basic global English</li></ul></div>
+  <div class="card c4"><h3>Make it skimmable</h3><ul><li>Ask for box-out suggestions</li><li>Lay out as HTML or in a page tool</li><li>Plain words, short panels</li></ul></div>
+  <div class="card c1"><h3>Style tricks</h3><ul><li>Ask the chatbot to describe a style first</li><li>Then rewrite in that style</li><li>Use an extreme style for inspiration</li><li>Style and counter-style for algorithms</li></ul></div>
+ </div>
+
+ <h2>Before you share AI output</h2>
+ <ul class="checklist" id="checklist"></ul>
+</section>
+
+<!-- PROMPTS -->
+<section role="tabpanel" id="panel-prompts" aria-labelledby="tab-prompts" tabindex="0">
+ <p class="note" style="margin-top:14px">Prompts below are reconstructed from what the instructor said aloud. Compare them with the course slides, which hold the exact text. Square brackets mark things to replace.</p>
+ <div id="promptList"></div>
+</section>
+
+<!-- QUIZ -->
+<section role="tabpanel" id="panel-quiz" aria-labelledby="tab-quiz" tabindex="0">
+ <div class="scorebar" id="scorebar" aria-live="polite">
+  <span id="scoreText">Score: 0 of 0 answered</span>
+  <button class="btn" type="button" id="restartBtn">Start again</button>
+ </div>
+ <div id="quizList"></div>
+ <div class="card" id="quizResult" style="display:none"></div>
+</section>
+
+<!-- CROSSWORD -->
+<section role="tabpanel" id="panel-crossword" aria-labelledby="tab-crossword" tabindex="0">
+ <p class="note" style="margin-top:14px">Every answer is a term from the glossary on the Summary tab, and each clue is that term's definition. Spaces, hyphens and brackets are left out of the answers. Click a square or a clue, then type. Arrow keys move, Space switches between across and down, Tab jumps to the next clue. On a small screen, scroll the grid sideways.</p>
+ <div class="xw-now" id="xwNow" aria-live="polite">Select a square to see its clue.</div>
+ <div class="xw-bar noprint">
+  <button class="btn primary" type="button" id="xwCheck">Check answers</button>
+  <button class="btn" type="button" id="xwRevealWord">Reveal word</button>
+  <button class="btn" type="button" id="xwRevealAll">Reveal all</button>
+  <button class="btn" type="button" id="xwClear">Clear all</button>
+  <span class="note" id="xwStatus" aria-live="polite"></span>
+ </div>
+ <div class="xw-layout">
+  <div class="xw-gridwrap"><div class="xw-grid" id="xwGrid" role="group" aria-label="Crossword grid"></div></div>
+  <div class="xw-clues"><div class="xw-scroll">
+   <div class="card"><h3>Across</h3><ul class="xw-list" id="xwAcross"></ul></div>
+   <div class="card"><h3>Down</h3><ul class="xw-list" id="xwDown"></ul></div>
+  </div></div>
+ </div>
+</section>
+
+<!-- VISUALS -->
+<section role="tabpanel" id="panel-visuals" aria-labelledby="tab-visuals" tabindex="0">
+ <h2>Word cloud</h2>
+ <p class="note">Built from the session text. Spoken filler and common function words were removed; larger means more frequent.</p>
+ <div id="cloud" role="list" aria-label="Most frequent content words"></div>
+ <h2>Mindmap</h2>
+ <p class="note">The course structure at a glance. Scroll sideways on a small screen.</p>
+ <div id="mind"></div>
+</section>
+
+<!-- OTHER COURSES -->
+<section role="tabpanel" id="panel-courses" aria-labelledby="tab-courses" tabindex="0">
+ <div style="margin-top:16px">
+  <img class="instructor" src="data:image/jpeg;base64,/9j/4QDKRXhpZgAATU0AKgAAAAgABgESAAMAAAABAAEAAAEaAAUAAAABAAAAVgEbAAUAAAABAAAAXgEoAAMAAAABAAIAAAITAAMAAAABAAEAAIdpAAQAAAABAAAAZgAAAAAAAABIAAAAAQAAAEgAAAABAAeQAAAHAAAABDAyMjGRAQAHAAAABAECAwCgAAAHAAAABDAxMDCgAQADAAAAAQABAACgAgAEAAAAAQAAAJagAwAEAAAAAQAAAJakBgADAAAAAQAAAAAAAAAAAAD/2wCEABgYGBgYGCkYGCk6KSkpOk46Ojo6TmJOTk5OTmJ3YmJiYmJid3d3d3d3d3ePj4+Pj4+mpqampru7u7u7u7u7u7sBHR8fMCwwUSwsUcOEbYTDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw//dAAQACv/AABEIAJYAlgMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN+kpaSpGJSUUlABTXbaBgZJ4Ap1RTcJvHVefypPYaIRcfOVyp24yB2zVysxrRI7hp1/5aD+daCNuQN7VFOXQqSKdyW3MP7q5A/nTdPmMsWTx7HtU84G5G/4CfoarQErIuf92pekh9DRooptbGYtJUbvtwAMk9BUXmyZwAnHbd/9aoc4rRjSLNLVcPNjOxcezf8A1qXzWHWM/hg0lVh3HysmZgqlj0FCMHUMvQ1XeWN0KE7Mj+IYpjJIVSJPu45YdKq/YVi9RUSSxudqnPFS1Qj/0N6kp1NqRiU2lpKACjGRiisS+u33mFeAPSgC7LPCsKq7AMnGO/FVBqQiUqiZ9M8Csg56E/gKu6bBFNc7ZACAucev/wCqpjTUdRuXQSTUZ5Rjjb2wP61Er3MrhVJLGpLlklLMsXlFG2+x/wDr1BDIYn3g7eCMjtmrshD5Gu4W2yEgj3Nb9pI8turyden5VjTMptokaQSuM8j0rUsnH2RS3AXj8qAJ2/1yfQ/0rF8l9ktwAoCNIc/xHqMfStdnidA5bZjp2I/Co43lY7Bj1+YY47ZHv/KuWpF3vE0VrFRLt4gII1DFDt299oTP86ntbl5EkZyCE6EDHbPT2qZ0kYEbRyMZU4NMSIJG0To7B87icHOfpWTpu3wlJkNpdj7OPNDZVVJ4zkN3GKeJbV5liiO1nXdkcfp3pJYbeQ5yUPHUcYAwBRBGkDhg6lBGq+421Oi1WgeRdt1UR5AAPQ49uKsVFCCIhnvz+dS13rYyP//R36SlpKkY002n02gBKyNQgUESqPvda16hnj82Jk9uKAOX7UsbtEwdDtI6Gnsu3rxTEV3bEa5NUA+eae5wZWzjp2A/CqxVjwxGPatWOyGMzNj2FWFt7cfcwaVy1AxcitexxJCUU/Mjbh6U6RIQMbcmksYWjuHYDCFR+dLfQHGxbSJmy7/ISegx/Op1VUGFGKfTamMVHZE3FpRTacKoQ6k2r1wPypaWgBaKWigD/9LoKSim1IwptLSUAJSUUlAGHcW7m5dei/ez/hVm2gECkZznmtJgGXaarEbSB6UM0hYjkR24U7aijjZW3E8VZd1VagBP3j+QpGtis8Q84k1fteAVqjM27HG2rlsTg59qCJWsW6SkopmI6nCminCgB1LSU6gApaKKAP/T3aSlptSMKSikoAKbRSUAFQy9cio3uo1k8lSN3fPQVLg/nSZpGJXI3KVqMw7RlGI9uoqR0K/dqEzkcYoLIdmX3Mc46e1acS7E56nmsxpXAMiqPk5qSPUoW/1gKfqKETJN7GjS1Ekscn+rYH6VJTMx4pwNR0tAiWnCohTxQBJRSUUAf//U3KbS02pGFJRSUAFZF5f4/dQH6t/hS6hckf6On/Av8KxiaDeEOrG9at297NB8v3l9D/SqfXp+VNpGrOlivbebjO0+hp7CP1FcwKX6UWI5TZvGSOJlXq3FYtOeRpDz1FNFA0rCjIORwR6Vp22osPln5Hr3rMpOh+tMGkzrVIYBl5B6U6sXTLnj7O//AAH/AArZoOZqw4VIKipwoES0U0UUAf/V26bTqbUjG0nSlpD0xTGcs773L+pzUfPalI2nHpxSUjtGHntTTzT8UwigloQenpTqjzjn0qTpxQJCY5oHpS0h4oGLSEcYp1FADYyQdw45zXTWs4uIt3ccEVy6ccVctZzbyhux4I9qDOUbo6WlpqkMoZeQelOoOcWlpKKAP//W3KbTqbUjGUlONNpgc3crsndfeq1aeooBMrf3h/Ks2kdsXdIbSGnUmKBkLChD8oz2q9ZiLzNsg6jA9KnlsY8bovlPp2/+tQZPRmbTDSElDtYYIppagdyQHilyKhGW4FTKgHJoBMhzhvapc56VMKrsMPtUUBaxsaddbW+zv0PT2NbdcgvHt9K6i2l86BZO/Q/UUGVSPUsUUUtBkf/X3KbTqbUjG0lOptMDO1CHfDvUcp/LvWGCD9a6s1zNzD5UzIOg6fSkdFKXQixSUuexoxQbjcVMk0qLtHPpmo6KQmhspE7fMuCO4poRB2p3TmkpkcqQtJSUUhhTDjdSk44FIBTEOFbWlPw8fpg1jqpYhVGSemK3rC2aBWaTgtjj0AoInaxo0tAooOc//9DcptOptSMSm06m0wG1kamgBSTuflrXrL1P7kf1/pQaU/iRimkDY4PSl9ajNI6SfGKSnmmjrQUJ9KaafTDQSxtB4HFFIelAhqgVctrX7Q2AcAdaqLWxpn3m+goIei0NGG3igH7sc+verFJS0HOPFLSCloEf/9k=" alt="David Griffiths smiling with folded arms, wearing a grey plug-shaped hat with a speech label reading Plug hat" width="150" height="150">
+  <h2>More from the instructor</h2>
+ </div>
+ <h3 style="margin-top:22px">Upcoming live courses</h3>
+ <div class="cards">
+     <div class="card"><strong>Nov 5, 2026</strong><br><a href="https://learning.oreilly.com/live-events/ai-assisted-research/0642572399726/0642572399719" target="_blank" rel="noopener noreferrer">AI-Assisted Research</a> (1 hour)</div>
+     <div class="card"><strong>Nov 12, 2026</strong><br><a href="https://learning.oreilly.com/live-events/fundamentals-of-technical-writing/0636920077082/0790145079029/" target="_blank" rel="noopener noreferrer">Fundamentals of Technical Writing</a></div>
+     <div class="card"><strong>Nov 18, 2026</strong><br><a href="https://learning.oreilly.com/live-events/generative-ai-to-improve-your-writing/0636920097362/0642572263867/" target="_blank" rel="noopener noreferrer">Generative AI to Improve Your Writing</a></div>
+ </div>
+
+ <h3 style="margin-top:22px">Video courses</h3>
+ <div class="cards">
+     <div class="card"><a href="https://learning.oreilly.com/course/generative-ai-to/0642572079505/" target="_blank" rel="noopener noreferrer">Generative AI to Improve Your Productivity</a><br><span style="color:var(--muted)">2 hrs 45 mins</span></div>
+     <div class="card"><a href="https://learning.oreilly.com/videos/generative-ai-for/0642572079673/" target="_blank" rel="noopener noreferrer">Generative AI for Enhanced Project Management</a><br><span style="color:var(--muted)">2 hrs 30 mins</span></div>
+     <div class="card"><a href="https://learning.oreilly.com/videos/business-writing-essentials/0636920954453/" target="_blank" rel="noopener noreferrer">Business Writing Essentials</a><br><span style="color:var(--muted)">90 mins</span></div>
+ </div>
+
+ <h3 style="margin-top:22px">Books</h3>
+ <div class="cards">
+     <div class="card"><a href="https://www.amazon.com/React-Cookbook-Recipes-Mastering-Framework/dp/1492085847/" target="_blank" rel="noopener noreferrer">React Cookbook: Recipes for Mastering the React Framework</a></div>
+     <div class="card"><a href="https://www.amazon.com/Head-First-Android-Development-Learners/dp/149207652X/" target="_blank" rel="noopener noreferrer">Head First Android Development</a></div>
+     <div class="card"><a href="https://www.amazon.com/Head-First-Kotlin-Brain-Friendly-Guide-ebook/dp/B07NPZ21QP/" target="_blank" rel="noopener noreferrer">Head First Kotlin</a></div>
+     <div class="card"><a href="https://www.amazon.com/Things-Every-Java-Programmer-Should/dp/1491952695/" target="_blank" rel="noopener noreferrer">97 Things Every Java Programmer Should Know</a></div>
+     <div class="card"><a href="https://www.amazon.com/Head-First-C-David-Griffiths/dp/1449399916/" target="_blank" rel="noopener noreferrer">Head First C</a></div>
+     <div class="card"><a href="https://www.amazon.com/Head-First-Programming-learners-programming-ebook/dp/B00CBM1WFW/" target="_blank" rel="noopener noreferrer">Head First Programming</a></div>
+ </div>
+
+ <h3 style="margin-top:22px">Elsewhere</h3>
+ <div class="cards">
+     <div class="card"><a href="https://www.oreilly.com/pub/au/3371" target="_blank" rel="noopener noreferrer">Author page (O'Reilly)</a></div>
+     <div class="card"><a href="https://www.linkedin.com/in/dogriffiths/" target="_blank" rel="noopener noreferrer">LinkedIn</a></div>
+     <div class="card"><a href="https://github.com/dogriffiths" target="_blank" rel="noopener noreferrer">GitHub: dogriffiths</a></div>
+     <div class="card"><a href="https://www.youtube.com/@DavidGriffithsEsq" target="_blank" rel="noopener noreferrer">YouTube channel</a></div>
+ </div>
+ <p class="note" style="margin-top:20px">Copied from the instructor's Linktree on the day this page was built. Course dates and listings change, so use the Linktree link above for the current list.</p>
+ <a class="card linkcard" href="https://linktr.ee/dogriffiths" target="_blank" rel="noopener noreferrer"><h3>Instructor's Linktree</h3><p class="note">linktr.ee/dogriffiths. Opens in a new tab.</p></a>
+</section>
+
+</main>
+<footer><div class="wrap">Companion page for attendees. Summary text paraphrases the live session; demo outputs were illustrations.</div></footer>
+
+<script type="application/json" id="cloudData">[["writing", 122], ["chatbot", 91], ["idea", 70], ["problem", 65], ["text", 60], ["outline", 48], ["generate", 45], ["section", 37], ["slide", 36], ["style", 36], ["create", 36], ["prompt", 32], ["state", 32], ["page", 28], ["document", 28], ["content", 28], ["human", 26], ["read", 26], ["response", 25], ["book", 25], ["mind", 24], ["presentation", 22], ["chatgpt", 21], ["useful", 21], ["map", 21], ["source", 21], ["stage", 20], ["detail", 19], ["example", 19], ["image", 18], ["plan", 17], ["bullet", 17], ["question", 16], ["powerpoint", 16], ["english", 16], ["brain", 16], ["include", 15], ["information", 15], ["technique", 15], ["claude", 15], ["check", 14], ["topic", 14], ["research", 14], ["fact", 13], ["report", 13], ["list", 13], ["react", 12], ["quality", 12], ["format", 12], ["perfect", 12], ["google", 12], ["component", 12], ["author", 11], ["video", 11], ["system", 11], ["solution", 11], ["data", 11], ["youtube", 11], ["solve", 11], ["rewrite", 11]]</script>
+<script>
+(function(){
+"use strict";
+
+var PROMPTS=[
+ {
+  "t": "Seven-part prompt (disaster recovery)",
+  "p": "As an expert in disaster recovery, create a plan to reduce the likelihood of the main accounting system failing. Use headings and bullet points, in a formal style, for a technical audience. Make sure it takes no longer than six months to implement, and list any additional products and services that might be required.",
+  "n": "Shows all seven parts: role, task, format, tone, audience, scope, things to include."
+ },
+ {
+  "t": "Exercise: marathon plan",
+  "p": "As an experienced personal trainer, create an exercise plan for someone to run a marathon. Give it as a weekly schedule, in an enthusiastic tone. The person is not very fit but wants to run a marathon within one year. Make sure to include how many hours each day they need to train.",
+  "n": "The sample solution to the first exercise; a personal trainer role and an enthusiastic tone."
+ },
+ {
+  "t": "Ask for options",
+  "p": "Give me 10 good names for a YouTube channel about [topic].",
+  "n": "Then ask for 10 more, add scope (for example only one region) or ask for 10 variants of a favourite."
+ },
+ {
+  "t": "Exercise: trivial documentaries",
+  "p": "Give me 10 ideas for a Netflix documentary series about something trivial.",
+  "n": "Use repeat and refine: more options, narrower scope, then a short summary of the favourite."
+ },
+ {
+  "t": "Factual ideas (head)",
+  "p": "Give me 10 factual things to consider when [your topic].",
+  "n": "Part of the head, heart and behaviour idea prompts. Check any facts you use."
+ },
+ {
+  "t": "Emotional ideas (heart)",
+  "p": "Give me 10 emotional things to consider when [your topic].",
+  "n": "Change the word factual to emotional. You may use few of them, but they are often the most valuable."
+ },
+ {
+  "t": "Behavioural and ethical ideas",
+  "p": "Give me 10 behavioural or ethical things to consider when [your topic].",
+  "n": "Chatbots tend to forget ethical points, so prompt for them directly."
+ },
+ {
+  "t": "Competitive analysis",
+  "p": "Conduct a competitive analysis of providers of [service]. Include small, medium and large companies, and rate each company on two axes: ability to get things done and insight (vision). Show the results graphically.",
+  "n": "Used in a deep research mode. Check every source it relies on."
+ },
+ {
+  "t": "Check a source",
+  "p": "Validate the [source name] source against the CRAAP criteria.",
+  "n": "Currency, relevance, authority, accuracy, purpose. If a source is weak, rerun the research and ask for better ones, for example peer-reviewed."
+ },
+ {
+  "t": "Outline from a transcription",
+  "p": "Create an outline of the following transcription of me talking.\n\n[paste transcription]",
+  "n": "Expect nonsense in the transcript; edit the outline afterwards."
+ },
+ {
+  "t": "Find the problem in each section",
+  "p": "For each section, identify a problem being solved, inventing a specific one if needed.\n\n[paste outline]",
+  "n": "A suggestion only. A section with no problem may need restructuring or removing."
+ },
+ {
+  "t": "Four-step arc for each section",
+  "p": "For each section of the outline, add four steps: something the reader wants to do, a problem that frustrates them, a decision that solves it, and the details of carrying it out.\n\n[paste outline with problems]",
+  "n": "The observe, orient, decide, act (OODA) sequence. Produces a draft motivated outline."
+ },
+ {
+  "t": "Shrink bullets for slides",
+  "p": "Replace each bullet point with a phrase of no more than three words.\n\n[paste outline]",
+  "n": "Slides are your reminders; the audience should not be able to read ahead."
+ },
+ {
+  "t": "Slides in Marp format",
+  "p": "Give me this in Marp format.\n\n[paste outline]",
+  "n": "Use when a chatbot will not create a PowerPoint file. Convert the text with an online or command-line tool."
+ },
+ {
+  "t": "Expand tentpole sentences",
+  "p": "Expand each of these sentences into a paragraph.\n\n[paste tentpole bullets]",
+  "n": "Edit and fact-check the result."
+ },
+ {
+  "t": "Basic global English",
+  "p": "Rewrite the following in basic global English.\n\n[paste text]",
+  "n": "Simpler language for international readers, often clearer for everyone."
+ },
+ {
+  "t": "Synonyms and phrases",
+  "p": "Give me 10 diplomatic synonyms for [phrase].",
+  "n": "Works for phrases as well as words."
+ },
+ {
+  "t": "Suggest box-outs",
+  "p": "I want to split the following text up to make it more readable. Suggest some sections that would work as separate box-outs that could run alongside the main text.\n\n[paste text]",
+  "n": "Then lay the panels out in HTML or a page-layout tool."
+ },
+ {
+  "t": "Describe a style, then use it",
+  "p": "Describe the style of this writing.\n\n[paste sample]\n\nNow rewrite the following in that style.\n\n[paste your text]",
+  "n": "Two steps in one conversation. Works best with an extreme style."
+ },
+ {
+  "t": "Style and counter-style",
+  "p": "Rewrite the following in the style of [text A] and avoiding the style of [text B].\n\n[paste text]",
+  "n": "Describe each style first. The instructor used trending and non-trending video titles as the two styles."
+ },
+ {
+  "t": "Fact-check a document",
+  "p": "Fact check this document.",
+  "n": "Used inside a word processor's assistant. A claimed error may itself be wrong, so confirm for yourself."
+ },
+ {
+  "t": "Interactive map",
+  "p": "Create a web page with an interactive US map showing states. When I click a state, show the details from this spreadsheet.\n\n[attach spreadsheet]",
+  "n": "Build it step by step: map, zoom, then data. Reconstructed from the on-screen demo."
+ }
+];
+
+var QUIZ=[
+ {
+  "q": "What analogy does the instructor use for a chatbot?",
+  "o": [
+   "An all-knowing oracle",
+   "An office intern",
+   "A calculator",
+   "A library catalogue"
+  ],
+  "a": 1,
+  "e": "A chatbot is enthusiastic and very productive, but its average quality is slightly below that of an equally well-informed human, so its work needs review."
+ },
+ {
+  "q": "When you give a chatbot a role, such as experienced author, what are you really doing?",
+  "o": [
+   "Turning it into an expert",
+   "Asking it to talk in a certain way",
+   "Unlocking hidden knowledge",
+   "Making its answers factual"
+  ],
+  "a": 1,
+  "e": "The chatbot is still the same intern. A role only asks it to pretend to talk as that kind of person."
+ },
+ {
+  "q": "Which of these is NOT one of the seven parts of a prompt described in the course?",
+  "o": [
+   "Scope",
+   "Audience",
+   "Budget",
+   "Format"
+  ],
+  "a": 2,
+  "e": "The seven parts are role, task, format, tone, audience, scope and things to include."
+ },
+ {
+  "q": "Why does asking a chatbot for several options work well?",
+  "o": [
+   "Chatbots are good at quantity and humans are good at judging quality",
+   "The first option is always the worst",
+   "It stops the chatbot making mistakes",
+   "It avoids the need to check facts"
+  ],
+  "a": 0,
+  "e": "Responses vary from run to run, so some are better than others. A chatbot supplies many, and you pick the good ones."
+ },
+ {
+  "q": "What is the repeat and refine technique?",
+  "o": [
+   "Re-running the same prompt until it is perfect",
+   "Asking for options, filtering them yourself, adding guidance and asking again",
+   "Editing the chatbot's training data",
+   "Asking a chatbot to check its own work"
+  ],
+  "a": 1,
+  "e": "It is a broad, shallow search that you steer, leaving you in charge of quality."
+ },
+ {
+  "q": "According to the instructor, what is the fundamental problem of writing?",
+  "o": [
+   "Getting words onto a page",
+   "Finding a good opening sentence",
+   "Getting somebody else to read your words",
+   "Avoiding spelling mistakes"
+  ],
+  "a": 2,
+  "e": "Getting words down is relatively easy. The harder problem is making readers care enough to read them."
+ },
+ {
+  "q": "What are the three sources of ideas taken from Aristotle's modes of persuasion?",
+  "o": [
+   "Head, heart and behaviour",
+   "Past, present and future",
+   "Facts, opinions and rumours",
+   "Who, what and why"
+  ],
+  "a": 0,
+  "e": "Logos is things you can know, pathos is things you can feel and ethos is things you can do."
+ },
+ {
+  "q": "Why does the instructor suggest drawing ideas on a paper mind map rather than keeping a list?",
+  "o": [
+   "It is faster than typing",
+   "It provides focus and helps you integrate ideas and find your point",
+   "Chatbots cannot read lists",
+   "Mind maps are required for outlines"
+  ],
+  "a": 1,
+  "e": "Ideas in the middle of a list get lost. On a mind map you notice connections, themes and the area worth writing about."
+ },
+ {
+  "q": "What does the CRAAP test help you do?",
+  "o": [
+   "Choose a chatbot",
+   "Judge whether a source is credible",
+   "Shorten a document",
+   "Detect AI-written text"
+  ],
+  "a": 1,
+  "e": "It checks currency, relevance, authority, accuracy and purpose."
+ },
+ {
+  "q": "What makes an outline a motivated outline?",
+  "o": [
+   "Each major section solves a problem for the reader",
+   "It is written by a chatbot",
+   "It has exactly ten sections",
+   "It contains no bullet points"
+  ],
+  "a": 0,
+  "e": "A problem gives the reader a reason to care and, in the instructor's brain picture, helps content past a filter."
+ },
+ {
+  "q": "What do the four letters of OODA stand for?",
+  "o": [
+   "Observe, orient, decide, act",
+   "Outline, organise, draft, adjust",
+   "Open, optimise, deliver, assess",
+   "Order, outline, decide, approve"
+  ],
+  "a": 0,
+  "e": "Observe is what you want to do, orient is the problem, decide is the plan and act is the details."
+ },
+ {
+  "q": "What is the 10-minute rule?",
+  "o": [
+   "A law that readers stop after ten minutes",
+   "A rule of thumb that a section should take about ten minutes or four to five pages",
+   "A limit on how long chatbots may take to answer",
+   "A rule that slides should be ten minutes apart"
+  ],
+  "a": 1,
+  "e": "The instructor says it is a rule, not a law, with thin scientific support but a lot of anecdotal use."
+ },
+ {
+  "q": "When trimming an outline, what is demoted material?",
+  "o": [
+   "Content deleted for good",
+   "Content moved to an appendix or another document",
+   "Content rewritten in simpler English",
+   "Content the chatbot refused to write"
+  ],
+  "a": 1,
+  "e": "Demoted material is not in the main piece but stays available for those who want it, for example online."
+ },
+ {
+  "q": "Why does the instructor suggest reducing slide bullets to two or three words?",
+  "o": [
+   "Slides load faster",
+   "The audience cannot read ahead, and the slides remind you what to say",
+   "Chatbots cannot handle long bullets",
+   "Short slides are always more attractive"
+  ],
+  "a": 1,
+  "e": "He says slides are secretly for the presenter. The audience should listen to you, not read the slide."
+ },
+ {
+  "q": "What are tentpole sentences?",
+  "o": [
+   "Sentences that open each chapter",
+   "Your key thoughts in order, which a chatbot expands into paragraphs",
+   "Chatbot-generated headings",
+   "Quotes from other authors"
+  ],
+  "a": 1,
+  "e": "They define the shape of the writing. You choose the thoughts and their order, and then edit what the chatbot expands."
+ },
+ {
+  "q": "What does the instructor say about AI-text detectors?",
+  "o": [
+   "They are accurate and should be trusted",
+   "They are unreliable, and can wrongly flag human writers or be fooled by plainer language",
+   "They only work on images",
+   "They are banned by law"
+  ],
+  "a": 1,
+  "e": "In his view, statistical detectors are probabilistic and open to bias, so signatures would be more trustworthy than watermarks. It is his opinion."
+ }
+];
+
+var CHECK=[
+ "I have double-checked any facts the chatbot supplied, and any sources it relied on.",
+ "I have edited the text so that it says what I mean, in my own voice.",
+ "I have not included anything private or confidential, or I have checked my organisation's rules.",
+ "I have a reason for the reader to care, and I am the author of what I keep.",
+ "I have not claimed AI-generated pictures are real photographs."
+];
+
+var MIND={
+ "center": "Generative AI for writing",
+ "right": [
+  {
+   "t": "Principles",
+   "c": 1,
+   "k": [
+    "Chatbot as intern",
+    "Ask for options",
+    "Conversations beat prompts",
+    "You are the author"
+   ]
+  },
+  {
+   "t": "Prompting",
+   "c": 2,
+   "k": [
+    "Role, task, format",
+    "Tone, audience, scope",
+    "Things to include",
+    "Repeat and refine"
+   ]
+  },
+  {
+   "t": "1. Ideas",
+   "c": 3,
+   "k": [
+    "Head, heart, behaviour",
+    "Paper mind map",
+    "Deep research",
+    "CRAAP source checks"
+   ]
+  },
+  {
+   "t": "2. Outline",
+   "c": 4,
+   "k": [
+    "Transcribe your talking",
+    "Motivated outline",
+    "Problem per section",
+    "OODA arc"
+   ]
+  }
+ ],
+ "left": [
+  {
+   "t": "3. Trim",
+   "c": 1,
+   "k": [
+    "10-minute rule",
+    "In, out, demoted",
+    "Quality, not quantity"
+   ]
+  },
+  {
+   "t": "4a. Slides",
+   "c": 2,
+   "k": [
+    "Two or three words",
+    "Slides remind you",
+    "Marp export",
+    "Avoid AI pictures"
+   ]
+  },
+  {
+   "t": "4b. Documents",
+   "c": 3,
+   "k": [
+    "Tentpole sentences",
+    "Basic global English",
+    "Box-outs",
+    "Edit and fact-check"
+   ]
+  },
+  {
+   "t": "Style",
+   "c": 4,
+   "k": [
+    "Describe a style",
+    "Extreme styles",
+    "Style and counter-style"
+   ]
+  },
+  {
+   "t": "Cautions",
+   "c": 1,
+   "k": [
+    "Check facts",
+    "Privacy and training",
+    "AI detection is unreliable"
+   ]
+  }
+ ]
+};
+
+function $(id){return document.getElementById(id);}
+function store(k,v){try{if(v===undefined){return localStorage.getItem(k);}localStorage.setItem(k,v);}catch(e){return null;}}
+
+/* theme */
+var themeBtn=$("themeBtn");
+function applyTheme(t){
+ if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}else{document.documentElement.removeAttribute("data-theme");}
+ themeBtn.textContent="Theme: "+(t==="light"||t==="dark"?t:"auto");
+}
+var savedTheme=store("genaiwrite-theme");
+applyTheme(savedTheme);
+themeBtn.addEventListener("click",function(){
+ var cur=document.documentElement.getAttribute("data-theme");
+ var next=cur==="light"?"dark":(cur==="dark"?"auto":"light");
+ applyTheme(next);store("genaiwrite-theme",next);drawMind();
+});
+
+/* tabs */
+var tabs=Array.prototype.slice.call(document.querySelectorAll("[role=tab]"));
+function showTab(h,focus,noHash){
+ var found=false;
+ tabs.forEach(function(t){
+  var on=t.getAttribute("data-hash")===h;
+  if(on){found=true;}
+  t.setAttribute("aria-selected",on?"true":"false");
+  t.setAttribute("tabindex",on?"0":"-1");
+  var p=$(t.getAttribute("aria-controls"));
+  if(on){p.classList.add("active");}else{p.classList.remove("active");}
+  if(on&&focus){t.focus();}
+ });
+ if(!found){showTab("summary",false,true);return;}
+ if(!noHash){try{history.replaceState(null,"","#"+h);}catch(e){location.hash=h;}}
+ if(h==="visuals"){drawMind();}
+}
+tabs.forEach(function(t,i){
+ t.addEventListener("click",function(){showTab(t.getAttribute("data-hash"),false);});
+ t.addEventListener("keydown",function(e){
+  var j=-1;
+  if(e.key==="ArrowRight"){j=(i+1)%tabs.length;}
+  else if(e.key==="ArrowLeft"){j=(i-1+tabs.length)%tabs.length;}
+  else if(e.key==="Home"){j=0;}
+  else if(e.key==="End"){j=tabs.length-1;}
+  if(j>=0){e.preventDefault();showTab(tabs[j].getAttribute("data-hash"),true);}
+ });
+});
+window.addEventListener("hashchange",function(){showTab((location.hash||"#summary").slice(1),false,true);});
+
+/* jump links in summary */
+Array.prototype.forEach.call(document.querySelectorAll("[data-jump]"),function(a){
+ a.addEventListener("click",function(e){
+  e.preventDefault();
+  var el=$(a.getAttribute("data-jump"));
+  if(el&&el.scrollIntoView){el.scrollIntoView({behavior:"smooth",block:"start"});}
+ });
+});
+
+/* checklist */
+var saved={};
+try{saved=JSON.parse(store("genaiwrite-check")||"{}")||{};}catch(e){saved={};}
+var cl=$("checklist");
+CHECK.forEach(function(txt,i){
+ var li=document.createElement("li");
+ var cb=document.createElement("input");cb.type="checkbox";cb.id="chk"+i;cb.checked=!!saved[i];
+ cb.addEventListener("change",function(){saved[i]=cb.checked;store("genaiwrite-check",JSON.stringify(saved));});
+ var lb=document.createElement("label");lb.setAttribute("for","chk"+i);lb.textContent=txt;
+ li.appendChild(cb);li.appendChild(lb);cl.appendChild(li);
+});
+$("printBtn").addEventListener("click",function(){showTab("cheat",false);window.print();});
+
+/* prompts */
+function copyText(text,btn){
+ function done(){var o=btn.textContent;btn.textContent="Copied";setTimeout(function(){btn.textContent=o;},1400);}
+ if(navigator.clipboard&&navigator.clipboard.writeText){
+  navigator.clipboard.writeText(text).then(done,function(){fallback();});
+ }else{fallback();}
+ function fallback(){
+  var ta=document.createElement("textarea");ta.value=text;ta.setAttribute("readonly","");
+  ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();
+  try{document.execCommand("copy");done();}catch(e){}
+  document.body.removeChild(ta);
+ }
+}
+var pl=$("promptList");
+PROMPTS.forEach(function(p,i){
+ var card=document.createElement("div");card.className="card";
+ var head=document.createElement("div");head.className="prompt-head";
+ var h=document.createElement("h3");h.textContent=(i+1)+". "+p.t;
+ var tag=document.createElement("span");tag.className="tag";tag.textContent="reconstructed";h.appendChild(tag);
+ var b=document.createElement("button");b.type="button";b.className="btn noprint";b.textContent="Copy";
+ b.setAttribute("aria-label","Copy prompt "+(i+1)+": "+p.t);
+ b.addEventListener("click",function(){copyText(p.p,b);});
+ head.appendChild(h);head.appendChild(b);
+ var pre=document.createElement("div");pre.className="prompt";pre.textContent=p.p;
+ var n=document.createElement("p");n.className="note";n.textContent=p.n;
+ card.appendChild(head);card.appendChild(pre);card.appendChild(n);pl.appendChild(card);
+});
+
+/* quiz */
+var answered=0,score=0;
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function updateScore(){
+ $("scoreText").textContent="Score: "+score+" of "+answered+" answered ("+QUIZ.length+" questions)";
+ var r=$("quizResult");
+ if(answered===QUIZ.length){r.style.display="block";r.textContent="Finished. You scored "+score+" out of "+QUIZ.length+".";}
+ else{r.style.display="none";}
+}
+function buildQuiz(){
+ var ql=$("quizList");ql.innerHTML="";answered=0;score=0;
+ QUIZ.forEach(function(item,qi){
+  var box=document.createElement("div");box.className="q";
+  var h=document.createElement("h3");h.textContent=(qi+1)+". "+item.q;box.appendChild(h);
+  var idx=shuffle(item.o.map(function(_,i){return i;}));
+  var btns=[];
+  idx.forEach(function(oi){
+   var b=document.createElement("button");b.type="button";b.className="opt";b.textContent=item.o[oi];b.setAttribute("data-i",oi);
+   b.addEventListener("click",function(){
+    if(box.classList.contains("done")){return;}
+    box.classList.add("done");answered++;
+    if(oi===item.a){score++;b.classList.add("right");}
+    else{b.classList.add("wrong");}
+    btns.forEach(function(x){x.disabled=true;if(+x.getAttribute("data-i")===item.a){x.classList.add("right");}});
+    updateScore();
+   });
+   btns.push(b);box.appendChild(b);
+  });
+  var ex=document.createElement("p");ex.className="expl";ex.textContent=item.e;box.appendChild(ex);
+  ql.appendChild(box);
+ });
+ updateScore();
+}
+$("restartBtn").addEventListener("click",function(){buildQuiz();try{window.scrollTo(0,0);}catch(e){}});
+buildQuiz();
+
+/* word cloud */
+(function(){
+ var data=[];
+ try{data=JSON.parse($("cloudData").textContent);}catch(e){data=[];}
+ var box=$("cloud");var n=data.length;if(!n){return;}
+ var max=data[0][1],min=data[n-1][1];
+ var items=data.map(function(d,i){return {w:d[0],c:d[1],i:i,k:(i*29+7)%n};});
+ items.sort(function(a,b){return a.k-b.k;});
+ items.forEach(function(it){
+  var s=document.createElement("span");
+  var f=(Math.sqrt(it.c)-Math.sqrt(min))/((Math.sqrt(max)-Math.sqrt(min))||1);
+  s.style.fontSize=(0.95+f*2.55).toFixed(2)+"rem";
+  s.className="w"+(it.i%4);s.textContent=it.w;s.setAttribute("role","listitem");s.setAttribute("tabindex","0");
+  s.title=it.w+": "+it.c;box.appendChild(s);
+ });
+})();
+
+/* mindmap */
+function drawMind(){
+ var box=$("mind");if(!box){return;}
+ var NS="http://www.w3.org/2000/svg";
+ var cwid=7.4;
+ function tw(s){return Math.ceil(s.length*cwid+22);}
+ function side(arr){var b=0,l=0;arr.forEach(function(x){b=Math.max(b,tw(x.t)+8);x.k.forEach(function(k){l=Math.max(l,tw(k));});});return {b:b,l:l};}
+ var R=side(MIND.right),L=side(MIND.left);
+ var centerW=Math.max(tw(MIND.center)+20,180),gapC=46,gapB=34,pad=16;
+ var rightW=gapC+R.b+gapB+R.l,leftW=gapC+L.b+gapB+L.l;
+ var W=pad+leftW+centerW+rightW+pad;
+ var cx=pad+leftW+centerW/2;
+ function layout(arr){
+  var y=pad,out=[];
+  arr.forEach(function(b){
+   var h=Math.max(36,b.k.length*30);
+   out.push({b:b,top:y,h:h,cy:y+h/2});
+   y+=h+18;
+  });
+  return {rows:out,total:y-18+pad};
+ }
+ var LR=layout(MIND.right),LL=layout(MIND.left);
+ var H=Math.max(LR.total,LL.total,120);
+ var cy=H/2;
+ function offset(l){return (H-l.total)/2;}
+ var svg=document.createElementNS(NS,"svg");
+ svg.setAttribute("viewBox","0 0 "+W+" "+H);
+ svg.setAttribute("role","img");
+ var names=MIND.right.concat(MIND.left).map(function(x){return x.t;}).join(", ");
+ svg.setAttribute("aria-label","Mindmap of the course with the central topic "+MIND.center+" and branches: "+names);
+ function el(name,attrs,text){var e=document.createElementNS(NS,name);for(var k in attrs){e.setAttribute(k,attrs[k]);}if(text!==undefined){e.textContent=text;}svg.appendChild(e);return e;}
+ function curve(x1,y1,x2,y2,cls){var xm=(x1+x2)/2;el("path",{d:"M"+x1+" "+y1+" C"+xm+" "+y1+","+xm+" "+y2+","+x2+" "+y2,"class":"conn "+cls});}
+ function rectText(x,y,w,h,cls,tcls,text){
+  el("rect",{x:x,y:y,width:w,height:h,rx:8,ry:8,"class":cls});
+  el("text",{x:x+w/2,y:y+h/2+4.5,"text-anchor":"middle","class":tcls},text);
+ }
+ function drawSide(lay,dir,S){
+  var off=offset(lay);
+  lay.rows.forEach(function(r){
+   var b=r.b,cyb=r.cy+off,bw=S.b;
+   var bx=dir>0?cx+centerW/2+gapC:cx-centerW/2-gapC-bw;
+   var startX=dir>0?cx+centerW/2:cx-centerW/2;
+   var endX=dir>0?bx:bx+bw;
+   curve(startX,cy,endX,cyb,"cn"+b.c);
+   rectText(bx,cyb-18,bw,36,"mb m"+b.c,"mtext b",b.t);
+   var leafTop=r.top+off+(r.h-b.k.length*30)/2;
+   b.k.forEach(function(k,i){
+    var lw=tw(k),ly=leafTop+i*30+15;
+    var lx=dir>0?bx+bw+gapB:bx-gapB-lw;
+    var sx=dir>0?bx+bw:bx;
+    var ex=dir>0?lx:lx+lw;
+    curve(sx,cyb,ex,ly,"cn"+b.c);
+    rectText(lx,ly-13,lw,26,"ml m"+b.c,"mtext",k);
+   });
+  });
+ }
+ drawSide(LR,1,R);drawSide(LL,-1,L);
+ rectText(cx-centerW/2,cy-22,centerW,44,"mc","mtext c",MIND.center);
+ box.innerHTML="";box.appendChild(svg);
+}
+
+/* crossword */
+(function(){
+ var XW={"h":24,"w":23,"entries":[{"n":3,"d":"A","r":1,"c":2,"a":"TENTPOLESENTENCES","term":"Tentpole sentences","clue":"Your key thoughts in order, which hold up the shape of the text a chatbot expands.","e":"8,9"},{"n":8,"d":"A","r":3,"c":10,"a":"BOXOUTS","term":"Box-outs","clue":"Small separate panels that run alongside the main text so that readers can skim.","e":"3,4"},{"n":14,"d":"A","r":13,"c":2,"a":"WATERMARKANDSIGNATURE","term":"Watermark and signature","clue":"The first marks content in a way that can be removed. The second is a checkable code tied to unchanged content.","e":"9,3,9"},{"n":17,"d":"A","r":19,"c":0,"a":"MARP","term":"Marp","clue":"A text format for slides that can be converted into a PowerPoint file.","e":"4"},{"n":19,"d":"A","r":20,"c":6,"a":"DEEPRESEARCHMODE","term":"Deep research mode","clue":"A setting where a chatbot searches many sources and writes a report with references.","e":"4,8,4"},{"n":20,"d":"A","r":23,"c":1,"a":"TENMINUTERULE","term":"10-minute rule","clue":"A rule of thumb limiting a section to about four to five pages of reading.","e":"3,6,4"},{"n":1,"d":"D","r":0,"c":2,"a":"STYLOMETRY","term":"Stylometry","clue":"Statistical analysis of writing style, used by some AI-text detectors.","e":"10"},{"n":2,"d":"D","r":0,"c":11,"a":"DEMOTEDMATERIAL","term":"Demoted material","clue":"Content moved out of the main piece into an appendix or another document.","e":"7,8"},{"n":4,"d":"D","r":1,"c":20,"a":"GLOBUSPALLIDUS","term":"Globus pallidus","clue":"A part of the brain the instructor described as controlling access to working memory, used as a picture of why dull material feels boring.","e":"6,8"},{"n":5,"d":"D","r":2,"c":22,"a":"BASICGLOBALENGLISH","term":"Basic global English","clue":"A simplified form of the language with a smaller vocabulary and simpler grammar.","e":"5,6,7"},{"n":6,"d":"D","r":3,"c":5,"a":"PROMPTANDRESPONSE","term":"Prompt and response","clue":"Anything you type into a chatbot is the first; anything you get back is the second.","e":"6,3,8"},{"n":7,"d":"D","r":3,"c":7,"a":"FEWSHOTPROMPTING","term":"Few-shot prompting","clue":"Giving the chatbot a number of examples of what you mean instead of an abstract rule.","e":"3,4,9"},{"n":9,"d":"D","r":4,"c":9,"a":"REPEATANDREFINE","term":"Repeat and refine","clue":"Asking for options, filtering them yourself and asking again with more guidance.","e":"6,3,6"},{"n":10,"d":"D","r":5,"c":13,"a":"MOTIVATEDOUTLINE","term":"Motivated outline","clue":"A bullet list of sections in which each major one solves a problem for the reader.","e":"9,7"},{"n":11,"d":"D","r":6,"c":15,"a":"CRAAPCRITERIA","term":"CRAAP criteria","clue":"Currency, relevance, authority, accuracy and purpose: five checks for judging a source.","e":"5,8"},{"n":12,"d":"D","r":7,"c":18,"a":"CORELEARNING","term":"Core learning","clue":"What a chatbot picked up in training, as opposed to what it looks up when searching.","e":"4,8"},{"n":13,"d":"D","r":11,"c":3,"a":"TRANSCRIPTION","term":"Transcription","clue":"A text version of speech, used to turn your talking into material a chatbot can outline.","e":"13"},{"n":15,"d":"D","r":15,"c":0,"a":"MINDMAP","term":"Mind map","clue":"A diagram with a topic in the centre and ideas on branches, used here to focus and integrate ideas.","e":"4,3"},{"n":16,"d":"D","r":18,"c":20,"a":"OODA","term":"OODA","clue":"Observe, orient, decide, act: four steps used to describe a problem being solved.","e":"4"},{"n":18,"d":"D","r":19,"c":10,"a":"ARC","term":"Arc","clue":"One problem being solved, roughly one section of the writing.","e":"3"}]};
+ var gridEl=$("xwGrid");if(!gridEl){return;}
+ var E=XW.entries,H=XW.h,W=XW.w;
+ var cells={},all=[];
+ function key(r,c){return r+","+c;}
+ E.forEach(function(e){
+  e.cells=[];
+  for(var k=0;k<e.a.length;k++){
+   var r=e.r+(e.d==="D"?k:0),c=e.c+(e.d==="A"?k:0),kk=key(r,c);
+   var o=cells[kk];
+   if(!o){o=cells[kk]={r:r,c:c,ch:e.a.charAt(k)};all.push(o);}
+   if(e.d==="A"){o.across=e;}else{o.down=e;}
+   if(k===0){o.num=e.n;}
+   e.cells.push(o);
+  }
+ });
+ var sel={o:null,e:null};
+ var nowEl=$("xwNow"),statusEl=$("xwStatus");
+
+ function selectCell(o,dir,noFocus){
+  var e=dir==="A"?o.across:o.down;
+  if(!e){e=o.across||o.down;}
+  sel.o=o;sel.e=e;paint();
+  if(!noFocus&&document.activeElement!==o.inp){o.inp.focus();}
+ }
+ function paint(){
+  all.forEach(function(o){
+   o.el.classList.remove("xw-word","xw-cur");
+   o.inp.tabIndex=(o===sel.o)?0:-1;
+  });
+  if(!sel.e){return;}
+  sel.e.cells.forEach(function(o){o.el.classList.add("xw-word");});
+  sel.o.el.classList.add("xw-cur");
+  nowEl.textContent=sel.e.n+" "+(sel.e.d==="A"?"Across":"Down")+" ("+sel.e.e+"): "+sel.e.clue;
+  E.forEach(function(e){if(e.btn){e.btn.classList.toggle("xw-active",e===sel.e);}});
+ }
+ function advance(o){
+  var cs=sel.e.cells,i=cs.indexOf(o);
+  if(i>=0&&i<cs.length-1){selectCell(cs[i+1],sel.e.d);}
+ }
+ function move(o,dr,dc,dir){
+  var t=cells[key(o.r+dr,o.c+dc)];
+  if(t){selectCell(t,dir);}
+ }
+ function entryDone(e){return e.cells.every(function(o){return o.inp.value===o.ch;});}
+ function refresh(){
+  var n=0;
+  E.forEach(function(e){
+   var d=entryDone(e);if(d){n++;}
+   if(e.btn){e.btn.parentNode.classList.toggle("xw-done",d);}
+  });
+  statusEl.textContent=n===E.length?"Solved! All "+E.length+" terms found.":n+" of "+E.length+" terms complete.";
+ }
+ function save(){
+  var s={};
+  all.forEach(function(o){if(o.inp.value){s[key(o.r,o.c)]=o.inp.value;}});
+  store("pmcomp-xw",JSON.stringify(s));
+ }
+ function changed(o){
+  if(o){o.el.classList.remove("xw-bad");}
+  save();refresh();
+ }
+
+ function wire(o){
+  var inp=o.inp,pre=null;
+  inp.addEventListener("mousedown",function(){pre=sel.o;});
+  inp.addEventListener("focus",function(){
+   if(sel.o!==o){selectCell(o,sel.e?sel.e.d:"A",true);}
+   setTimeout(function(){try{inp.select();}catch(err){}},0);
+  });
+  inp.addEventListener("click",function(){
+   if(pre===o&&o.across&&o.down){selectCell(o,sel.e.d==="A"?"D":"A",true);}
+   pre=null;
+  });
+  inp.addEventListener("keydown",function(ev){
+   if(ev.ctrlKey||ev.metaKey||ev.altKey){return;}
+   var k=ev.key;
+   if(k&&k.length===1&&/[a-zA-Z]/.test(k)){
+    ev.preventDefault();inp.value=k.toUpperCase();changed(o);advance(o);return;
+   }
+   if(k==="Backspace"||k==="Delete"){
+    ev.preventDefault();
+    if(inp.value){inp.value="";changed(o);}
+    else if(k==="Backspace"){
+     var cs=sel.e.cells,i=cs.indexOf(o);
+     if(i>0){var p=cs[i-1];p.inp.value="";changed(p);selectCell(p,sel.e.d);}
+    }
+    return;
+   }
+   if(k==="ArrowLeft"){ev.preventDefault();move(o,0,-1,"A");return;}
+   if(k==="ArrowRight"){ev.preventDefault();move(o,0,1,"A");return;}
+   if(k==="ArrowUp"){ev.preventDefault();move(o,-1,0,"D");return;}
+   if(k==="ArrowDown"){ev.preventDefault();move(o,1,0,"D");return;}
+   if(k===" "||k==="Enter"){
+    ev.preventDefault();
+    if(o.across&&o.down){selectCell(o,sel.e.d==="A"?"D":"A");}
+    return;
+   }
+   if(k==="Tab"){
+    var idx=E.indexOf(sel.e);
+    if((!ev.shiftKey&&idx===E.length-1)||(ev.shiftKey&&idx===0)){return;}
+    ev.preventDefault();
+    var n=E[idx+(ev.shiftKey?-1:1)];
+    selectCell(n.cells[0],n.d);
+   }
+  });
+  /* fallback for mobile keyboards that do not report a key */
+  inp.addEventListener("input",function(){
+   var v=inp.value.replace(/[^a-zA-Z]/g,"");
+   if(!v){inp.value="";changed(o);return;}
+   inp.value=v.charAt(v.length-1).toUpperCase();
+   changed(o);advance(o);
+  });
+ }
+
+ /* build the grid */
+ gridEl.style.gridTemplateColumns="repeat("+W+",var(--xc))";
+ for(var r=0;r<H;r++){
+  for(var c=0;c<W;c++){
+   var o=cells[key(r,c)];
+   if(!o){
+    var b=document.createElement("div");b.className="xw-blank";b.setAttribute("aria-hidden","true");gridEl.appendChild(b);
+    continue;
+   }
+   var d=document.createElement("div");d.className="xw-cell";
+   if(o.num){var nm=document.createElement("span");nm.className="xw-num";nm.textContent=o.num;nm.setAttribute("aria-hidden","true");d.appendChild(nm);}
+   var inp=document.createElement("input");
+   inp.type="text";inp.maxLength=1;inp.autocomplete="off";
+   inp.setAttribute("autocapitalize","characters");inp.setAttribute("autocorrect","off");inp.setAttribute("spellcheck","false");
+   var lab="Row "+(o.r+1)+", column "+(o.c+1);
+   if(o.across){lab+=", "+o.across.n+" across";}
+   if(o.down){lab+=", "+o.down.n+" down";}
+   inp.setAttribute("aria-label",lab);
+   d.appendChild(inp);gridEl.appendChild(d);
+   o.el=d;o.inp=inp;
+   wire(o);
+  }
+ }
+
+ /* clue lists */
+ var lists={A:$("xwAcross"),D:$("xwDown")};
+ E.forEach(function(e){
+  var li=document.createElement("li");
+  var bt=document.createElement("button");bt.type="button";bt.className="xw-clue";
+  var cn=document.createElement("span");cn.className="xw-cn";cn.textContent=e.n;
+  bt.appendChild(cn);bt.appendChild(document.createTextNode(e.clue+" ("+e.e+")"));
+  bt.addEventListener("click",function(){selectCell(e.cells[0],e.d);});
+  li.appendChild(bt);lists[e.d].appendChild(li);e.btn=bt;
+ });
+
+ /* restore saved letters */
+ var sv={};
+ try{sv=JSON.parse(store("pmcomp-xw")||"{}")||{};}catch(err){sv={};}
+ all.forEach(function(o){var v=sv[key(o.r,o.c)];if(typeof v==="string"&&/^[A-Z]$/.test(v)){o.inp.value=v;}});
+
+ /* buttons */
+ function twoStep(btn,label,fn){
+  var orig=btn.textContent,t=null;
+  btn.addEventListener("click",function(){
+   if(t){clearTimeout(t);t=null;btn.textContent=orig;fn();return;}
+   btn.textContent=label;
+   t=setTimeout(function(){t=null;btn.textContent=orig;},3000);
+  });
+ }
+ $("xwCheck").addEventListener("click",function(){
+  var bad=0,filled=0;
+  all.forEach(function(o){
+   var v=o.inp.value;
+   if(v){
+    filled++;
+    if(v!==o.ch){bad++;o.el.classList.add("xw-bad");}else{o.el.classList.remove("xw-bad");}
+   }
+  });
+  statusEl.textContent=bad?(bad+(bad===1?" letter is":" letters are")+" wrong (shown in red)."):(filled?"No mistakes so far.":"Nothing to check yet.");
+ });
+ $("xwRevealWord").addEventListener("click",function(){
+  if(!sel.e){statusEl.textContent="Select a square first.";return;}
+  sel.e.cells.forEach(function(o){o.inp.value=o.ch;o.el.classList.remove("xw-bad");});
+  save();refresh();
+ });
+ twoStep($("xwRevealAll"),"Sure? Click again",function(){
+  all.forEach(function(o){o.inp.value=o.ch;o.el.classList.remove("xw-bad");});
+  save();refresh();
+ });
+ twoStep($("xwClear"),"Sure? Click again",function(){
+  all.forEach(function(o){o.inp.value="";o.el.classList.remove("xw-bad");});
+  save();refresh();
+ });
+
+ selectCell(E[0].cells[0],E[0].d,true);
+ refresh();
+})();
+
+showTab((location.hash||"#summary").slice(1),false,true);
+})();
+</script>
+</body>
+</html>
